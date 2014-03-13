@@ -75,9 +75,7 @@ class Todoist(object):
                                                   connected with Google.
         """
         params = {'email': email, 'oauth2_token': oauth2_token}
-        if kwargs:
-            params.update(kwargs)
-        return self._get('loginWithGoogle', params)
+        return self._get('loginWithGoogle', params, **kwargs)
 
     def ping(self, token):
         """Test a user's login token.
@@ -136,9 +134,7 @@ class Todoist(object):
               "UNKNOWN_ERROR"
         """
         params = {'email': email, 'full_name': full_name, 'password': password}
-        if kwargs:
-            params.update(kwargs)
-        return self._get('register', params)
+        return self._get('register', params, **kwargs)
 
     def delete_user(self, token, current_password, **kwargs):
         """Delete a registered Todoist user.
@@ -160,9 +156,7 @@ class Todoist(object):
             response.status_code: 403
         """
         params = {'token': token, 'current_password': current_password}
-        if kwargs:
-            params.update(kwargs)
-        return self._get('deleteUser', params)
+        return self._get('deleteUser', params, **kwargs)
 
     def update_user(self, token, **kwargs):
         """Update a registered Todoist user.
@@ -238,6 +232,6 @@ class Todoist(object):
         Returns:
           response (requests.Response): Contains the status of the request.
         """
-        if kwargs:
+        if params and kwargs:
             params.update(kwargs)
         return requests.get(self.api_url + end_point, params=params)

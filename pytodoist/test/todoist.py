@@ -54,6 +54,10 @@ class TodoistTest(unittest.TestCase):
         self.assertTrue(response.status_code == 200)
         self.assertTrue(response.json()['email'] == params['email'])
 
+    def test_update_avatar(self):
+        response = self.t.update_avatar(self.user.token)
+        self.assertTrue(response.status_code == 200)
+
 def main():
     unittest.main()
     return 0
