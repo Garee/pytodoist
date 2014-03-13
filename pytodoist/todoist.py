@@ -226,7 +226,7 @@ class Todoist(object):
               "IMAGE_TOO_BIG"
         """
         params = {'token': token}
-        return self._get('updateAvatar', params, kwargs)
+        return self._get('updateAvatar', params, **kwargs)
 
     def _get(self, end_point, params=None, **kwargs):
         """Send a HTTP GET request to a Todoist API end-point.
