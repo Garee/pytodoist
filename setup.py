@@ -9,5 +9,5 @@ setup(name = 'PyTodoist',
       long_description = open('README').read(),
       author = 'Gary Blackwood',
       author_email = 'gary@garyblackwood.co.uk',
-      url = 'http://www.github.com/Garee/pytodoist',
+      url = 'http://www.github.com/Garee/PyTodoist',
       packages = ['pytodoist'],)
