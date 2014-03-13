@@ -48,6 +48,12 @@ class TodoistTest(unittest.TestCase):
         n_timezones = len(timezones)
         self.assertTrue(n_timezones > 0)
 
+    def test_update_user(self):
+        params = {'email': 'todoist.updated.email@gmail.com'}
+        response = self.t.update_user(self.user.token, **params)
+        self.assertTrue(response.status_code == 200)
+        self.assertTrue(response.json()['email'] == params['email'])
+
 def main():
     unittest.main()
     return 0
