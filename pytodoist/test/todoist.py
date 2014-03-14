@@ -83,6 +83,26 @@ class TodoistTest(unittest.TestCase):
         self.assertTrue(response.status_code == 200)
         self.assertTrue(len(response.json()) == 3)
 
+    def test_update_project(self):
+        response = self.t.add_project(self.user.token, 'Project_1')
+        project_id = response.json()['id']
+        params = {'name': 'Project_1_Updated'}
+        response = self.t.update_project(self.user.token, project_id, **params)
+        self.assertTrue(response.status_code == 200)
+        self.assertTrue(response.json()['name'] == params['name'])
+
+    def test_update_project_orders(self):
+        for i in range(10):
+            response = self.t.add_project(self.user.token, 'Project_' + str(i))
+        response = self.t.get_projects(self.user.token)
+        project_ids = [project['id'] for project in response.json()]
+        rev_project_ids = project_ids[::-1]
+        response = self.t.update_project_orders(self.user.token, rev_project_ids)
+        self.assertTrue(response.status_code == 200)
+        response = self.t.get_projects(self.user.token)
+        project_ids_2 = [project['id'] for project in response.json()]
+        self.assertTrue(project_ids_2 == rev_project_ids)
+
 def main():
     unittest.main()
     return 0

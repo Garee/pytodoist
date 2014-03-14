@@ -283,6 +283,51 @@ class Todoist(object):
         params = {'token': token, 'name': name}
         return self._get('addProject', params, **kwargs)
 
+    def update_project(self, token, project_id, **kwargs):
+        """Update an existing project.
+
+        Args:
+          token (str): The user's login token.
+          project_id (str): The ID of the project to update.
+          name (str, optional): The name of the new project.
+          color (str, optional): The color of the new project.
+          indent (int, optional): The indent of the project (1-4).
+          order (int, optional): The order of the project (1+).
+          collapsed (int, optional): 1 - collapsed, otherwise 0.
+        Returns:
+          response (requests.Response): Contains the status of the request.
+
+          On success:
+            response.status_code: 200
+            response.json(): Contains the updated project data.
+
+          On failure:
+            response.text:
+              "ERROR_PROJECT_NOT_FOUND"
+        """
+        params = {'token': token, 'project_id': project_id}
+        return self._get('updateProject', params, **kwargs)
+
+    def update_project_orders(self, token, project_ids):
+        """Update how the projects are ordered.
+
+        Args:
+          token (str): The user's login token.
+          project_ids (int list): An ordered list of project IDs.
+        Returns:
+          response (requests.Response): Contains the status of the request.
+
+          On success:
+            response.status_code: 200
+            response.text: "ok"
+
+          On failure:
+            response.text:
+              "ERROR_PROJECT_NOT_FOUND"
+        """
+        params = {'token': token, 'item_id_list': str(project_ids)}
+        return self._get('updateProjectOrders', params)
+
     def _get(self, end_point, params=None, **kwargs):
         """Send a HTTP GET request to a Todoist API end-point.
 
