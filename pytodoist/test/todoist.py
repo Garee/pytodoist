@@ -58,6 +58,11 @@ class TodoistTest(unittest.TestCase):
         response = self.t.update_avatar(self.user.token)
         self.assertTrue(response.status_code == 200)
 
+    def test_get_projects(self):
+        response = self.t.get_projects(self.user.token)
+        self.assertTrue(response.status_code == 200)
+        self.assertTrue(len(response.json()) == 1) # Inbox is a default project.
+
 def main():
     unittest.main()
     return 0

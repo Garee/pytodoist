@@ -222,6 +222,21 @@ class Todoist(object):
         params = {'token': token}
         return self._get('updateAvatar', params, **kwargs)
 
+    def get_projects(self, token):
+        """Get a list of all of a user's projects.
+
+        Args:
+          token (str): The user's login token.
+        Returns:
+          response (requests.Response): Contains the status of the request.
+
+          On success:
+            response.status_code: 200
+            response.json(): Contains a list of that user's projects.
+        """
+        params = {'token': token}
+        return self._get('getProjects', params)
+
     def _get(self, end_point, params=None, **kwargs):
         """Send a HTTP GET request to a Todoist API end-point.
 
