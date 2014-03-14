@@ -364,6 +364,26 @@ class Todoist(object):
         params = {'token': token, 'project_id': project_id}
         return self._get('archiveProject', params)
 
+    def unarchive_project(self, token, project_id):
+        """Unarchive the project with 'project_id'.
+
+        Args:
+          token (str): The user's login token.
+          project_id (str): The id of the project to unarchive.
+        Returns:
+          response (requests.Response): Contains the status of the request.
+
+          On success:
+            response.status_code: 200
+            response.json(): A list of unarchived project_ids e.g.
+                             [1234,4324,3242]. [] if the user does
+                             not have Todoist premium
+        Note:
+          Only available for Todoist premium users.
+        """
+        params = {'token': token, 'project_id': project_id}
+        return self._get('unarchiveProject', params)
+
     def _get(self, end_point, params=None, **kwargs):
         """Send a HTTP GET request to a Todoist API end-point.
 

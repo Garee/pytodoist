@@ -121,6 +121,16 @@ class TodoistTest(unittest.TestCase):
         archived_ids = response.json()
         self.assertTrue(len(archived_ids) == 0) # Only works if you are a premium user.
 
+    def test_unarchive_project(self):
+        for i in range(3):
+            response = self.t.add_project(self.user.token, 'Project_' + str(i))
+        response = self.t.get_projects(self.user.token)
+        project_ids = [project['id'] for project in response.json() if project['name'] != 'Inbox']
+        response = self.t.unarchive_project(self.user.token, project_ids[0])
+        self.assertTrue(response.status_code == 200)
+        archived_ids = response.json()
+        self.assertTrue(len(archived_ids) == 0) # Only works if you are a premium user.
+
 def main():
     unittest.main()
     return 0
