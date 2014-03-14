@@ -313,7 +313,7 @@ class Todoist(object):
 
         Args:
           token (str): The user's login token.
-          project_ids (int list): An ordered list of project IDs.
+          project_ids (list): An ordered list of project IDs.
         Returns:
           response (requests.Response): Contains the status of the request.
 
@@ -327,6 +327,22 @@ class Todoist(object):
         """
         params = {'token': token, 'item_id_list': str(project_ids)}
         return self._get('updateProjectOrders', params)
+
+    def delete_project(self, token, project_id):
+        """Delete the project with 'project_id'.
+
+        Args:
+          token (str): The user's login token.
+          project_id (str): The id of the project to delete.
+        Returns:
+          response (requests.Response): Contains the status of the request.
+
+          On success:
+            response.status_code: 200
+            response.text: "ok"
+        """
+        params = {'token': token, 'project_id': project_id}
+        return self._get('deleteProject', params)
 
     def _get(self, end_point, params=None, **kwargs):
         """Send a HTTP GET request to a Todoist API end-point.

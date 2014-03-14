@@ -103,6 +103,14 @@ class TodoistTest(unittest.TestCase):
         project_ids_2 = [project['id'] for project in response.json()]
         self.assertTrue(project_ids_2 == rev_project_ids)
 
+    def test_delete_project(self):
+        response = self.t.add_project(self.user.token, 'Project_1')
+        project_id = response.json()['id']
+        response = self.t.delete_project(self.user.token, project_id)
+        self.assertTrue(response.status_code == 200)
+        response = self.t.get_projects(self.user.token)
+        self.assertTrue(len(response.json()) == 1)
+
 def main():
     unittest.main()
     return 0
