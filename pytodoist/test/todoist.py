@@ -63,6 +63,26 @@ class TodoistTest(unittest.TestCase):
         self.assertTrue(response.status_code == 200)
         self.assertTrue(len(response.json()) == 1) # Inbox is a default project.
 
+    def test_get_project(self):
+        response = self.t.get_projects(self.user.token)
+        projects = response.json()
+        inbox = projects[0]
+        response = self.t.get_project(self.user.token, inbox['id'])
+        self.assertTrue(response.status_code == 200)
+        self.assertTrue(response.json()['name'] == inbox['name'])
+
+    def test_add_project(self):
+        response = self.t.add_project(self.user.token, 'Project_1')
+        self.assertTrue(response.status_code == 200)
+        response = self.t.get_projects(self.user.token)
+        self.assertTrue(response.status_code == 200)
+        self.assertTrue(len(response.json()) == 2)
+        response = self.t.add_project(self.user.token, 'Project_2')
+        self.assertTrue(response.status_code == 200)
+        response = self.t.get_projects(self.user.token)
+        self.assertTrue(response.status_code == 200)
+        self.assertTrue(len(response.json()) == 3)
+
 def main():
     unittest.main()
     return 0

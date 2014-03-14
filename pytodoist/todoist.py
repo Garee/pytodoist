@@ -169,8 +169,10 @@ class Todoist(object):
           timezone (str, optional): The updated Todoist supported timezone.
           date_format (int, optional): If 0: DD-MM-YYYY. If 1 MM-DD-YYYY.
           time_format (int, optional): If 0: '13:00'. If 1: '1:00pm'.
-          start_day (int, optional): The first day of the week (1-7 - Mon-Sun).
-          next_week (int, optional): Which day to use when postponing (1-7 - Mon-Sun).
+          start_day (int, optional): The first day of the week:
+                                     (1-7 - Mon-Sun).
+          next_week (int, optional): Which day to use when postponing:
+                                     (1-7 - Mon-Sun).
 
           start_page (str, optional):
             "_blank" to show a blank page.
@@ -205,7 +207,8 @@ class Todoist(object):
           token (str): The user's login token.
           image (str, optional): The avatar image. Must be encoded with
                                  multipart/form-data - Max size 2mb.
-          delete (bool, optional): If true, delete current avatar and use default.
+          delete (bool, optional): If true, delete current avatar
+                                   and use default.
         Returns:
           response (requests.Response): Contains the status of the request.
 
@@ -236,6 +239,49 @@ class Todoist(object):
         """
         params = {'token': token}
         return self._get('getProjects', params)
+
+    def get_project(self, token, project_id):
+        """Get details about a user's project.
+
+        Args:
+          token (str): The user's login token.
+          project_id (str): The id of the project to fetch.
+        Returns:
+          response (requests.Response): Contains the status of the request.
+
+          On success:
+            response.status_code: 200
+            response.json(): Contains the project data.
+
+          On failure:
+            response.text:
+              "ERROR_PROJECT_NOT_FOUND"
+        """
+        params = {'token': token, 'project_id': project_id}
+        return self._get('getProject', params)
+
+    def add_project(self, token, name, **kwargs):
+        """Add a new project.
+
+        Args:
+          token (str): The user's login token.
+          name (str): The name of the new project.
+          color (str, optional): The color of the new project.
+          indent (int, optional): The indent of the project (1-4).
+          order (int, optional): The order of the project (1+).
+        Returns:
+          response (requests.Response): Contains the status of the request.
+
+          On success:
+            response.status_code: 200
+            response.json(): Contains the new project data.
+
+          On failure:
+            response.text:
+              "ERROR_NAME_IS_EMPTY"
+        """
+        params = {'token': token, 'name': name}
+        return self._get('addProject', params, **kwargs)
 
     def _get(self, end_point, params=None, **kwargs):
         """Send a HTTP GET request to a Todoist API end-point.
