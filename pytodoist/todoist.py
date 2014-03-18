@@ -485,15 +485,33 @@ class Todoist(object):
         }
         return self._get('updateLabelColor', params)
 
+    def delete_label(self, token, label_name):
+      """Delete a user's label.
+
+        Args:
+            token (str): The user's login token.
+            label_name (str): The name of the label.
+        Returns:
+            response (requests.Response): The HTTP response to the request.
+
+            On success:
+                response.text: "ok"
+      """
+      params = {
+        'token': token,
+        'name': label_name
+      }
+      return self._get('deleteLabel', params)
+
     def _get(self, end_point, params=None, **kwargs):
         """Send a HTTP GET request to a Todoist API end-point.
 
         Args:
-          end_point (str): The Todoist API end-point.
-          params (dict): The required request parameters.
-          kwargs (dict): Any additional parameters.
+            end_point (str): The Todoist API end-point.
+            params (dict): The required request parameters.
+            kwargs (dict): Any additional parameters.
         Returns:
-          response (requests.Response): The HTTP response to the request.
+            response (requests.Response): The HTTP response to the request.
         """
         url = self.api_url + end_point
         if params and kwargs:

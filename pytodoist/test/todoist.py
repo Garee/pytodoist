@@ -181,14 +181,25 @@ class TodoistTest(unittest.TestCase):
         self.assertEqual(label_details['name'], new_name)
 
     def test_update_label_color(self):
-      label_name = "Label 1"
-      label_color = 0
-      self.t.add_label(self.user.token, label_name, color=label_color)
-      response = self.t.update_label_color(self.user.token,
-                                           label_name,
-                                           1)
-      label_details = response.json()
-      self.assertEqual(label_details['color'], 1)
+        label_name = "Label 1"
+        label_color = 0
+        self.t.add_label(self.user.token, label_name, color=label_color)
+        response = self.t.update_label_color(self.user.token,
+                                             label_name,
+                                             1)
+        label_details = response.json()
+        self.assertEqual(label_details['color'], 1)
+
+    def test_delete_label(self):
+        label_name = "Label 1"
+        self.t.add_label(self.user.token, label_name)
+        response = self.t.get_labels(self.user.token)
+        labels = response.json()
+        self.assertEqual(len(labels), 1)
+        self.t.delete_label(self.user.token, label_name)
+        response = self.t.get_labels(self.user.token)
+        labels = response.json()
+        self.assertEqual(len(labels), 0)
 
     def _get_inbox(self):
         response = self.t.get_projects(self.user.token)
