@@ -202,23 +202,24 @@ class TodoistTest(unittest.TestCase):
         self.assertEqual(len(labels), 0)
 
     def test_get_uncompleted_tasks_failure(self):
-      response = self.t.get_uncompleted_tasks(self.user.token,
-                                              'badid')
-      self.assertEqual(response.status_code, 400)
+        response = self.t.get_uncompleted_tasks(self.user.token, 'badid')
+        self.assertEqual(response.status_code, 400)
 
     def test_add_task_success(self):
-      response = self.t.add_task(self.user.token, 'Task 1')
-      inbox = self._get_inbox()
-      inbox_id = inbox['id']
-      response = self.t.get_uncompleted_tasks(self.user.token, inbox_id)
-      uncompleted_tasks = response.json()
-      self.assertEqual(len(uncompleted_tasks), 1)
+        response = self.t.add_task(self.user.token, 'Task 1')
+        inbox = self._get_inbox()
+        inbox_id = inbox['id']
+        response = self.t.get_uncompleted_tasks(self.user.token, inbox_id)
+        uncompleted_tasks = response.json()
+        self.assertEqual(len(uncompleted_tasks), 1)
 
     def test_add_task_failure(self):
-      response = self.t.add_task(self.user.token, 'Task 1', project_id='badid')
-      self.assertEqual(response.status_code, 400)
-      response = self.t.add_task(self.user.token, 'Task 2', date_string='d')
-      self.assertEqual(response.text, '"ERROR_WRONG_DATE_SYNTAX"')
+        response = self.t.add_task(self.user.token,
+                                   'Task 1',
+                                   project_id='badid')
+        self.assertEqual(response.status_code, 400)
+        response = self.t.add_task(self.user.token, 'Task 2', date_string='d')
+        self.assertEqual(response.text, '"ERROR_WRONG_DATE_SYNTAX"')
 
     def _get_inbox(self):
         response = self.t.get_projects(self.user.token)

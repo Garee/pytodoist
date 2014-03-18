@@ -486,46 +486,46 @@ class Todoist(object):
         return self._get('updateLabelColor', params)
 
     def delete_label(self, token, label_name):
-      """Delete a user's label.
+        """Delete a user's label.
 
-        Args:
-            token (str): The user's login token.
-            label_name (str): The name of the label.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+          Args:
+              token (str): The user's login token.
+              label_name (str): The name of the label.
+          Returns:
+              response (requests.Response): The HTTP response to the request.
 
-            On success:
-                response.text: "ok"
-      """
-      params = {
-        'token': token,
-        'name': label_name
-      }
-      return self._get('deleteLabel', params)
+              On success:
+                  response.text: "ok"
+        """
+        params = {
+          'token': token,
+          'name': label_name
+        }
+        return self._get('deleteLabel', params)
 
     def get_uncompleted_tasks(self, token, project_id, **kwargs):
-      """Return a list of a project's uncompleted tasks.
+         """Return a list of a project's uncompleted tasks.
 
-        Args:
-            token (str): The user's login token.
-            project_id (str): The id of the project.
-            js_date (int):
-                if 1: 'new Date("Sun Apr 29 2007 23:59:59")'
-                otherwise: 'Sun Apr 2007 23:59:59'
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+         Args:
+             token (str): The user's login token.
+             project_id (str): The id of the project.
+             js_date (int):
+                 if 1: 'new Date("Sun Apr 29 2007 23:59:59")'
+                 otherwise: 'Sun Apr 2007 23:59:59'
+         Returns:
+             response (requests.Response): The HTTP response to the request.
 
-            On success:
-                response.json(): A list of uncompleted tasks.
+             On success:
+                 response.json(): A list of uncompleted tasks.
 
-            On failure:
-                response.status_code: 400 (Invalid project ID).
-      """
-      params = {
-        'token': token,
-        'project_id': project_id
-      }
-      return self._get('getUncompletedItems', params, **kwargs)
+             On failure:
+                 response.status_code: 400 (Invalid project ID).
+         """
+         params = {
+            'token': token,
+            'project_id': project_id
+         }
+         return self._get('getUncompletedItems', params, **kwargs)
 
     def add_task(self, token, content, **kwargs):
       """Add a task to a project.
