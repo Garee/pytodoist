@@ -1,26 +1,30 @@
 #!/usr/bin/env python
+"""This module contains unit tests for the pytodoist.todoist module."""
 
 import sys
 import unittest
 from pytodoist.todoist import Todoist
 
 class TestUser(object):
+    """A fake user to use in each unit test."""
 
     def __init__(self):
-        self.full_name = 'Py Todoist'
-        self.email = 'pytodoist.test.email@gmail.com'
-        self.password = 'pytodoist.test.password'
+        self.full_name = "Py Todoist"
+        self.email = "pytodoist.test.email@gmail.com"
+        self.password = "pytodoist.test.password"
         self.token = None
 
 class TodoistTest(unittest.TestCase):
+    """Test the functionality of the pytodoist.Todoist class"""
 
     @classmethod
-    def setUpClass(self):
-        self.t = Todoist()
-        self.user = TestUser()
+    def setUpClass(cls):
+        cls.t = Todoist()
+        cls.user = TestUser()
 
     def setUp(self):
-        response = self.t.register(self.user.email, self.user.full_name,
+        response = self.t.register(self.user.email,
+                                   self.user.full_name,
                                    self.user.password)
         if response.text == '"ALREADY_REGISTRED"':
             response = self.t.login(self.user.email, self.user.password)
@@ -30,106 +34,132 @@ class TodoistTest(unittest.TestCase):
     def tearDown(self):
         self.t.delete_user(self.user.token, self.user.password)
 
-    def test_login(self):
+    def test_login_success(self):
         response = self.t.login(self.user.email, self.user.password)
-        self.assertTrue(response.status_code == 200)
-        self.assertTrue('token' in response.json())
+        self.assertIn('token', response.json())
 
-    def test_ping(self):
-        response = self.t.login(self.user.email, self.user.password)
-        token = response.json()['token']
-        response = self.t.ping(token)
-        self.assertTrue(response.status_code == 200)
+    def test_login_failure(self):
+        response = self.t.login(self.user.email, "badpassword")
+        self.assertEqual(response.text, '"LOGIN_ERROR"')
+
+    def test_ping_success(self):
+        response = self.t.ping(self.user.token)
+        self.assertEqual(response.status_code, 200)
+
+    def test_ping_failure(self):
+        response = self.t.ping('badtoken')
+        self.assertEqual(response.status_code, 401)
 
     def test_get_timezones(self):
         response = self.t.get_timezones()
-        self.assertTrue(response.status_code == 200)
         timezones = response.json()
-        n_timezones = len(timezones)
-        self.assertTrue(n_timezones > 0)
+        self.assertTrue(len(timezones) > 0)
 
     def test_update_user(self):
-        params = {'email': 'todoist.updated.email@gmail.com'}
-        response = self.t.update_user(self.user.token, **params)
-        self.assertTrue(response.status_code == 200)
-        self.assertTrue(response.json()['email'] == params['email'])
+        new_email = "todoist.updated.email@gmail.com"
+        response = self.t.update_user(self.user.token, email=new_email)
+        user_details = response.json()
+        self.assertEqual(user_details['email'], new_email)
+
+    def test_update_user_bad_password(self):
+        new_password = "007" # Too short.
+        response = self.t.update_user(self.user.token, password=new_password)
+        self.assertEqual(response.status_code, 400)
+
+    def test_update_user_bad_email(self):
+        new_email = "gareeblackwood@gmail.com" # Already exists.
+        response = self.t.update_user(self.user.token, email=new_email)
+        self.assertEqual(response.text, '"ERROR_EMAIL_FOUND"')
 
     def test_update_avatar(self):
-        response = self.t.update_avatar(self.user.token)
-        self.assertTrue(response.status_code == 200)
+        pass
 
     def test_get_projects(self):
         response = self.t.get_projects(self.user.token)
-        self.assertTrue(response.status_code == 200)
-        self.assertTrue(len(response.json()) == 1) # Inbox is a default project.
-
-    def test_get_project(self):
-        response = self.t.get_projects(self.user.token)
         projects = response.json()
-        inbox = projects[0]
-        response = self.t.get_project(self.user.token, inbox['id'])
-        self.assertTrue(response.status_code == 200)
-        self.assertTrue(response.json()['name'] == inbox['name'])
+        self.assertEqual(len(projects), 1) # Inbox always exists.
 
-    def test_add_project(self):
-        response = self.t.add_project(self.user.token, 'Project_1')
-        self.assertTrue(response.status_code == 200)
-        response = self.t.get_projects(self.user.token)
-        self.assertTrue(response.status_code == 200)
-        self.assertTrue(len(response.json()) == 2)
-        response = self.t.add_project(self.user.token, 'Project_2')
-        self.assertTrue(response.status_code == 200)
-        response = self.t.get_projects(self.user.token)
-        self.assertTrue(response.status_code == 200)
-        self.assertTrue(len(response.json()) == 3)
+    def test_get_project_success(self):
+        inbox = self._get_inbox()
+        project_id = inbox['id']
+        response = self.t.get_project(self.user.token, project_id)
+        project_details = response.json()
+        self.assertEqual(project_details['name'], inbox['name'])
 
-    def test_update_project(self):
-        response = self.t.add_project(self.user.token, 'Project_1')
-        project_id = response.json()['id']
-        params = {'name': 'Project_1_Updated'}
-        response = self.t.update_project(self.user.token, project_id, **params)
-        self.assertTrue(response.status_code == 200)
-        self.assertTrue(response.json()['name'] == params['name'])
+    def test_get_project_failure(self):
+        response = self.t.get_project(self.user.token, 'badid')
+        self.assertEqual(response.status_code, 400)
+
+    def test_add_project_success(self):
+        project_name = "Project 1"
+        response = self.t.add_project(self.user.token, project_name)
+        project_details = response.json()
+        self.assertEqual(project_details['name'], project_name)
+
+    def test_add_project_failure(self):
+        project_name = ""
+        response = self.t.add_project(self.user.token, project_name)
+        self.assertEqual(response.text, '"ERROR_NAME_IS_EMPTY"')
+
+    def test_update_project_success(self):
+        response = self.t.add_project(self.user.token, "Project 1")
+        project_details = response.json()
+        project_id = project_details['id']
+        new_project_name = "Project 2"
+        response = self.t.update_project(self.user.token,
+                                         project_id,
+                                         name=new_project_name)
+        project_details = response.json()
+        updated_project_name = project_details['name']
+        self.assertEqual(updated_project_name, new_project_name)
+
+    def test_update_project_failure(self):
+        project_id = "badid"
+        new_project_name = "Project 2"
+        response = self.t.update_project(self.user.token,
+                                         project_id,
+                                         name=new_project_name)
+        self.assertEqual(response.status_code, 400)
 
     def test_update_project_orders(self):
-        for i in range(10):
-            response = self.t.add_project(self.user.token, 'Project_' + str(i))
+        for i in range(5):
+            self.t.add_project(self.user.token, "Project_" + str(i))
         response = self.t.get_projects(self.user.token)
-        project_ids = [project['id'] for project in response.json()]
-        rev_project_ids = project_ids[::-1]
-        response = self.t.update_project_orders(self.user.token, rev_project_ids)
-        self.assertTrue(response.status_code == 200)
+        current_order = [project['id'] for project in response.json()]
+        reverse_order = current_order[::-1]
+        response = self.t.update_project_orders(self.user.token,
+                                                str(reverse_order))
         response = self.t.get_projects(self.user.token)
-        project_ids_2 = [project['id'] for project in response.json()]
-        self.assertTrue(project_ids_2 == rev_project_ids)
+        updated_order = [project['id'] for project in response.json()]
+        self.assertEqual(updated_order, reverse_order)
 
     def test_delete_project(self):
         response = self.t.add_project(self.user.token, 'Project_1')
         project_id = response.json()['id']
         response = self.t.delete_project(self.user.token, project_id)
-        self.assertTrue(response.status_code == 200)
+        self.assertEqual(response.status_code, 200)
         response = self.t.get_projects(self.user.token)
-        self.assertTrue(len(response.json()) == 1)
+        self.assertTrue(len(response.json()) == 1) # Only Inbox remains.
 
     def test_archive_project(self):
-        for i in range(3):
-            response = self.t.add_project(self.user.token, 'Project_' + str(i))
-        response = self.t.get_projects(self.user.token)
-        project_ids = [project['id'] for project in response.json() if project['name'] != 'Inbox']
-        response = self.t.archive_project(self.user.token, project_ids[0])
-        self.assertTrue(response.status_code == 200)
+        project_id = '1'
+        response = self.t.archive_project(self.user.token, project_id)
         archived_ids = response.json()
-        self.assertTrue(len(archived_ids) == 0) # Only works if you are a premium user.
+        self.assertEqual(len(archived_ids), 0) # Premium users only.
 
     def test_unarchive_project(self):
-        for i in range(3):
-            response = self.t.add_project(self.user.token, 'Project_' + str(i))
-        response = self.t.get_projects(self.user.token)
-        project_ids = [project['id'] for project in response.json() if project['name'] != 'Inbox']
-        response = self.t.unarchive_project(self.user.token, project_ids[0])
-        self.assertTrue(response.status_code == 200)
+        project_id = '1'
+        response = self.t.unarchive_project(self.user.token, project_id)
         archived_ids = response.json()
-        self.assertTrue(len(archived_ids) == 0) # Only works if you are a premium user.
+        self.assertEqual(len(archived_ids), 0) # Premium users only.
+
+    def _get_inbox(self):
+        response = self.t.get_projects(self.user.token)
+        projects = response.json()
+        for project in projects:
+            if project['name'] == 'Inbox':
+                return project
+
 
 def main():
     unittest.main()
