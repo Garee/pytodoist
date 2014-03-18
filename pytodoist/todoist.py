@@ -282,7 +282,7 @@ class Todoist(object):
         Args:
             token (str): The user's login token.
             name (str): The name of the new project.
-            color (str): The color of the new project.
+            color (int): The color of the new project.
             indent (int): The indentation of the project: (1-4).
             order (int): The order of the project: (1+).
         Returns:
@@ -307,7 +307,7 @@ class Todoist(object):
             token (str): The user's login token.
             project_id (str): The id of the project to update.
             name (str): The name of the new project.
-            color (str): The color of the new project.
+            color (int): The color of the new project.
             indent (int): The indent of the project: (1-4).
             order (int): The order of the project: (1+).
             collapsed (int): If set to 1 the project is collapsed.
@@ -432,7 +432,7 @@ class Todoist(object):
         Args:
             token (str): The user's login token.
             label_name (str): The name of the label.
-            color (str): The color of the label.
+            color (int): The color of the label.
         Returns:
             response (requests.Response): The HTTP response to the request.
 
@@ -444,6 +444,46 @@ class Todoist(object):
           'name': label_name
         }
         return self._get('addLabel', params, **kwargs)
+
+    def update_label_name(self, token, label_name, new_name):
+        """Update the name of a user's label.
+
+        Args:
+            token (str): The user's login token.
+            label_name (str): The name of the label.
+            new_name (str): The name to change to.
+        Returns:
+            response (requests.Response): The HTTP response to the request.
+
+            On success:
+                response.json(): The updated label details.
+        """
+        params = {
+          'token': token,
+          'old_name': label_name,
+          'new_name': new_name
+        }
+        return self._get('updateLabel', params)
+
+    def update_label_color(self, token, label_name, color):
+        """Update the color of a user's label.
+
+        Args:
+            token (str): The user's login token.
+            label_name (str): The name of the label.
+            color (int): The color to change to.
+        Returns:
+            response (requests.Response): The HTTP response to the request.
+
+            On success:
+                response.json(): The updated label details.
+        """
+        params = {
+          'token': token,
+          'name': label_name,
+          'color': color
+        }
+        return self._get('updateLabelColor', params)
 
     def _get(self, end_point, params=None, **kwargs):
         """Send a HTTP GET request to a Todoist API end-point.
