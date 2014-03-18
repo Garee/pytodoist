@@ -503,6 +503,72 @@ class Todoist(object):
       }
       return self._get('deleteLabel', params)
 
+    def get_uncompleted_tasks(self, token, project_id, **kwargs):
+      """Return a list of a project's uncompleted tasks.
+
+        Args:
+            token (str): The user's login token.
+            project_id (str): The id of the project.
+            js_date (int):
+                if 1: 'new Date("Sun Apr 29 2007 23:59:59")'
+                otherwise: 'Sun Apr 2007 23:59:59'
+        Returns:
+            response (requests.Response): The HTTP response to the request.
+
+            On success:
+                response.json(): A list of uncompleted tasks.
+
+            On failure:
+                response.status_code: 400 (Invalid project ID).
+      """
+      params = {
+        'token': token,
+        'project_id': project_id
+      }
+      return self._get('getUncompletedItems', params, **kwargs)
+
+    def add_task(self, token, content, **kwargs):
+      """Add a task to a project.
+
+        Args:
+            token (str): The user's login token.
+            content (str): The task description.
+            project_id (str, default=Inbox): The id of the project.
+            date_string (str): The date of the task.
+            priority (int): Natural -> Very Urgent (1 -> 4).
+            indent (int): The task indentation (1-4).
+            js_date (int):
+                if 1: 'new Date("Sun Apr 29 2007 23:59:59")'
+                otherwise: 'Sun Apr 2007 23:59:59'
+            item_order (int): The task order.
+            children (list): A list of child tasks IDs.
+            labels (list): A list of label IDs.
+            assigned_by_uid (str): The id of user who assigns current task.
+                Accepts 0 or any user id from the list of project collaborators.
+                If value is unset or invalid it will automatically be set up by
+                your uid.
+            responsible_uid (str): The id of user who is responsible for
+                accomplishing the current task. Accepts 0 or any user id from
+                the list of project collaborators. If the value is unset or
+                invalid it will automatically be set to null.
+            note (str): A task note.
+        Returns:
+            response (requests.Response): The HTTP response to the request.
+
+            On success:
+                response.json(): The task details.
+
+            On failure:
+                response.status_code: 400 (Invalid project ID).
+                response.text:
+                    "ERROR_WRONG_DATE_SYNTAX"
+      """
+      params = {
+        'token': token,
+        'content': content
+      }
+      return self._get('addItem', params, **kwargs)
+
     def _get(self, end_point, params=None, **kwargs):
         """Send a HTTP GET request to a Todoist API end-point.
 
