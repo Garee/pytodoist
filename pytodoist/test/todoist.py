@@ -153,6 +153,23 @@ class TodoistTest(unittest.TestCase):
         archived_ids = response.json()
         self.assertEqual(len(archived_ids), 0) # Premium users only.
 
+    def test_get_labels(self):
+        response = self.t.get_labels(self.user.token)
+        labels = response.json()
+        self.assertTrue(isinstance(labels, dict))
+        response = self.t.get_labels(self.user.token, as_list=1)
+        labels = response.json()
+        self.assertTrue(isinstance(labels, list))
+
+    def test_add_label(self):
+        label_name = "Label 1"
+        response = self.t.add_label(self.user.token, label_name)
+        label_details = response.json()
+        self.assertEqual(label_details['name'], label_name)
+        response = self.t.get_labels(self.user.token)
+        labels = response.json()
+        self.assertEqual(len(labels), 1)
+
     def _get_inbox(self):
         response = self.t.get_projects(self.user.token)
         projects = response.json()

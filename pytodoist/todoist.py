@@ -409,6 +409,42 @@ class Todoist(object):
         }
         return self._get('unarchiveProject', params)
 
+    def get_labels(self, token, **kwargs):
+        """Return all of a user's labels.
+
+        Args:
+            token (str): The user's login token.
+            as_list (int): If 1 return a list of names rather than objects.
+        Returns:
+            response (requests.Response): The HTTP response to the request.
+
+            On success:
+                response.json(): A list of labels.
+        """
+        params = {
+          'token': token
+        }
+        return self._get('getLabels', params, **kwargs)
+
+    def add_label(self, token, label_name, **kwargs):
+        """Add a label or return an existing one.
+
+        Args:
+            token (str): The user's login token.
+            label_name (str): The name of the label.
+            color (str): The color of the label.
+        Returns:
+            response (requests.Response): The HTTP response to the request.
+
+            On success:
+                response.json(): The label details.
+        """
+        params = {
+          'token': token,
+          'name': label_name
+        }
+        return self._get('addLabel', params, **kwargs)
+
     def _get(self, end_point, params=None, **kwargs):
         """Send a HTTP GET request to a Todoist API end-point.
 
