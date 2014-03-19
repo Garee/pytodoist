@@ -747,6 +747,24 @@ class Todoist(object):
         }
         return self._get('updateRecurringDate', params, **kwargs)
 
+    def delete_tasks(self, token, task_ids):
+        """Delete a given list of tasks.
+
+        Args:
+            token (str): The user's login token.
+            task_ids (list): A list of task IDs to delete.
+        Returns:
+            response (requests.Response): The HTTP response to the request.
+
+            On success:
+                response.text: "ok"
+        """
+        params = {
+            'token': token,
+            'ids': task_ids
+        }
+        return self._get('deleteItems', params)
+
     def complete_tasks(self, token, task_ids, **kwargs):
         """Complete a given list of tasks.
 

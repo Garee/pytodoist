@@ -336,6 +336,19 @@ class TodoistTest(unittest.TestCase):
         self.assertEqual(task['id'], task_id)
         self.assertNotEqual(task['due_date'], task_due_date)
 
+    def test_delete_tasks(self):
+        for i in range(3):
+            self.t.add_task(self.user.token, 'Task_' + str(i))
+        inbox = self._get_inbox()
+        inbox_id = inbox['id']
+        response = self.t.get_uncompleted_tasks(self.user.token, inbox_id)
+        tasks = response.json()
+        task_ids = [task['id'] for task in tasks]
+        response = self.t.delete_tasks(self.user.token, str(task_ids))
+        response = self.t.get_uncompleted_tasks(self.user.token, inbox_id)
+        tasks = response.json()
+        self.assertEqual(len(tasks), 0)
+
     def _get_inbox(self):
         response = self.t.get_projects(self.user.token)
         projects = response.json()
