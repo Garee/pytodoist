@@ -80,11 +80,10 @@ class TodoistTest(unittest.TestCase):
         self.assertEqual(len(projects), 1) # Inbox always exists.
 
     def test_get_project_success(self):
-        inbox = self._get_inbox()
-        project_id = inbox['id']
+        project_id = self._get_inbox_id()
         response = self.t.get_project(self.user.token, project_id)
         project_details = response.json()
-        self.assertEqual(project_details['name'], inbox['name'])
+        self.assertEqual(project_details['name'], 'Inbox')
 
     def test_get_project_failure(self):
         response = self.t.get_project(self.user.token, 'badid')
@@ -102,23 +101,15 @@ class TodoistTest(unittest.TestCase):
         self.assertEqual(response.text, '"ERROR_NAME_IS_EMPTY"')
 
     def test_update_project_success(self):
-        response = self.t.add_project(self.user.token, "Project 1")
-        project_details = response.json()
-        project_id = project_details['id']
-        new_project_name = "Project 2"
-        response = self.t.update_project(self.user.token,
-                                         project_id,
-                                         name=new_project_name)
-        project_details = response.json()
-        updated_project_name = project_details['name']
-        self.assertEqual(updated_project_name, new_project_name)
+        project = self._add_project()
+        response = self.t.update_project(self.user.token, project['id'],
+                                         name='Update')
+        updated_project = response.json()
+        self.assertEqual(updated_project['name'], 'Update')
 
     def test_update_project_failure(self):
-        project_id = "badid"
-        new_project_name = "Project 2"
-        response = self.t.update_project(self.user.token,
-                                         project_id,
-                                         name=new_project_name)
+        response = self.t.update_project(self.user.token, 'badid',
+                                         name='Update')
         self.assertEqual(response.status_code, 400)
 
     def test_update_project_orders(self):
@@ -127,17 +118,14 @@ class TodoistTest(unittest.TestCase):
         response = self.t.get_projects(self.user.token)
         current_order = [project['id'] for project in response.json()]
         reverse_order = current_order[::-1]
-        response = self.t.update_project_orders(self.user.token,
-                                                str(reverse_order))
+        self.t.update_project_orders(self.user.token, str(reverse_order))
         response = self.t.get_projects(self.user.token)
         updated_order = [project['id'] for project in response.json()]
         self.assertEqual(updated_order, reverse_order)
 
     def test_delete_project(self):
-        response = self.t.add_project(self.user.token, 'Project_1')
-        project_id = response.json()['id']
-        response = self.t.delete_project(self.user.token, project_id)
-        self.assertEqual(response.status_code, 200)
+        project = self._add_project()
+        self.t.delete_project(self.user.token, project['id'])
         response = self.t.get_projects(self.user.token)
         self.assertTrue(len(response.json()) == 1) # Only Inbox remains.
 
@@ -164,21 +152,20 @@ class TodoistTest(unittest.TestCase):
     def test_add_label(self):
         label_name = "Label 1"
         response = self.t.add_label(self.user.token, label_name)
-        label_details = response.json()
-        self.assertEqual(label_details['name'], label_name)
+        label = response.json()
+        self.assertEqual(label['name'], label_name)
         response = self.t.get_labels(self.user.token)
         labels = response.json()
         self.assertEqual(len(labels), 1)
 
     def test_update_label_name(self):
         label_name = "Label 1"
+        new_name = "Updated"
         self.t.add_label(self.user.token, label_name)
-        new_name = "Label 2"
-        response = self.t.update_label_name(self.user.token,
-                                            label_name,
+        response = self.t.update_label_name(self.user.token, label_name,
                                             new_name)
-        label_details = response.json()
-        self.assertEqual(label_details['name'], new_name)
+        label = response.json()
+        self.assertEqual(label['name'], new_name)
 
     def test_update_label_color(self):
         label_name = "Label 1"
@@ -187,8 +174,8 @@ class TodoistTest(unittest.TestCase):
         response = self.t.update_label_color(self.user.token,
                                              label_name,
                                              1)
-        label_details = response.json()
-        self.assertEqual(label_details['color'], 1)
+        label = response.json()
+        self.assertEqual(label['color'], 1)
 
     def test_delete_label(self):
         label_name = "Label 1"
@@ -448,12 +435,28 @@ class TodoistTest(unittest.TestCase):
         setting = settings['user_left_project']
         self.assertEqual(setting['notify_email'], 1)
 
+    def _add_project(self):
+        response = self.t.add_project(self.user.token, 'Project')
+        return response.json()
+
+    def _add_task(self):
+        response = self.t.add_task(self.user.token, 'Task')
+        return response.json()
+
+    def _add_label(self):
+        response = self.t.add_label(self.user.token, 'Label')
+        return response.json()
+
     def _get_inbox(self):
         response = self.t.get_projects(self.user.token)
         projects = response.json()
         for project in projects:
             if project['name'] == 'Inbox':
                 return project
+
+    def _get_inbox_id(self):
+        inbox = self._get_inbox()
+        return inbox['id']
 
 
 def main():
