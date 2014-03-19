@@ -362,6 +362,63 @@ class TodoistTest(unittest.TestCase):
         tasks = response.json()
         self.assertEqual(len(tasks), 1)
 
+    def test_add_note(self):
+        response = self.t.add_task(self.user.token, 'Task 1')
+        task = response.json()
+        task_id = task['id']
+        response = self.t.add_note(self.user.token, task_id, 'Note 1')
+        note = response.json()
+        self.assertEqual(note['content'], 'Note 1')
+
+    def test_update_note(self):
+        response = self.t.add_task(self.user.token, 'Task 1')
+        task = response.json()
+        task_id = task['id']
+        response = self.t.add_note(self.user.token, task_id, 'Note 1')
+        note = response.json()
+        note_id = note['id']
+        self.t.update_note(self.user.token, note_id, 'Note 2')
+        response = self.t.get_notes(self.user.token, task_id)
+        notes = response.json()
+        note = notes[0]
+        self.assertEqual(note['content'], 'Note 2')
+
+    def test_delete_note(self):
+        response = self.t.add_task(self.user.token, 'Task 1')
+        task = response.json()
+        task_id = task['id']
+        response = self.t.add_note(self.user.token, task_id, 'Note 1')
+        note = response.json()
+        note_id = note['id']
+        response = self.t.delete_note(self.user.token, task_id, note_id)
+        response = self.t.get_notes(self.user.token, task_id)
+        notes = response.json()
+        self.assertEqual(len(notes), 0)
+
+    def test_get_notes(self):
+        response = self.t.add_task(self.user.token, 'Task 1')
+        task = response.json()
+        task_id = task['id']
+        response = self.t.add_note(self.user.token, task_id, 'Note 1')
+        note = response.json()
+        note_id = note['id']
+        response = self.t.get_notes(self.user.token, task_id)
+        notes = response.json()
+        self.assertTrue(len(notes) > 0)
+        note = notes[0]
+        self.assertEqual(note['content'], 'Note 1')
+
+    def test_get_notes_and_task(self):
+        response = self.t.add_task(self.user.token, 'Task 1')
+        task = response.json()
+        task_id = task['id']
+        response = self.t.add_note(self.user.token, task_id, 'Note 1')
+        note = response.json()
+        note_id = note['id']
+        response = self.t.get_notes_and_task(self.user.token, task_id)
+        notes_and_task = response.json()
+        self.assertEqual(len(notes_and_task), 3)
+
     def _get_inbox(self):
         response = self.t.get_projects(self.user.token)
         projects = response.json()

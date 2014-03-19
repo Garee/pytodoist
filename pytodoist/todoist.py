@@ -803,6 +803,107 @@ class Todoist(object):
         }
         return self._get('uncompleteItems', params)
 
+    def add_note(self, token, task_id, note_content):
+        """Add a note to a task.
+
+        Args:
+            token (str): The user's login token.
+            task_id (str): The ID of the task.
+            note_content (str): The note to add.
+        Returns:
+            response (requests.Response): The HTTP response to the request.
+
+            On success:
+                response.json(): The note details.
+        """
+        params = {
+            'token': token,
+            'item_id': task_id,
+            'content': note_content
+        }
+        return self._get('addNote', params)
+
+    def update_note(self, token, note_id, new_content):
+        """Update the content of a note.
+
+        Args:
+            token (str): The user's login token.
+            note_id (str): The ID of the note to update.
+            new_content (str): The updated note content.
+        Returns:
+            response (requests.Response): The HTTP response to the request.
+
+            On success:
+                response.text: "ok"
+        """
+        params = {
+            'token': token,
+            'note_id': note_id,
+            'content': new_content
+        }
+        return self._get('updateNote', params)
+
+    def delete_note(self, token, task_id, note_id):
+        """Delete a note from a task.
+
+        Args:
+            token (str): The user's login token.
+            task_id (str): The ID of the task.
+            note_id (str): The ID of the note to delete.
+        Returns:
+            response (requests.Response): The HTTP response to the request.
+
+            On success:
+                response.text: ok
+        """
+        params = {
+            'token': token,
+            'item_id': task_id,
+            'note_id': note_id
+        }
+        return self._get('deleteNote', params)
+
+    def get_notes(self, token, task_id):
+        """Return the list of notes for a task.
+
+        Args:
+            token (str): The user's login token.
+            task_id (str): The ID of the task.
+        Returns:
+            response (requests.Response): The HTTP response to the request.
+
+            On success:
+                response.json(): A list of notes.
+        """
+        params = {
+            'token': token,
+            'item_id': task_id
+        }
+        return self._get('getNotes', params)
+
+    def get_notes_and_task(self, token, task_id):
+        """Return the list of notes for a task and the task itself.
+
+        Args:
+            token (str): The user's login token.
+            task_id (str): The ID of the task.
+        Returns:
+            response (requests.Response): The HTTP response to the request.
+
+            On success:
+                response.json():
+                    {
+                        "item": {},
+                        "project": {},
+                        "notes": [{...}, ..., {...}]
+                    }
+        """
+        params = {
+            'token': token,
+            'item_id': task_id
+        }
+        return self._get('getNotesData', params)
+
     def _get(self, end_point, params=None, **kwargs):
         """Send a HTTP GET request to a Todoist API end-point.
 
