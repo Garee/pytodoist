@@ -881,6 +881,38 @@ class Todoist(object):
         }
         return self._get('getNotes', params)
 
+    def search_tasks(self, token, queries, **kwargs):
+        """Return the list of tasks, each of which matches one of the
+        provided queries.
+
+        Note:
+            See https://todoist.com/Help/timeQuery for valid queries.
+        Args:
+            token (str): The user's login token.
+            queries (list): A list of queries.
+        Returns:
+            response (requests.Response): The HTTP response to the request.
+
+            On success:
+                response.json(): A list of query matching notes.
+                    [{
+                        "type": "date",
+                        "query": "2007-4-29T10:13",
+                        "data": [
+                            [...]
+                        ]
+                    }, {
+                        "type": "overdue",
+                        "data": [...]
+                    },
+                    ...]
+        """
+        params = {
+            'token': token,
+            'queries': queries
+        }
+        return self._get('query', params, **kwargs)
+
     def get_notes_and_task(self, token, task_id):
         """Return the list of notes for a task and the task itself.
 

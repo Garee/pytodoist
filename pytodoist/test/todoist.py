@@ -419,6 +419,21 @@ class TodoistTest(unittest.TestCase):
         notes_and_task = response.json()
         self.assertEqual(len(notes_and_task), 3)
 
+    def test_search_tasks(self):
+        response = self.t.add_task(self.user.token,
+                                   'Task 1',
+                                   date_string='tomorrow')
+        task = response.json()
+        task_id = task['id']
+        queries = '["tomorrow"]'
+        response = self.t.search_tasks(self.user.token, queries)
+        for entry in response.json():
+            if entry['query'] == 'tomorrow':
+                tasks = entry['data']
+        self.assertEqual(len(tasks), 1)
+        task = tasks[0]
+        self.assertEqual(task['id'], task_id)
+
     def _get_inbox(self):
         response = self.t.get_projects(self.user.token)
         projects = response.json()
