@@ -725,6 +725,27 @@ class Todoist(object):
         }
         return self._get('moveItems', params)
 
+    def advance_recurring_dates(self, token, task_ids, **kwargs):
+        """Update the recurring dates of a list of tasks. The date
+        will be advanced to the next date with respect to their 'date_string'.
+
+        Args:
+            token (str): The user's login token.
+            task_ids (list): Advance the dates of these tasks.
+            js_date (int):
+                if 1: 'new Date("Sun Apr 29 2007 23:59:59")'
+                otherwise: 'Sun Apr 2007 23:59:59'
+        Returns:
+            response (requests.Response): The HTTP response to the request.
+
+            On success:
+                response.json(): A list of updated tasks.
+        """
+        params = {
+            'token': token,
+            'ids': task_ids
+        }
+        return self._get('updateRecurringDate', params, **kwargs)
 
     def complete_tasks(self, token, task_ids, **kwargs):
         """Complete a given list of tasks.

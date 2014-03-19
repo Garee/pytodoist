@@ -322,6 +322,20 @@ class TodoistTest(unittest.TestCase):
         tasks = response.json()
         self.assertEqual(len(tasks), 1)
 
+    def test_advance_recurring_dates(self):
+        response = self.t.add_task(self.user.token,
+                                   'Task 1',
+                                   date_string='every day')
+        task = response.json()
+        task_id = task['id']
+        task_due_date = task['due_date']
+        response = self.t.advance_recurring_dates(self.user.token,
+                                                       str([task_id]))
+        tasks = response.json()
+        task = tasks[0]
+        self.assertEqual(task['id'], task_id)
+        self.assertNotEqual(task['due_date'], task_due_date)
+
     def _get_inbox(self):
         response = self.t.get_projects(self.user.token)
         projects = response.json()
