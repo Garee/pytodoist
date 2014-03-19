@@ -701,6 +701,31 @@ class Todoist(object):
         }
         return self._get('updateOrders', params)
 
+    def move_tasks(self, token, task_locations, project_id):
+        """Move tasks to another project.
+
+        Args:
+            token (str): The user's login token.
+            task_locations (map):
+                Where the tasks are currently located. A mapping
+                of project_id->task_id e.g. {"1534": ["23454"]}.
+            project_id (str): The project to move the tasks to.
+        Returns:
+            response (requests.Response): The HTTP response to the request.
+
+            On success:
+                response.json():
+                    The task counts of each project. e.g.
+                    {"counts": {"1523": 0, "1245": 1}}
+        """
+        params = {
+            'token': token,
+            'project_items': task_locations,
+            'to_project': project_id
+        }
+        return self._get('moveItems', params)
+
+
     def complete_tasks(self, token, task_ids, **kwargs):
         """Complete a given list of tasks.
 

@@ -301,6 +301,27 @@ class TodoistTest(unittest.TestCase):
                                                str([]))
         self.assertEqual(response.status_code, 400)
 
+    def test_move_tasks(self):
+        response = self.t.add_project(self.user.token, 'Project 1')
+        project = response.json()
+        project_id = project['id']
+        response = self.t.add_task(self.user.token, 'Task 1')
+        task = response.json()
+        task_id = task['id']
+        inbox = self._get_inbox()
+        inbox_id = inbox['id']
+        task_locations = '{{"{p_id}": ["{t_id}"]}}'.format(p_id=inbox_id,
+                                                           t_id=task_id)
+        response = self.t.move_tasks(self.user.token,
+                                     str(task_locations),
+                                     project_id)
+        response = self.t.get_uncompleted_tasks(self.user.token, inbox_id)
+        tasks = response.json()
+        self.assertEqual(len(tasks), 0)
+        response = self.t.get_uncompleted_tasks(self.user.token, project_id)
+        tasks = response.json()
+        self.assertEqual(len(tasks), 1)
+
     def _get_inbox(self):
         response = self.t.get_projects(self.user.token)
         projects = response.json()
