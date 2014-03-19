@@ -221,6 +221,29 @@ class TodoistTest(unittest.TestCase):
         response = self.t.add_task(self.user.token, 'Task 2', date_string='d')
         self.assertEqual(response.text, '"ERROR_WRONG_DATE_SYNTAX"')
 
+    def test_get_all_completed_tasks_success(self):
+        response = self.t.add_task(self.user.token, 'Task 1')
+        task = response.json()
+        task_id = task['id']
+        self.t.complete_tasks(self.user.token, str([task_id]))
+        response = self.t.get_all_completed_tasks(self.user.token)
+        tasks = response.json()['items']
+        self.assertEqual(len(tasks), 0) # Premium users only.
+
+    def test_complete_tasks(self):
+        self.t.add_task(self.user.token, 'Task 1')
+        self.t.add_task(self.user.token, 'Task 2')
+        inbox = self._get_inbox()
+        inbox_id = inbox['id']
+        response = self.t.get_uncompleted_tasks(self.user.token, inbox_id)
+        tasks = response.json()
+        task_ids = [task['id'] for task in tasks]
+        response = self.t.complete_tasks(self.user.token, str(task_ids))
+        self.assertEqual(response.text, '"ok"')
+        response = self.t.get_uncompleted_tasks(self.user.token, inbox_id)
+        tasks = response.json()
+        self.assertEqual(len(tasks), 0)
+
     def _get_inbox(self):
         response = self.t.get_projects(self.user.token)
         projects = response.json()

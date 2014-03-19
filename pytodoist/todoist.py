@@ -527,6 +527,32 @@ class Todoist(object):
          }
          return self._get('getUncompletedItems', params, **kwargs)
 
+    def get_all_completed_tasks(self, token, **kwargs):
+        """Return a list of a user's uncompleted tasks.
+
+        Note:
+            Will return an empty list for non-premium users.
+        Args:
+            token (str): The user's login token.
+            js_date (int):
+                if 1: 'new Date("Sun Apr 29 2007 23:59:59")'
+                otherwise: 'Sun Apr 2007 23:59:59'
+            project_id (str): Filter by tasks by project ID.
+            label (str): Filter the tasks by label.
+            interval (str, default=past 2 weeks): Restrict the time range.
+        Returns:
+            response (requests.Response): The HTTP response to the request.
+
+            On success:
+                response.json(): A list of uncompleted tasks.
+            On failure:
+                response.status_code: 400 (Invalid project ID).
+        """
+        params = {
+            'token': token
+        }
+        return self._get('getAllCompletedItems', params, **kwargs)
+
     def add_task(self, token, content, **kwargs):
       """Add a task to a project.
 
@@ -568,6 +594,27 @@ class Todoist(object):
         'content': content
       }
       return self._get('addItem', params, **kwargs)
+
+    def complete_tasks(self, token, task_ids, **kwargs):
+        """Complete a given list of tasks.
+
+        Args:
+            token (str): The user's login token.
+            task_ids (list): A list of task IDs to complete.
+            in_history (int, default=1):
+                If 0 the tasks will not be moved to the task history.
+        Returns:
+            response (requests.Response): The HTTP response to the request.
+
+            On success:
+                response.text: "ok"
+        """
+        params = {
+            'token': token,
+            'ids': task_ids
+        }
+        return self._get('completeItems', params, **kwargs)
+
 
     def _get(self, end_point, params=None, **kwargs):
         """Send a HTTP GET request to a Todoist API end-point.
