@@ -349,6 +349,19 @@ class TodoistTest(unittest.TestCase):
         tasks = response.json()
         self.assertEqual(len(tasks), 0)
 
+    def test_uncomplete_tasks(self):
+        response = self.t.add_task(self.user.token, 'Task 1')
+        task = response.json()
+        task_id = task['id']
+        self.t.complete_tasks(self.user.token, str([task_id]))
+        response = self.t.uncomplete_tasks(self.user.token, str([task_id]))
+        self.assertEqual(response.text, '"ok"')
+        inbox = self._get_inbox()
+        inbox_id = inbox['id']
+        response = self.t.get_uncompleted_tasks(self.user.token, inbox_id)
+        tasks = response.json()
+        self.assertEqual(len(tasks), 1)
+
     def _get_inbox(self):
         response = self.t.get_projects(self.user.token)
         projects = response.json()

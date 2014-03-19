@@ -785,6 +785,23 @@ class Todoist(object):
         }
         return self._get('completeItems', params, **kwargs)
 
+    def uncomplete_tasks(self, token, task_ids):
+        """Uncomplete a given list of tasks.
+
+        Args:
+            token (str): The user's login token.
+            task_ids (list): A list of task IDs to uncomplete.
+        Returns:
+            response (requests.Response): The HTTP response to the request.
+
+            On success:
+                response.text: "ok"
+        """
+        params = {
+            'token': token,
+            'ids': task_ids
+        }
+        return self._get('uncompleteItems', params)
 
     def _get(self, end_point, params=None, **kwargs):
         """Send a HTTP GET request to a Todoist API end-point.
