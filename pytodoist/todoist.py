@@ -544,7 +544,7 @@ class Todoist(object):
             response (requests.Response): The HTTP response to the request.
 
             On success:
-                response.json(): A list of uncompleted tasks.
+                response.json(): A list of completed tasks.
             On failure:
                 response.status_code: 400 (Invalid project ID).
         """
@@ -552,6 +552,49 @@ class Todoist(object):
             'token': token
         }
         return self._get('getAllCompletedItems', params, **kwargs)
+
+    def get_completed_tasks(self, token, project_id, **kwargs):
+        """Return a list of a project's uncompleted tasks.
+
+        Args:
+            token (str): The user's login token.
+            project_id (str): The id of the project.
+            js_date (int):
+                if 1: 'new Date("Sun Apr 29 2007 23:59:59")'
+                otherwise: 'Sun Apr 2007 23:59:59'
+        Returns:
+            response (requests.Response): The HTTP response to the request.
+
+            On success:
+                response.json(): A list of completed tasks.
+            On failure:
+                response.status_code: 400 (Invalid project ID).
+        """
+        params = {
+            'token': token
+        }
+        return self._get('getAllCompletedItems', params, **kwargs)
+
+    def get_tasks_by_id(self, token, task_ids, **kwargs):
+        """Return a list of tasks with given IDs.
+
+        Args:
+            token (str): The user's login token.
+            task_ids (list): Return tasks with these ids.
+            js_date (int):
+                if 1: 'new Date("Sun Apr 29 2007 23:59:59")'
+                otherwise: 'Sun Apr 2007 23:59:59'
+        Returns:
+            response (requests.Response): The HTTP response to the request.
+
+            On success:
+                response.json(): A list of tasks.
+        """
+        params = {
+            'token': token,
+            'ids': task_ids
+        }
+        return self._get('getItemsById', params, **kwargs)
 
     def add_task(self, token, content, **kwargs):
       """Add a task to a project.

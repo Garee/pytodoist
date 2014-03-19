@@ -230,6 +230,23 @@ class TodoistTest(unittest.TestCase):
         tasks = response.json()['items']
         self.assertEqual(len(tasks), 0) # Premium users only.
 
+    def test_get_all_completed_tasks_failure(self):
+        project_id = 'badid'
+        response = self.t.get_all_completed_tasks(self.user.token,
+                                                  project_id=project_id)
+        self.assertEqual(response.status_code, 400)
+
+    def test_get_tasks_by_id(self):
+        response = self.t.add_task(self.user.token, 'Task 1')
+        task = response.json()
+        task_id = task['id']
+        self.t.add_task(self.user.token, 'Task 2')
+        response = self.t.get_tasks_by_id(self.user.token, str([task_id]))
+        tasks = response.json()
+        self.assertEqual(len(tasks), 1)
+        task = tasks[0]
+        self.assertEqual(task['content'], 'Task 1')
+
     def test_complete_tasks(self):
         self.t.add_task(self.user.token, 'Task 1')
         self.t.add_task(self.user.token, 'Task 2')
