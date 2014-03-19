@@ -678,6 +678,29 @@ class Todoist(object):
       }
       return self._get('updateItem', params, **kwargs)
 
+    def update_task_ordering(self, token, project_id, task_ids):
+        """Update the order of a project's tasks.
+
+        Args:
+            token (str): The user's login token.
+            project_id (str): The project to update.
+            task_ids (list): The task ordering.
+        Returns:
+            response (requests.Response): The HTTP response to the request.
+
+            On success:
+                response.text: "ok"
+
+            On failure:
+                response.status_code: 400 (Invalid project ID).
+        """
+        params = {
+            'token': token,
+            'project_id': project_id,
+            'item_id_list': task_ids
+        }
+        return self._get('updateOrders', params)
+
     def complete_tasks(self, token, task_ids, **kwargs):
         """Complete a given list of tasks.
 

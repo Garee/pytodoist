@@ -277,6 +277,30 @@ class TodoistTest(unittest.TestCase):
         tasks = response.json()
         self.assertEqual(len(tasks), 0)
 
+    def test_update_task_ordering_success(self):
+        for i in range(10):
+            self.t.add_task(self.user.token, 'Task 1')
+        inbox = self._get_inbox()
+        inbox_id = inbox['id']
+        response = self.t.get_uncompleted_tasks(self.user.token, inbox_id)
+        tasks = response.json()
+        task_ordering = [task['id'] for task in tasks]
+        rev_ordering = task_ordering[::-1]
+        response = self.t.update_task_ordering(self.user.token,
+                                               inbox_id,
+                                               str(rev_ordering))
+        self.assertEqual(response.text, '"ok"')
+        response = self.t.get_uncompleted_tasks(self.user.token, inbox_id)
+        tasks = response.json()
+        task_ordering = [task['id'] for task in tasks]
+        self.assertEqual(task_ordering, rev_ordering)
+
+    def test_update_task_ordering_failure(self):
+        response = self.t.update_task_ordering(self.user.token,
+                                               'badid',
+                                               str([]))
+        self.assertEqual(response.status_code, 400)
+
     def _get_inbox(self):
         response = self.t.get_projects(self.user.token)
         projects = response.json()
