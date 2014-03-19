@@ -279,7 +279,7 @@ class TodoistTest(unittest.TestCase):
 
     def test_update_task_ordering_success(self):
         for i in range(10):
-            self.t.add_task(self.user.token, 'Task 1')
+            self.t.add_task(self.user.token, 'Task_' + str(i))
         inbox = self._get_inbox()
         inbox_id = inbox['id']
         response = self.t.get_uncompleted_tasks(self.user.token, inbox_id)
@@ -406,6 +406,7 @@ class TodoistTest(unittest.TestCase):
         notes = response.json()
         self.assertTrue(len(notes) > 0)
         note = notes[0]
+        self.assertEqual(note['id'], note_id)
         self.assertEqual(note['content'], 'Note 1')
 
     def test_get_notes_and_task(self):
@@ -413,8 +414,6 @@ class TodoistTest(unittest.TestCase):
         task = response.json()
         task_id = task['id']
         response = self.t.add_note(self.user.token, task_id, 'Note 1')
-        note = response.json()
-        note_id = note['id']
         response = self.t.get_notes_and_task(self.user.token, task_id)
         notes_and_task = response.json()
         self.assertEqual(len(notes_and_task), 3)
