@@ -221,6 +221,22 @@ class TodoistTest(unittest.TestCase):
         response = self.t.add_task(self.user.token, 'Task 2', date_string='d')
         self.assertEqual(response.text, '"ERROR_WRONG_DATE_SYNTAX"')
 
+    def test_update_task_success(self):
+        response = self.t.add_task(self.user.token, 'Task 1')
+        task = response.json()
+        task_id = task['id']
+        response = self.t.update_task(self.user.token,
+                                      task_id,
+                                      content="Task 2")
+        updated_task = response.json()
+        self.assertEqual(updated_task['content'], "Task 2")
+        self.assertEqual(updated_task['id'], task_id)
+
+    def test_update_task_failure(self):
+        task_id = '-1' # Bad id - won't exist.
+        response = self.t.update_task(self.user.token, task_id)
+        self.assertEqual(response.text, '"ERROR_ITEM_NOT_FOUND"')
+
     def test_get_all_completed_tasks_success(self):
         response = self.t.add_task(self.user.token, 'Task 1')
         task = response.json()
