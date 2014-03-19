@@ -434,6 +434,21 @@ class TodoistTest(unittest.TestCase):
         task = tasks[0]
         self.assertEqual(task['id'], task_id)
 
+    def test_get_notification_settings(self):
+        response = self.t.get_notification_settings(self.user.token)
+        settings = response.json()
+        self.assertTrue(len(settings) > 0)
+
+    def test_update_notification_settings(self):
+        response = self.t.update_notification_settings(self.user.token,
+                                                       'user_left_project',
+                                                       'push',
+                                                       1)
+        response = self.t.get_notification_settings(self.user.token)
+        settings = response.json()
+        setting = settings['user_left_project']
+        self.assertEqual(setting['notify_email'], 1)
+
     def _get_inbox(self):
         response = self.t.get_projects(self.user.token)
         projects = response.json()

@@ -936,6 +936,45 @@ class Todoist(object):
         }
         return self._get('getNotesData', params)
 
+    def get_notification_settings(self, token):
+        """Return a user's notification settings.
+
+        Args:
+            token (str): The user's login token.
+        Returns:
+            response (requests.Response): The HTTP response to the request.
+
+            On success:
+                response.json(): A list of notification settings.
+        """
+        params = {
+            'token': token
+        }
+        return self._get('getNotificationSettings', params)
+
+    def update_notification_settings(self, token, notification_type,
+                                     service, should_notify):
+        """Update a user's notification settings.
+
+        Args:
+            token (str): The user's login token.
+            notification_type (str): The notification to update.
+            service (str): email or push.
+            should_notify (int): If 0 notify, otherwise do not send.
+        Returns:
+            response (requests.Response): The HTTP response to the request.
+
+            On success:
+                response.text: "ok"
+        """
+        params = {
+            'token': token,
+            'notification_type': notification_type,
+            'service': service,
+            'dont_notify': should_notify
+        }
+        return self._get('updateNotificationSetting', params)
+
     def _get(self, end_point, params=None, **kwargs):
         """Send a HTTP GET request to a Todoist API end-point.
 
