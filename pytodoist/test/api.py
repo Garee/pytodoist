@@ -14,7 +14,7 @@ class TestUser(object):
         self.password = "pytodoist.test.password"
         self.token = None
 
-class APITest(unittest.TestCase):
+class TodoistAPITest(unittest.TestCase):
     """Test the functionality of the pytodoist.Todoist class"""
 
     @classmethod

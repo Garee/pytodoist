@@ -1,7 +1,7 @@
 """This module provides an abstract method for interacting with the Todoist API.
 
 Classes:
-    API: A simple wrapper around the Todoist API.
+    TodoistAPI: A simple wrapper around the Todoist API.
     using the requests module.
 """
 import requests
