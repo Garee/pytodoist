@@ -16,7 +16,9 @@ class TodoistAPI(object):
     URL = 'https://www.todoist.com/API/'
 
     ERRORS = ['"LOGIN_ERROR"', "INTERNAL_ERROR",
-              "EMAIL_MISMATCH", "ACCOUNT_NOT_CONNECTED_WITH_GOOGLE"]
+              "EMAIL_MISMATCH", "ACCOUNT_NOT_CONNECTED_WITH_GOOGLE",
+              '"ALREADY_REGISTRED"', '"TOO_SHORT_PASSWORD"', '"INVALID_EMAIL"',
+              '"INVALID_TIMEZONE"', '"INVALID_FULL_NAME"', '"UNKNOWN_ERROR"']
 
     def login(self, email, password):
         """Login to Todoist.
@@ -224,8 +226,8 @@ class TodoistAPI(object):
                 The avatar image. Must be encoded with multipart/form-data.
                 Max size: 2mb.
 
-            delete (bool):
-                If true, delete current avatar and use a default.
+            delete (int):
+                If 1, delete current avatar and use a default.
         Returns:
             response (requests.Response): The HTTP response to the request.
 
