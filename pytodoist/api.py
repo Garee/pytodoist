@@ -15,10 +15,16 @@ class TodoistAPI(object):
 
     URL = 'https://www.todoist.com/API/'
 
-    ERRORS = ['"LOGIN_ERROR"', "INTERNAL_ERROR",
-              "EMAIL_MISMATCH", "ACCOUNT_NOT_CONNECTED_WITH_GOOGLE",
-              '"ALREADY_REGISTRED"', '"TOO_SHORT_PASSWORD"', '"INVALID_EMAIL"',
-              '"INVALID_TIMEZONE"', '"INVALID_FULL_NAME"', '"UNKNOWN_ERROR"']
+    ERRORS = ['"LOGIN_ERROR"',
+              "INTERNAL_ERROR",
+              "EMAIL_MISMATCH",
+              "ACCOUNT_NOT_CONNECTED_WITH_GOOGLE",
+              '"ALREADY_REGISTRED"',
+              '"TOO_SHORT_PASSWORD"',
+              '"INVALID_EMAIL"',
+              '"INVALID_TIMEZONE"',
+              '"INVALID_FULL_NAME"',
+              '"UNKNOWN_ERROR"']
 
     def login(self, email, password):
         """Login to Todoist.
@@ -534,7 +540,7 @@ class TodoistAPI(object):
         return self._get('getUncompletedItems', params, **kwargs)
 
     def get_all_completed_tasks(self, token, **kwargs):
-        """Return a list of a user's uncompleted tasks.
+        """Return a list of a user's completed tasks.
 
         Note:
             Will return an empty list for non-premium users.
@@ -560,7 +566,7 @@ class TodoistAPI(object):
         return self._get('getAllCompletedItems', params, **kwargs)
 
     def get_completed_tasks(self, token, project_id, **kwargs):
-        """Return a list of a project's uncompleted tasks.
+        """Return a list of a project's completed tasks.
 
         Args:
             token (str): The user's login token.
