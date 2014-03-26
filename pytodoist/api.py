@@ -903,6 +903,10 @@ class TodoistAPI(object):
         Args:
             token (str): The user's login token.
             queries (list): A list of queries.
+            as_count (int): If 1, a count of tasks will be returned.
+            js_date (int):
+                if 1: 'new Date("Sun Apr 29 2007 23:59:59")'
+                otherwise: 'Sun Apr 2007 23:59:59'
         Returns:
             response (requests.Response): The HTTP response to the request.
 

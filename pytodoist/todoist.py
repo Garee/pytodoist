@@ -82,14 +82,10 @@ class User(object):
         return Label(label_as_json, self)
 
     def search(self, queries):
-        pass
-
-    def get_notification_settings(self):
-        pass
-
-    def update_notification_settings(self):
-        pass
-
+        response = api.search_tasks(self.token, queries)
+        _fail_if_contains_errors(response)
+        search_results = response.json()
+        return [Task(result['data']) for result in search_results]
 
 class Project(object):
 
@@ -183,9 +179,6 @@ class Task(object):
         response = api.advance_recurring_dates(self.project.owner.token,
                                                task_ids)
         _fail_if_contains_errors(response)
-
-    def move(self):
-        pass
 
 
 class Note(object):
