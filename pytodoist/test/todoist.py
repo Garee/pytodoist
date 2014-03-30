@@ -8,16 +8,20 @@ full_name = "Py Todoist"
 email = "pytodoist.test.email@gmail.com"
 password = "pytodoist.test.password"
 
+def _get_user():
+    try:
+        user = todoist.register(full_name, email, password)
+    except todoist.TodoistException, e:
+        if e.response.text == '"ALREADY_REGISTRED"':
+            user = todoist.login(email, password)
+            user.delete()
+            user = todoist.register(full_name, email, password)
+    return user
+
 class UserTest(unittest.TestCase):
 
     def setUp(self):
-        try:
-            self.user = todoist.register(full_name, email, password)
-        except todoist.TodoistException, e:
-            if e.response.text == '"ALREADY_REGISTRED"':
-                self.user = todoist.login(email, password)
-                self.user.delete()
-                self.user = todoist.register(full_name, email, password)
+        self.user = _get_user()
 
     def tearDown(self):
         self.user.delete()
@@ -29,7 +33,6 @@ class UserTest(unittest.TestCase):
         self.user.full_name = 'Todoist Py'
         self.user.update()
         self.user = todoist.login(email, password)
-        print self.user
         self.assertEqual(self.user.full_name, 'Todoist Py')
 
     def test_add_project(self):
@@ -79,10 +82,53 @@ class UserTest(unittest.TestCase):
         self.assertEqual(len(tasks), 2)
 
     def test_is_receiving_email_notifications(self):
-      self.user.disable_email_notifications("note_added")
-      is_receiving = self.user.is_receiving_email_notifications("note_added")
-      self.assertFalse(is_receiving)
+        self.user.disable_email_notifications("note_added")
+        is_receiving = self.user.is_receiving_email_notifications("note_added")
+        self.assertFalse(is_receiving)
 
+class ProjectTest(unittest.TestCase):
+
+    def setUp(self):
+        self.user = _get_user()
+        self.project = self.user.add_project('Project_1')
+
+    def tearDown(self):
+        self.user.delete()
+
+    def test_delete(self):
+        self.project.delete()
+        projects = self.user.get_projects()
+        self.assertEqual(len(projects), 1) # Only Inbox.
+
+    def test_update(self):
+        self.project.name = 'Project_2'
+        self.project.update()
+        project = self.user.get_project_with_id(self.project.id)
+        self.assertEqual(project.name, 'Project_2')
+
+    def test_archive(self):
+        self.project.archive() # Premium only.
+
+    def test_unarchive(self):
+        self.project.unarchive() # Premium only.
+
+    def test_add_task(self):
+        self.project.add_task('Task_1')
+        tasks = self.project.get_uncompleted_tasks()
+        self.assertEqual(len(tasks), 1)
+
+    def test_get_uncompleted_tasks(self):
+        for i in range(5):
+            self.project.add_task('Task_' + str(i))
+        tasks = self.project.get_uncompleted_tasks()
+        self.assertEqual(len(tasks), 5)
+
+    def test_get_completed_tasks(self):
+        for i in range(5):
+            task = self.project.add_task('Task_' + str(i))
+            task.complete()
+        tasks = self.project.get_completed_tasks()
+        self.assertEqual(len(tasks), 5)
 
 def main():
     unittest.main()

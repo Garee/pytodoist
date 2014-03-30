@@ -99,7 +99,6 @@ class User(object):
         tasks_as_json = response.json()['items']
         tasks = []
         for json in tasks_as_json:
-            print json
             project_id = json['project_id']
             project = self.get_project_with_id(project_id)
             tasks.append(Task(json, project))
@@ -187,7 +186,7 @@ class Project(object):
         for attr in json:
             setattr(self, attr, json[attr])
 
-    def delete():
+    def delete(self):
         response = api.delete_project(self.owner.token, self.id)
         _fail_if_contains_errors(response)
 
@@ -220,7 +219,7 @@ class Project(object):
     def get_completed_tasks(self):
         response = api.get_completed_tasks(self.owner.token, self.id)
         _fail_if_contains_errors(response)
-        tasks_as_json = response.json()['items']
+        tasks_as_json = response.json()
         return [Task(json, self) for json in tasks_as_json]
 
     def update_task_orders(self, tasks):
@@ -250,9 +249,7 @@ class Task(object):
 
     def complete(self):
         task_ids = '[{id}]'.format(id=self.id)
-        print task_ids
         response = api.complete_tasks(self.project.owner.token, task_ids)
-        print response.status_code, response.text
         _fail_if_contains_errors(response)
 
     def uncomplete(self):

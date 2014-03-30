@@ -586,7 +586,7 @@ class TodoistAPI(object):
             'token': token,
             'project_id': project_id
         }
-        return self._get('getAllCompletedItems', params, **kwargs)
+        return self._get('getCompletedItems', params, **kwargs)
 
     def get_tasks_by_id(self, token, task_ids, **kwargs):
         """Return a list of tasks with given IDs.
