@@ -59,7 +59,11 @@ class UserTest(unittest.TestCase):
             self.assertEqual(p.name, rev_projects[i].name)
 
     def test_get_completed_tasks(self):
-        pass
+        inbox = self.user.get_project('Inbox')
+        task = inbox.add_task('Task 1')
+        task.complete()
+        completed_tasks = self.user.get_completed_tasks()
+        self.assertEqual(len(completed_tasks), 1)
 
     def test_add_label(self):
         self.user.add_label('Label 1', color=1)
@@ -129,6 +133,60 @@ class ProjectTest(unittest.TestCase):
             task.complete()
         tasks = self.project.get_completed_tasks()
         self.assertEqual(len(tasks), 5)
+
+    def test_update_task_orders(self):
+      for i in range(5):
+        self.project.add_task('Task_' + str(i))
+      tasks = self.project.get_tasks()
+      rev_tasks = tasks[::-1]
+      self.project.update_task_orders(rev_tasks)
+      tasks = self.project.get_tasks()
+      for i, task in enumerate(tasks):
+        self.assertEqual(task.id, rev_tasks[i].id)
+
+class TaskTest(unittest.TestCase):
+
+    def setUp(self):
+        self.user = _get_user()
+        self.project = self.user.add_project('Project_1')
+        self.task = self.project.add_task('Task_1')
+
+    def tearDown(self):
+        self.user.delete()
+
+    def test_update(self):
+        self.task.content = 'Task_2'
+        self.task.update()
+        task = self.project.get_task(self.task.id)
+        self.assertEqual(task.content, 'Task_2')
+
+    def test_delete(self):
+        self.task.delete()
+        tasks = self.project.get_tasks()
+        self.assertEqual(len(tasks), 0)
+
+    def test_complete(self):
+        self.task.complete()
+        tasks = self.project.get_completed_tasks()
+        self.assertEqual(len(tasks), 1)
+        task = tasks[0]
+        self.assertEqual(task.id, self.task.id)
+
+    def test_uncomplete(self):
+        self.task.complete()
+        tasks = self.project.get_completed_tasks()
+        self.assertEqual(len(tasks), 1)
+        self.task.uncomplete()
+        tasks = self.project.get_completed_tasks()
+        self.assertEqual(len(tasks), 0)
+        tasks = self.project.get_uncompleted_tasks()
+        self.assertEqual(len(tasks), 1)
+
+    def test_add_note(self):
+        self.task.add_note('Note_1')
+        notes = self.task.get_notes()
+        self.assertEqual(len(notes), 1)
+        self.assertEqual(notes[0].content, 'Note_1')
 
 def main():
     unittest.main()

@@ -88,8 +88,8 @@ class User(object):
         return Project(project_as_json, self)
 
     def update_project_orders(self, projects):
-        project_ids = [project.id for project in projects]
-        response = api.update_project_orders(self.token, str(project_ids))
+        project_ids = str([project.id for project in projects])
+        response = api.update_project_orders(self.token, project_ids)
         _fail_if_contains_errors(response)
 
     def get_completed_tasks(self, label=None, interval=None):
@@ -210,6 +210,14 @@ class Project(object):
         task_as_json = response.json()
         return Task(task_as_json, self)
 
+    def get_tasks(self):
+        return self.get_uncompleted_tasks() + self.get_completed_tasks()
+
+    def get_task(self, task_id):
+        for task in self.get_tasks():
+            if task.id == task_id:
+                return task
+
     def get_uncompleted_tasks(self):
         response = api.get_uncompleted_tasks(self.owner.token, self.id)
         _fail_if_contains_errors(response)
@@ -223,7 +231,7 @@ class Project(object):
         return [Task(json, self) for json in tasks_as_json]
 
     def update_task_orders(self, tasks):
-        task_ids = [task.id for task in tasks]
+        task_ids = str([task.id for task in tasks])
         response = api.update_task_ordering(self.owner.token, self.id, task_ids)
         _fail_if_contains_errors(response)
 
