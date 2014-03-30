@@ -3,17 +3,27 @@ from api import TodoistAPI
 api = TodoistAPI()
 
 def login(email, password):
-    return _login(api.login, email, password)
+    user = _login(api.login, email, password)
+    user.password = password
+    return user
 
 def login_with_google(email, oauth2_token):
     return _login(api.login_with_google, email, oauth2_token)
+
+def _login(login_func, *args):
+    response = login_func(*args)
+    _fail_if_contains_errors(response)
+    user_as_json = response.json()
+    return User(user_as_json)
 
 def register(full_name, email, password, lang=None, timezone=None):
     response = api.register(email, full_name, password,
                             lang=lang, timezone=timezone)
     _fail_if_contains_errors(response)
     user_as_json = response.json()
-    return User(user_as_json)
+    user = User(user_as_json)
+    user.password = password
+    return user
 
 def get_timezones():
     response = api.get_timezones()
@@ -33,8 +43,10 @@ class User(object):
         response = api.ping(self.token)
         return not _contains_errors(response)
 
-    def delete(self, password, reason=None):
-        response = api.delete_user(self.token, password,
+    def delete(self, reason=None):
+        if not hasattr(self, 'password'):
+            raise Exception("You cannot delete a Google-linked account.")
+        response = api.delete_user(self.token, self.password,
                                    reason=reason, in_background=0)
         _fail_if_contains_errors(response)
 
@@ -75,6 +87,12 @@ class User(object):
         tasks_as_json = response.json()
         return [Task(json) for json in tasks_as_json]
 
+    def get_labels(self):
+        response = api.get_labels(self.token)
+        _fail_if_contains_errors(response)
+        labels_as_json = response.json()
+        return [Label(json) for json in labels_as_json]
+
     def add_label(self, name, color=None):
         response = api.add_label(self.token, name, color=color)
         _fail_if_contains_errors(response)
@@ -86,6 +104,12 @@ class User(object):
         _fail_if_contains_errors(response)
         search_results = response.json()
         return [Task(result['data']) for result in search_results]
+
+    def get_notification_settings(self):
+        pass
+
+    def update_notification_settings(self):
+        pass
 
 class Project(object):
 
@@ -180,6 +204,8 @@ class Task(object):
                                                task_ids)
         _fail_if_contains_errors(response)
 
+    def move(self):
+        pass
 
 class Note(object):
 
@@ -229,10 +255,4 @@ def _fail_if_contains_errors(response):
         raise TodoistException(response)
 
 def _contains_errors(response):
-    return response.text in api.ERRORS or response.status_code != 200
-
-def _login(login_func, *args):
-    response = login_func(*args)
-    _fail_if_contains_errors(response)
-    user_as_json = response.json()
-    return User(user_as_json)
+    return response.status_code != 200 or response.text in api.ERRORS

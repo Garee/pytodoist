@@ -16,14 +16,20 @@ class UserTest(unittest.TestCase):
         except todoist.TodoistException, e:
             if e.response.text == '"ALREADY_REGISTRED"':
                 self.user = todoist.login(email, password)
-                self.user.delete(password)
+                self.user.delete()
                 self.user = todoist.register(full_name, email, password)
 
     def tearDown(self):
-        self.user.delete(password)
+        self.user.delete()
 
     def test_login_success(self):
         self.assertTrue(self.user.is_logged_in())
+
+    def test_change_avatar(self):
+        pass
+
+    def test_use_default_avatar(self):
+        pass
 
     def test_add_project(self):
         project = self.user.add_project('Project 1')
@@ -36,9 +42,24 @@ class UserTest(unittest.TestCase):
         projects = self.user.get_projects()
         self.assertEqual(len(projects), 6) # 5 + Inbox
 
+    def test_update_project_orders(self):
+        pass
+
     def test_update(self):
         self.user.full_name = 'Todoist Py'
         self.user.update()
+        self.user = todoist.login(email, password)
+        self.assertEqual(self.user.full_name, 'Todoist Py')
+
+    def test_get_completed_tasks(self):
+        pass
+
+    def test_get_labels(self):
+        pass
+
+    def test_search(self):
+        pass
+
 
 def main():
     unittest.main()
