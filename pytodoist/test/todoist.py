@@ -84,7 +84,6 @@ class UserTest(unittest.TestCase):
       self.assertFalse(is_receiving)
 
 
-
 def main():
     unittest.main()
     return 0

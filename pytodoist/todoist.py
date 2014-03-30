@@ -140,10 +140,10 @@ class User(object):
                     tasks.append(task)
         return tasks
 
-    def get_notification_settings(self):
+    def get_notification_types(self):
         response = api.get_notification_settings(self.token)
         _fail_if_contains_errors(response)
-        return response.json()
+        return response.json().keys()
 
     def is_receiving_email_notifications(self, notification_type):
         notification_settings = self.get_notification_settings()
@@ -156,7 +156,7 @@ class User(object):
     def enable_push_notifications(self, notification_type):
         self.update_notification_settings(notification_type, 'push', 0)
 
-    def disable_email_notifications(self, notification_type):
+    def disable_push_notifications(self, notification_type):
         self.update_notification_settings(notification_type, 'push', 1)
 
     def enable_email_notifications(self, notification_type):
