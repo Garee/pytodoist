@@ -46,7 +46,14 @@ class UserTest(unittest.TestCase):
         self.assertEqual(len(projects), 6) # 5 + Inbox
 
     def test_update_project_orders(self):
-        pass
+        for i in range(5):
+            self.user.add_project('Project_' + str(i))
+        projects = self.user.get_projects()
+        rev_projects = projects[::-1]
+        self.user.update_project_orders(rev_projects)
+        projects = self.user.get_projects()
+        for i, p in enumerate(projects):
+            self.assertEqual(p.name, rev_projects[i].name)
 
     def test_get_completed_tasks(self):
         pass

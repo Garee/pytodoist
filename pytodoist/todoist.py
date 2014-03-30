@@ -89,7 +89,7 @@ class User(object):
 
     def update_project_orders(self, projects):
         project_ids = [project.id for project in projects]
-        response = api.update_project_orders(self.token, project_ids)
+        response = api.update_project_orders(self.token, str(project_ids))
         _fail_if_contains_errors(response)
 
     def get_completed_tasks(self, label=None, interval=None):
