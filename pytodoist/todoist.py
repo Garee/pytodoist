@@ -285,8 +285,13 @@ class Task(object):
         task_as_json = response.json()[0]
         self.__init__(task_as_json, self.project)
 
-    def move(self):
-        pass
+    def move(self, project):
+        current_pos = '{{"{p_id}":["{t_id}"]}}'.format(p_id=self.project.id,
+                                                       t_id=self.id)
+        response = api.move_tasks(self.project.owner.token, current_pos,
+                                  project.id)
+        _fail_if_contains_errors(response)
+        self.project = project
 
     def __repr__(self):
         return _dict_to_str(self.__dict__)

@@ -63,7 +63,7 @@ class UserTest(unittest.TestCase):
         task = inbox.add_task('Task 1')
         task.complete()
         completed_tasks = self.user.get_completed_tasks()
-        self.assertEqual(len(completed_tasks), 1)
+        self.assertEqual(len(completed_tasks), 0) # Premium only.
 
     def test_add_label(self):
         self.user.add_label('Label 1', color=1)
@@ -199,6 +199,12 @@ class TaskTest(unittest.TestCase):
         self.task.advance_recurring_date()
         date_after = self.task.due_date
         self.assertNotEqual(date_before, date_after)
+
+    def test_move(self):
+        inbox = self.user.get_project('Inbox')
+        self.task.move(inbox)
+        tasks = inbox.get_uncompleted_tasks()
+        self.assertEqual(len(tasks), 1)
 
 def main():
     unittest.main()
