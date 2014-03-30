@@ -149,7 +149,7 @@ class TaskTest(unittest.TestCase):
     def setUp(self):
         self.user = _get_user()
         self.project = self.user.add_project('Project_1')
-        self.task = self.project.add_task('Task_1')
+        self.task = self.project.add_task('Task_1', date='every day')
 
     def tearDown(self):
         self.user.delete()
@@ -187,6 +187,18 @@ class TaskTest(unittest.TestCase):
         notes = self.task.get_notes()
         self.assertEqual(len(notes), 1)
         self.assertEqual(notes[0].content, 'Note_1')
+
+    def test_get_notes(self):
+        for i in range(5):
+            self.task.add_note('Note_' + str(i))
+        notes = self.task.get_notes()
+        self.assertEqual(len(notes), 5)
+
+    def test_advance_recurring_date(self):
+        date_before = self.task.due_date
+        self.task.advance_recurring_date()
+        date_after = self.task.due_date
+        self.assertNotEqual(date_before, date_after)
 
 def main():
     unittest.main()

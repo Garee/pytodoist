@@ -282,6 +282,8 @@ class Task(object):
         response = api.advance_recurring_dates(self.project.owner.token,
                                                task_ids)
         _fail_if_contains_errors(response)
+        task_as_json = response.json()[0]
+        self.__init__(task_as_json, self.project)
 
     def move(self):
         pass
