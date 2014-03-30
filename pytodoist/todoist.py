@@ -141,13 +141,41 @@ class User(object):
         return tasks
 
     def get_notification_settings(self):
-        pass
+        response = api.get_notification_settings(self.token)
+        _fail_if_contains_errors(response)
+        return response.json()
 
-    def update_notification_settings(self):
-        pass
+    def is_receiving_email_notifications(self, notification_type):
+        notification_settings = self.get_notification_settings()
+        return notification_settings[notification_type]['notify_email']
+
+    def is_receiving_push_notifications(self, notification_type):
+        notification_settings = self.get_notification_settings()
+        return notification_settings[notification_type]['notify_push']
+
+    def enable_push_notifications(self, notification_type):
+        self.update_notification_settings(notification_type, 'push', 0)
+
+    def disable_email_notifications(self, notification_type):
+        self.update_notification_settings(notification_type, 'push', 1)
+
+    def enable_email_notifications(self, notification_type):
+        self.update_notification_settings(notification_type, 'email', 0)
+
+    def disable_email_notifications(self, notification_type):
+        self.update_notification_settings(notification_type, 'email', 1)
+
+    def update_notification_settings(self, notification_type, service,
+                                         should_notify):
+        response = api.update_notification_settings(self.token,
+                                                    notification_type,
+                                                    service,
+                                                    should_notify)
+        _fail_if_contains_errors(response)
 
     def __repr__(self):
         return _dict_to_str(self.__dict__)
+
 
 class Project(object):
 

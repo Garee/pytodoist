@@ -78,6 +78,12 @@ class UserTest(unittest.TestCase):
         tasks = self.user.search(queries)
         self.assertEqual(len(tasks), 2)
 
+    def test_is_receiving_email_notifications(self):
+      self.user.disable_email_notifications("note_added")
+      is_receiving = self.user.is_receiving_email_notifications("note_added")
+      self.assertFalse(is_receiving)
+
+
 
 def main():
     unittest.main()
