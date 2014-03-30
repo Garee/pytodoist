@@ -75,6 +75,18 @@ class User(object):
         projects_as_json = response.json()
         return [Project(json, self) for json in projects_as_json]
 
+    def get_project(self, name):
+        projects = self.get_projects()
+        for project in projects:
+            if project.name == name:
+                return project
+
+    def get_project_with_id(self, project_id):
+        response = api.get_project(self.token, project_id)
+        _fail_if_contains_errors(response)
+        project_as_json = response.json()
+        return Project(project_as_json, self)
+
     def update_project_orders(self, projects):
         project_ids = [project.id for project in projects]
         response = api.update_project_orders(self.token, project_ids)
@@ -84,14 +96,25 @@ class User(object):
         response = api.get_all_completed_tasks(self.token, label=label,
                                                interval=interval)
         _fail_if_contains_errors(response)
-        tasks_as_json = response.json()
-        return [Task(json) for json in tasks_as_json]
+        tasks_as_json = response.json()['items']
+        tasks = []
+        for json in tasks_as_json:
+            print json
+            project_id = json['project_id']
+            project = self.get_project_with_id(project_id)
+            tasks.append(Task(json, project))
+        return tasks
+
+    def get_label(self, label_name):
+        for label in self._get_labels():
+            if label.name == label_name:
+                return label
 
     def get_labels(self):
         response = api.get_labels(self.token)
         _fail_if_contains_errors(response)
-        labels_as_json = response.json()
-        return [Label(json) for json in labels_as_json]
+        labels_as_json = response.json().values()
+        return [Label(json, self) for json in labels_as_json]
 
     def add_label(self, name, color=None):
         response = api.add_label(self.token, name, color=color)
@@ -102,14 +125,29 @@ class User(object):
     def search(self, queries):
         response = api.search_tasks(self.token, queries)
         _fail_if_contains_errors(response)
-        search_results = response.json()
-        return [Task(result['data']) for result in search_results]
+        query_results = response.json()
+        tasks = []
+        for query in query_results:
+            projects_with_results = query['data']
+            for project in projects_with_results:
+                uncompleted_tasks = project.get('uncompleted', [])
+                completed_tasks = project.get('completed', [])
+                found_tasks = uncompleted_tasks + completed_tasks
+                for task_as_json in found_tasks:
+                    project_id = task_as_json['project_id']
+                    project = self.get_project_with_id(project_id)
+                    task = Task(task_as_json, project)
+                    tasks.append(task)
+        return tasks
 
     def get_notification_settings(self):
         pass
 
     def update_notification_settings(self):
         pass
+
+    def __repr__(self):
+        return _dict_to_str(self.__dict__)
 
 class Project(object):
 
@@ -151,13 +189,16 @@ class Project(object):
     def get_completed_tasks(self):
         response = api.get_completed_tasks(self.owner.token, self.id)
         _fail_if_contains_errors(response)
-        tasks_as_json = response.json()
+        tasks_as_json = response.json()['items']
         return [Task(json, self) for json in tasks_as_json]
 
     def update_task_orders(self, tasks):
         task_ids = [task.id for task in tasks]
         response = api.update_task_ordering(self.owner.token, self.id, task_ids)
         _fail_if_contains_errors(response)
+
+    def __repr__(self):
+        return _dict_to_str(self.__dict__)
 
 class Task(object):
 
@@ -172,17 +213,19 @@ class Task(object):
         _fail_if_contains_errors(response)
 
     def delete(self):
-        task_ids = '["{id}"]'.format(id=self.id)
+        task_ids = '[{id}]'.format(id=self.id)
         response = api.delete_tasks(self.project.owner.token, task_ids)
         _fail_if_contains_errors(response)
 
     def complete(self):
-        task_ids = '["{id}"]'.format(id=self.id)
+        task_ids = '[{id}]'.format(id=self.id)
+        print task_ids
         response = api.complete_tasks(self.project.owner.token, task_ids)
+        print response.status_code, response.text
         _fail_if_contains_errors(response)
 
     def uncomplete(self):
-        task_ids = '["{id}"]'.format(id=self.id)
+        task_ids = '[{id}]'.format(id=self.id)
         response = api.uncomplete_tasks(self.project.owner.token, task_ids)
         _fail_if_contains_errors(response)
 
@@ -199,13 +242,16 @@ class Task(object):
         return [Note(json, self) for json in notes_as_json]
 
     def advance_recurring_date(self):
-        task_ids = '["{id}"]'.format(id=self.id)
+        task_ids = '[{id}]'.format(id=self.id)
         response = api.advance_recurring_dates(self.project.owner.token,
                                                task_ids)
         _fail_if_contains_errors(response)
 
     def move(self):
         pass
+
+    def __repr__(self):
+        return _dict_to_str(self.__dict__)
 
 class Note(object):
 
@@ -223,6 +269,9 @@ class Note(object):
         response = api.delete_note(self.task.project.owner.token,
                                    task.id, self.id)
         _fail_if_contains_errors(response)
+
+    def __repr__(self):
+        return _dict_to_str(self.__dict__)
 
 
 class Label(object):
@@ -244,11 +293,15 @@ class Label(object):
         response = api.delete_label(self.owner.token, self.id)
         _fail_if_contains_errors(response)
 
+    def __repr__(self):
+        return _dict_to_str(self.__dict__)
+
 
 class TodoistException(Exception):
     def __init__(self, response):
         self.response = response
         Exception.__init__(self, response.text)
+
 
 def _fail_if_contains_errors(response):
     if _contains_errors(response):
@@ -256,3 +309,12 @@ def _fail_if_contains_errors(response):
 
 def _contains_errors(response):
     return response.status_code != 200 or response.text in api.ERRORS
+
+def _dict_to_str(dict):
+    s = ''
+    for k, v in dict.iteritems():
+        s += k + ': ' + str(v) + '\n'
+    return s
+
+def _quotify(obj):
+    return '"' + str(obj) + '"'

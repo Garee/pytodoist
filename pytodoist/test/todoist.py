@@ -25,16 +25,19 @@ class UserTest(unittest.TestCase):
     def test_login_success(self):
         self.assertTrue(self.user.is_logged_in())
 
-    def test_change_avatar(self):
-        pass
-
-    def test_use_default_avatar(self):
-        pass
+    def test_update(self):
+        self.user.full_name = 'Todoist Py'
+        self.user.update()
+        self.user = todoist.login(email, password)
+        print self.user
+        self.assertEqual(self.user.full_name, 'Todoist Py')
 
     def test_add_project(self):
         project = self.user.add_project('Project 1')
         projects = self.user.get_projects()
         self.assertEqual(len(projects), 2) # Project 1 + Inbox.
+        project = self.user.get_project('Project 1')
+        self.assertIsNotNone(project)
 
     def test_get_projects(self):
         for i in range(5):
@@ -45,20 +48,28 @@ class UserTest(unittest.TestCase):
     def test_update_project_orders(self):
         pass
 
-    def test_update(self):
-        self.user.full_name = 'Todoist Py'
-        self.user.update()
-        self.user = todoist.login(email, password)
-        self.assertEqual(self.user.full_name, 'Todoist Py')
-
     def test_get_completed_tasks(self):
         pass
 
+    def test_add_label(self):
+        self.user.add_label('Label 1', color=1)
+        labels = self.user.get_labels()
+        self.assertEqual(len(labels), 1)
+        self.assertEqual(labels[0].name, 'Label 1')
+
     def test_get_labels(self):
-        pass
+        for i in range(5):
+            self.user.add_label('Label_' + str(i))
+        labels = self.user.get_labels()
+        self.assertEqual(len(labels), 5)
 
     def test_search(self):
-        pass
+        inbox = self.user.get_project('Inbox')
+        inbox.add_task('Task Red')
+        inbox.add_task('Task Blue')
+        queries = '["view all"]'
+        tasks = self.user.search(queries)
+        self.assertEqual(len(tasks), 2)
 
 
 def main():
