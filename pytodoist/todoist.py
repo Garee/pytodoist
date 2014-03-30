@@ -271,6 +271,11 @@ class Task(object):
         note_as_json = response.json()
         return Note(note_as_json, self)
 
+    def get_note(self, note_id):
+        for note in self.get_notes():
+            if note.id == note_id:
+                return note
+
     def get_notes(self):
         response = api.get_notes(self.project.owner.token, self.id)
         _fail_if_contains_errors(response)
@@ -305,12 +310,12 @@ class Note(object):
 
     def update(self):
         response = api.update_note(self.task.project.owner.token, self.id,
-                                   **self.__dict__)
+                                   self.content)
         _fail_if_contains_errors(response)
 
     def delete(self):
         response = api.delete_note(self.task.project.owner.token,
-                                   task.id, self.id)
+                                   self.task.id, self.id)
         _fail_if_contains_errors(response)
 
     def __repr__(self):

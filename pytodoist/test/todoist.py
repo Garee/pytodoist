@@ -206,6 +206,28 @@ class TaskTest(unittest.TestCase):
         tasks = inbox.get_uncompleted_tasks()
         self.assertEqual(len(tasks), 1)
 
+class NoteTest(unittest.TestCase):
+
+    def setUp(self):
+        self.user = _get_user()
+        self.project = self.user.add_project('Project_1')
+        self.task = self.project.add_task('Task_1')
+        self.note = self.task.add_note('Note_1')
+
+    def tearDown(self):
+        self.user.delete()
+
+    def test_update(self):
+        self.note.content = 'Note_2'
+        self.note.update()
+        note = self.task.get_note(self.note.id)
+        self.assertEqual(note.content, 'Note_2')
+
+    def test_delete(self):
+        self.note.delete()
+        notes = self.task.get_notes()
+        self.assertEqual(len(notes), 0)
+
 def main():
     unittest.main()
     return 0
