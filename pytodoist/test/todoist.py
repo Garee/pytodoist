@@ -228,6 +228,27 @@ class NoteTest(unittest.TestCase):
         notes = self.task.get_notes()
         self.assertEqual(len(notes), 0)
 
+class LabelTest(unittest.TestCase):
+
+    def setUp(self):
+        self.user = _get_user()
+        self.label = self.user.add_label('Label_1')
+
+    def tearDown(self):
+        self.user.delete()
+
+    def test_update(self):
+        self.label.name = 'Label_2'
+        self.label.update()
+        label = self.user.get_label('Label_2')
+        self.assertIsNotNone(label)
+
+    def test_delete(self):
+        self.label.delete()
+        labels = self.user.get_labels()
+        self.assertEqual(len(labels), 0)
+
+
 def main():
     unittest.main()
     return 0

@@ -105,7 +105,7 @@ class User(object):
         return tasks
 
     def get_label(self, label_name):
-        for label in self._get_labels():
+        for label in self.get_labels():
             if label.name == label_name:
                 return label
 
