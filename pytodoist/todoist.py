@@ -1,14 +1,14 @@
-from api import TodoistAPI
+from pytodoist.api import TodoistAPI
 
-api = TodoistAPI()
+API = TodoistAPI()
 
 def login(email, password):
-    user = _login(api.login, email, password)
+    user = _login(API.login, email, password)
     user.password = password
     return user
 
 def login_with_google(email, oauth2_token):
-    return _login(api.login_with_google, email, oauth2_token)
+    return _login(API.login_with_google, email, oauth2_token)
 
 def _login(login_func, *args):
     response = login_func(*args)
@@ -17,7 +17,7 @@ def _login(login_func, *args):
     return User(user_as_json)
 
 def register(full_name, email, password, lang=None, timezone=None):
-    response = api.register(email, full_name, password,
+    response = API.register(email, full_name, password,
                             lang=lang, timezone=timezone)
     _fail_if_contains_errors(response)
     user_as_json = response.json()
@@ -26,51 +26,62 @@ def register(full_name, email, password, lang=None, timezone=None):
     return user
 
 def get_timezones():
-    response = api.get_timezones()
+    response = API.get_timezones()
     _fail_if_contains_errors(response)
     timezones_as_json = response.json()
     return [timezone for timezone in timezones_as_json]
 
-class User(object):
+class TodoistObject(object):
 
     def __init__(self, json):
         for attr in json:
             setattr(self, attr, json[attr])
 
+    def __repr__(self):
+        return self.__dict__
+
+
+class User(TodoistObject):
+
+    def __init__(self, json):
+        self.token = None
+        self.password = None
+        super(User, self).__init__(json)
+
     def is_logged_in(self):
-        if not hasattr(self, 'token'):
+        if not self.token:
             return False
-        response = api.ping(self.token)
+        response = API.ping(self.token)
         return not _contains_errors(response)
 
     def delete(self, reason=None):
         if not hasattr(self, 'password'):
             raise Exception("You cannot delete a Google-linked account.")
-        response = api.delete_user(self.token, self.password,
+        response = API.delete_user(self.token, self.password,
                                    reason=reason, in_background=0)
         _fail_if_contains_errors(response)
 
     def update(self):
-        response = api.update_user(**self.__dict__)
+        response = API.update_user(**self.__dict__)
         _fail_if_contains_errors(response)
 
     def change_avatar(self, image):
-        response = api.update_avatar(self.token, image=image)
+        response = API.update_avatar(self.token, image=image)
         _fail_if_contains_errors(response)
 
     def use_default_avatar(self):
-        response = api.update_avatar(self.token, delete=1)
+        response = API.update_avatar(self.token, delete=1)
         _fail_if_contains_errors(response)
 
     def add_project(self, name, color=None, indent=None, order=None):
-        response = api.add_project(self.token, name,
+        response = API.add_project(self.token, name,
                                    color=color, indent=indent, order=order)
         _fail_if_contains_errors(response)
         project_as_json = response.json()
         return Project(project_as_json, self)
 
     def get_projects(self):
-        response = api.get_projects(self.token)
+        response = API.get_projects(self.token)
         _fail_if_contains_errors(response)
         projects_as_json = response.json()
         return [Project(json, self) for json in projects_as_json]
@@ -82,18 +93,18 @@ class User(object):
                 return project
 
     def get_project_with_id(self, project_id):
-        response = api.get_project(self.token, project_id)
+        response = API.get_project(self.token, project_id)
         _fail_if_contains_errors(response)
         project_as_json = response.json()
         return Project(project_as_json, self)
 
     def update_project_orders(self, projects):
         project_ids = str([project.id for project in projects])
-        response = api.update_project_orders(self.token, project_ids)
+        response = API.update_project_orders(self.token, project_ids)
         _fail_if_contains_errors(response)
 
     def get_completed_tasks(self, label=None, interval=None):
-        response = api.get_all_completed_tasks(self.token, label=label,
+        response = API.get_all_completed_tasks(self.token, label=label,
                                                interval=interval)
         _fail_if_contains_errors(response)
         tasks_as_json = response.json()['items']
@@ -110,19 +121,19 @@ class User(object):
                 return label
 
     def get_labels(self):
-        response = api.get_labels(self.token)
+        response = API.get_labels(self.token)
         _fail_if_contains_errors(response)
         labels_as_json = response.json().values()
         return [Label(json, self) for json in labels_as_json]
 
     def add_label(self, name, color=None):
-        response = api.add_label(self.token, name, color=color)
+        response = API.add_label(self.token, name, color=color)
         _fail_if_contains_errors(response)
         label_as_json = response.json()
         return Label(label_as_json, self)
 
     def search(self, queries):
-        response = api.search_tasks(self.token, queries)
+        response = API.search_tasks(self.token, queries)
         _fail_if_contains_errors(response)
         query_results = response.json()
         tasks = []
@@ -140,7 +151,7 @@ class User(object):
         return tasks
 
     def get_notification_settings(self):
-        response = api.get_notification_settings(self.token)
+        response = API.get_notification_settings(self.token)
         _fail_if_contains_errors(response)
         return response.json()
 
@@ -169,42 +180,39 @@ class User(object):
 
     def update_notification_settings(self, notification_type, service,
                                          should_notify):
-        response = api.update_notification_settings(self.token,
+        response = API.update_notification_settings(self.token,
                                                     notification_type,
                                                     service,
                                                     should_notify)
         _fail_if_contains_errors(response)
 
-    def __repr__(self):
-        return _dict_to_str(self.__dict__)
 
-
-class Project(object):
+class Project(TodoistObject):
 
     def __init__(self, json, owner):
+        self.id = None
         self.owner = owner
-        for attr in json:
-            setattr(self, attr, json[attr])
+        super(Project, self).__init__(json)
 
     def delete(self):
-        response = api.delete_project(self.owner.token, self.id)
+        response = API.delete_project(self.owner.token, self.id)
         _fail_if_contains_errors(response)
 
     def update(self):
-        response = api.update_project(self.owner.token, self.id,
+        response = API.update_project(self.owner.token, self.id,
                                       **self.__dict__)
         _fail_if_contains_errors(response)
 
     def archive(self):
-        response = api.archive_project(self.owner.token, self.id)
+        response = API.archive_project(self.owner.token, self.id)
         _fail_if_contains_errors(response)
 
     def unarchive(self):
-        response = api.unarchive_project(self.owner.token, self.id)
+        response = API.unarchive_project(self.owner.token, self.id)
         _fail_if_contains_errors(response)
 
     def add_task(self, content, date=None, priority=None):
-        response = api.add_task(self.owner.token, content, project_id=self.id,
+        response = API.add_task(self.owner.token, content, project_id=self.id,
                                 date_string=date, priority=priority)
         _fail_if_contains_errors(response)
         task_as_json = response.json()
@@ -219,54 +227,52 @@ class Project(object):
                 return task
 
     def get_uncompleted_tasks(self):
-        response = api.get_uncompleted_tasks(self.owner.token, self.id)
+        response = API.get_uncompleted_tasks(self.owner.token, self.id)
         _fail_if_contains_errors(response)
         tasks_as_json = response.json()
         return [Task(json, self) for json in tasks_as_json]
 
     def get_completed_tasks(self):
-        response = api.get_completed_tasks(self.owner.token, self.id)
+        response = API.get_completed_tasks(self.owner.token, self.id)
         _fail_if_contains_errors(response)
         tasks_as_json = response.json()
         return [Task(json, self) for json in tasks_as_json]
 
     def update_task_orders(self, tasks):
         task_ids = str([task.id for task in tasks])
-        response = api.update_task_ordering(self.owner.token, self.id, task_ids)
+        response = API.update_task_ordering(self.owner.token, self.id, task_ids)
         _fail_if_contains_errors(response)
 
-    def __repr__(self):
-        return _dict_to_str(self.__dict__)
 
-class Task(object):
+class Task(TodoistObject):
 
     def __init__(self, json, project):
+        self.id = None
         self.project = project
-        for attr in json:
-            setattr(self, attr, json[attr])
+        super(Task, self).__init__(json)
 
     def update(self):
-        response = api.update_task(self.project.owner.token, self.id,
+        response = API.update_task(self.project.owner.token, self.id,
                                    **self.__dict__)
         _fail_if_contains_errors(response)
 
     def delete(self):
         task_ids = '[{id}]'.format(id=self.id)
-        response = api.delete_tasks(self.project.owner.token, task_ids)
+        response = API.delete_tasks(self.project.owner.token, task_ids)
         _fail_if_contains_errors(response)
 
     def complete(self):
         task_ids = '[{id}]'.format(id=self.id)
-        response = api.complete_tasks(self.project.owner.token, task_ids)
+        response = API.complete_tasks(self.project.owner.token, task_ids)
         _fail_if_contains_errors(response)
 
     def uncomplete(self):
         task_ids = '[{id}]'.format(id=self.id)
-        response = api.uncomplete_tasks(self.project.owner.token, task_ids)
+        response = API.uncomplete_tasks(self.project.owner.token, task_ids)
         _fail_if_contains_errors(response)
 
     def add_note(self, content):
-        response = api.add_note(self.project.owner.token, self.id, content)
+        response = API.add_note(self.project.owner.token, self.id, content)
         _fail_if_contains_errors(response)
         note_as_json = response.json()
         return Note(note_as_json, self)
@@ -277,14 +283,14 @@ class Task(object):
                 return note
 
     def get_notes(self):
-        response = api.get_notes(self.project.owner.token, self.id)
+        response = API.get_notes(self.project.owner.token, self.id)
         _fail_if_contains_errors(response)
         notes_as_json = response.json()
         return [Note(json, self) for json in notes_as_json]
 
     def advance_recurring_date(self):
         task_ids = '[{id}]'.format(id=self.id)
-        response = api.advance_recurring_dates(self.project.owner.token,
+        response = API.advance_recurring_dates(self.project.owner.token,
                                                task_ids)
         _fail_if_contains_errors(response)
         task_as_json = response.json()[0]
@@ -293,62 +299,56 @@ class Task(object):
     def move(self, project):
         current_pos = '{{"{p_id}":["{t_id}"]}}'.format(p_id=self.project.id,
                                                        t_id=self.id)
-        response = api.move_tasks(self.project.owner.token, current_pos,
+        response = API.move_tasks(self.project.owner.token, current_pos,
                                   project.id)
         _fail_if_contains_errors(response)
         self.project = project
 
-    def __repr__(self):
-        return _dict_to_str(self.__dict__)
 
-class Note(object):
+class Note(TodoistObject):
 
     def __init__(self, json, task):
+        self.id = None
+        self.content = None
         self.task = task
-        for attr in json:
-            setattr(self, attr, json[attr])
+        super(Note, self).__init__(json)
 
     def update(self):
-        response = api.update_note(self.task.project.owner.token, self.id,
+        response = API.update_note(self.task.project.owner.token, self.id,
                                    self.content)
         _fail_if_contains_errors(response)
 
     def delete(self):
-        response = api.delete_note(self.task.project.owner.token,
+        response = API.delete_note(self.task.project.owner.token,
                                    self.task.id, self.id)
         _fail_if_contains_errors(response)
 
-    def __repr__(self):
-        return _dict_to_str(self.__dict__)
 
-
-class Label(object):
+class Label(TodoistObject):
 
     def __init__(self, json, owner):
+        self.name = None
+        self.color = None
         self.owner = owner
-        for attr in json:
-            setattr(self, attr, json[attr])
+        super(Label, self).__init__(json)
         self.id = self.name
 
     def update(self):
-        response = api.update_label_name(self.owner.token, self.id, self.name)
+        response = API.update_label_name(self.owner.token, self.id, self.name)
         _fail_if_contains_errors(response)
         self.id = self.name
-        response = api.update_label_color(self.owner.token, self.id, self.color)
+        response = API.update_label_color(self.owner.token, self.id, self.color)
         _fail_if_contains_errors(response)
 
     def delete(self):
-        response = api.delete_label(self.owner.token, self.id)
+        response = API.delete_label(self.owner.token, self.id)
         _fail_if_contains_errors(response)
-
-    def __repr__(self):
-        return _dict_to_str(self.__dict__)
 
 
 class TodoistException(Exception):
     def __init__(self, response):
         self.response = response
-        Exception.__init__(self, response.text)
+        super(TodoistException, self).__init__(response.text)
 
 
 def _fail_if_contains_errors(response):
@@ -356,13 +356,4 @@ def _fail_if_contains_errors(response):
         raise TodoistException(response)
 
 def _contains_errors(response):
-    return response.status_code != 200 or response.text in api.ERRORS
-
-def _dict_to_str(dict):
-    s = ''
-    for k, v in dict.iteritems():
-        s += k + ': ' + str(v) + '\n'
-    return s
-
-def _quotify(obj):
-    return '"' + str(obj) + '"'
+    return response.status_code != 200 or response.text in API.ERRORS
