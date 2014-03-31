@@ -38,7 +38,7 @@ class TodoistObject(object):
             setattr(self, attr, json[attr])
 
     def __repr__(self):
-        return self.__dict__
+        return str(self.__dict__)
 
 
 class User(TodoistObject):

@@ -28,6 +28,7 @@ class UserTest(unittest.TestCase):
 
     def test_login_success(self):
         self.assertTrue(self.user.is_logged_in())
+        print self.user
 
     def test_update(self):
         self.user.full_name = 'Todoist Py'
@@ -44,7 +45,7 @@ class UserTest(unittest.TestCase):
 
     def test_get_projects(self):
         for i in range(5):
-            project = self.user.add_project('Project ' + str(i))
+            self.user.add_project('Project ' + str(i))
         projects = self.user.get_projects()
         self.assertEqual(len(projects), 6) # 5 + Inbox
 
@@ -55,8 +56,8 @@ class UserTest(unittest.TestCase):
         rev_projects = projects[::-1]
         self.user.update_project_orders(rev_projects)
         projects = self.user.get_projects()
-        for i, p in enumerate(projects):
-            self.assertEqual(p.name, rev_projects[i].name)
+        for i, project in enumerate(projects):
+            self.assertEqual(project.name, rev_projects[i].name)
 
     def test_get_completed_tasks(self):
         inbox = self.user.get_project('Inbox')
