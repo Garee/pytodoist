@@ -2,7 +2,7 @@
 
 from distutils.core import setup
 
-setup(name = 'PyTodoist',
+setup(name = 'pytodoist',
       version = '0.1dev',
       license = 'MIT',
       description = 'A python wrapper for the Todoist API.',
@@ -10,4 +10,5 @@ setup(name = 'PyTodoist',
       author = 'Gary Blackwood',
       author_email = 'gary@garyblackwood.co.uk',
       url = 'http://www.github.com/Garee/PyTodoist',
-      packages = ['pytodoist'],)
+      packages = ['pytodoist'],
+      install_requires = ['requests'],)
