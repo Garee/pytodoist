@@ -21,7 +21,7 @@ class TodoistAPI(object):
               '"INTERNAL_ERROR"',
               '"EMAIL_MISMATCH"',
               '"ACCOUNT_NOT_CONNECTED_WITH_GOOGLE"',
-              '"ALREADY_REGISTRED"',
+              '"ALREADY_REGISTRED"', # This isn't a typo - see the API doc.
               '"TOO_SHORT_PASSWORD"',
               '"INVALID_EMAIL"',
               '"INVALID_TIMEZONE"',
