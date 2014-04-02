@@ -28,7 +28,6 @@ class UserTest(unittest.TestCase):
 
     def test_login_success(self):
         self.assertTrue(self.user.is_logged_in())
-        print self.user
 
     def test_update(self):
         self.user.full_name = 'Todoist Py'
@@ -64,7 +63,7 @@ class UserTest(unittest.TestCase):
         task = inbox.add_task('Task 1')
         task.complete()
         completed_tasks = self.user.get_completed_tasks()
-        self.assertEqual(len(completed_tasks), 0) # Premium only.
+        self.assertEqual(len(completed_tasks), 1)
 
     def test_add_label(self):
         self.user.add_label('Label 1', color=1)
@@ -78,12 +77,12 @@ class UserTest(unittest.TestCase):
         labels = self.user.get_labels()
         self.assertEqual(len(labels), 5)
 
-    def test_search(self):
+    def test_search_tasks(self):
         inbox = self.user.get_project('Inbox')
         inbox.add_task('Task Red')
         inbox.add_task('Task Blue')
         queries = '["view all"]'
-        tasks = self.user.search(queries)
+        tasks = self.user.search_tasks(queries)
         self.assertEqual(len(tasks), 2)
 
     def test_is_receiving_email_notifications(self):
@@ -221,7 +220,7 @@ class NoteTest(unittest.TestCase):
     def test_update(self):
         self.note.content = 'Note_2'
         self.note.update()
-        note = self.task.get_note(self.note.id)
+        note = self.task.get_note_with_id(self.note.id)
         self.assertEqual(note.content, 'Note_2')
 
     def test_delete(self):

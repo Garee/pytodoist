@@ -1,3 +1,4 @@
+import itertools
 from pytodoist.api import TodoistAPI
 
 API = TodoistAPI()
@@ -86,10 +87,9 @@ class User(TodoistObject):
         projects_as_json = response.json()
         return [Project(json, self) for json in projects_as_json]
 
-    def get_project(self, name):
-        projects = self.get_projects()
-        for project in projects:
-            if project.name == name:
+    def get_project(self, project_name):
+        for project in self.get_projects():
+            if project.name == project_name:
                 return project
 
     def get_project_with_id(self, project_id):
@@ -103,7 +103,15 @@ class User(TodoistObject):
         response = API.update_project_orders(self.token, project_ids)
         _fail_if_contains_errors(response)
 
-    def get_completed_tasks(self, label=None, interval=None):
+    def get_uncompleted_tasks(self):
+        tasks = (p.get_uncompleted_tasks() for p in self.get_projects())
+        return list(itertools.chain.from_iterable(tasks))
+
+    def get_completed_tasks(self):
+        tasks = (p.get_completed_tasks() for p in self.get_projects())
+        return list(itertools.chain.from_iterable(tasks))
+
+    def search_completed_tasks(self, label=None, interval=None):
         response = API.get_all_completed_tasks(self.token, label=label,
                                                interval=interval)
         _fail_if_contains_errors(response)
@@ -113,6 +121,27 @@ class User(TodoistObject):
             project_id = json['project_id']
             project = self.get_project_with_id(project_id)
             tasks.append(Task(json, project))
+        return tasks
+
+    def get_tasks(self):
+        return self.get_uncompleted_tasks() + self.get_completed_tasks()
+
+    def search_tasks(self, queries):
+        response = API.search_tasks(self.token, queries)
+        _fail_if_contains_errors(response)
+        query_results = response.json()
+        tasks = []
+        for query in query_results:
+            projects_with_results = query['data']
+            for project in projects_with_results:
+                uncompleted_tasks = project.get('uncompleted', [])
+                completed_tasks = project.get('completed', [])
+                found_tasks = uncompleted_tasks + completed_tasks
+                for task_as_json in found_tasks:
+                    project_id = task_as_json['project_id']
+                    project = self.get_project_with_id(project_id)
+                    task = Task(task_as_json, project)
+                    tasks.append(task)
         return tasks
 
     def get_label(self, label_name):
@@ -132,59 +161,41 @@ class User(TodoistObject):
         label_as_json = response.json()
         return Label(label_as_json, self)
 
-    def search(self, queries):
-        response = API.search_tasks(self.token, queries)
-        _fail_if_contains_errors(response)
-        query_results = response.json()
-        tasks = []
-        for query in query_results:
-            projects_with_results = query['data']
-            for project in projects_with_results:
-                uncompleted_tasks = project.get('uncompleted', [])
-                completed_tasks = project.get('completed', [])
-                found_tasks = uncompleted_tasks + completed_tasks
-                for task_as_json in found_tasks:
-                    project_id = task_as_json['project_id']
-                    project = self.get_project_with_id(project_id)
-                    task = Task(task_as_json, project)
-                    tasks.append(task)
-        return tasks
-
-    def get_notification_settings(self):
+    def _get_notification_settings(self):
         response = API.get_notification_settings(self.token)
         _fail_if_contains_errors(response)
         return response.json()
 
-    def get_notification_types(self):
-        return self.get_notification_settings().values()
-
-    def is_receiving_email_notifications(self, notification_type):
-        notification_settings = self.get_notification_settings()
-        return notification_settings[notification_type]['notify_email']
-
-    def is_receiving_push_notifications(self, notification_type):
-        notification_settings = self.get_notification_settings()
-        return notification_settings[notification_type]['notify_push']
-
-    def enable_push_notifications(self, notification_type):
-        self.update_notification_settings(notification_type, 'push', 0)
-
-    def disable_push_notifications(self, notification_type):
-        self.update_notification_settings(notification_type, 'push', 1)
-
-    def enable_email_notifications(self, notification_type):
-        self.update_notification_settings(notification_type, 'email', 0)
-
-    def disable_email_notifications(self, notification_type):
-        self.update_notification_settings(notification_type, 'email', 1)
-
-    def update_notification_settings(self, notification_type, service,
+    def _update_notification_settings(self, notification_type, service,
                                          should_notify):
         response = API.update_notification_settings(self.token,
                                                     notification_type,
                                                     service,
                                                     should_notify)
         _fail_if_contains_errors(response)
+
+    def get_notification_types(self):
+        return self._get_notification_settings().values()
+
+    def is_receiving_email_notifications(self, notification_type):
+        notification_settings = self._get_notification_settings()
+        return notification_settings[notification_type]['notify_email']
+
+    def is_receiving_push_notifications(self, notification_type):
+        notification_settings = self._get_notification_settings()
+        return notification_settings[notification_type]['notify_push']
+
+    def enable_push_notifications(self, notification_type):
+        self._update_notification_settings(notification_type, 'push', 0)
+
+    def disable_push_notifications(self, notification_type):
+        self._update_notification_settings(notification_type, 'push', 1)
+
+    def enable_email_notifications(self, notification_type):
+        self._update_notification_settings(notification_type, 'email', 0)
+
+    def disable_email_notifications(self, notification_type):
+        self._update_notification_settings(notification_type, 'email', 1)
 
 
 class Project(TodoistObject):
@@ -277,7 +288,7 @@ class Task(TodoistObject):
         note_as_json = response.json()
         return Note(note_as_json, self)
 
-    def get_note(self, note_id):
+    def get_note_with_id(self, note_id):
         for note in self.get_notes():
             if note.id == note_id:
                 return note
