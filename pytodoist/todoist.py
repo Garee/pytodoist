@@ -440,19 +440,19 @@ ERROR_RESPONSE_MAPPING = {
     '"EMAIL_MISMATCH"':                    EmailMismatchError,
     '"ACCOUNT_NOT_CONNECTED_WITH_GOOGLE"': NoGoogleLinkError,
     '"ALREADY_REGISTRED"':                 RegistrationError,
+    '"UNKNOWN_ERROR"':                     TodoistError,
     '"TOO_SHORT_PASSWORD"':                TodoistValueError,
     '"INVALID_EMAIL"':                     TodoistValueError,
     '"INVALID_TIMEZONE"':                  TodoistValueError,
     '"INVALID_FULL_NAME"':                 TodoistValueError,
-    '"UNKNOWN_ERROR"':                     TodoistError,
     '"ERROR_PASSWORD_TOO_SHORT"':          TodoistValueError,
     '"ERROR_EMAIL_FOUND"':                 TodoistValueError,
+    '"ERROR_NAME_IS_EMPTY"':               TodoistValueError,
+    '"ERROR_WRONG_DATE_SYNTAX"':           TodoistValueError,
     '"UNKNOWN_IMAGE_FORMAT"':              BadImageError,
     '"UNABLE_TO_RESIZE_IMAGE"':            BadImageError,
     '"IMAGE_TOO_BIG"':                     BadImageError,
     '"ERROR_PROJECT_NOT_FOUND"':           NotFoundError,
-    '"ERROR_NAME_IS_EMPTY"':               TodoistValueError,
-    '"ERROR_WRONG_DATE_SYNTAX"':           TodoistValueError,
     '"ERROR_ITEM_NOT_FOUND"':              NotFoundError
 }
 
