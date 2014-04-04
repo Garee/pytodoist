@@ -11,11 +11,10 @@ password = "pytodoist.test.password"
 def _get_user():
     try:
         user = todoist.register(full_name, email, password)
-    except todoist.TodoistException, e:
-        if e.response.text == '"ALREADY_REGISTRED"':
-            user = todoist.login(email, password)
-            user.delete()
-            user = todoist.register(full_name, email, password)
+    except todoist.RegistrationError, e:
+        user = todoist.login(email, password)
+        user.delete()
+        user = todoist.register(full_name, email, password)
     return user
 
 class UserTest(unittest.TestCase):

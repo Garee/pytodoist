@@ -57,7 +57,7 @@ class User(TodoistObject):
 
     def delete(self, reason=None):
         if not hasattr(self, 'password'):
-            raise Exception("You cannot delete a Google-linked account.")
+            raise TodoistError("Account is linked to Google.")
         response = API.delete_user(self.token, self.password,
                                    reason=reason, in_background=0)
         _fail_if_contains_errors(response)
@@ -356,15 +356,109 @@ class Label(TodoistObject):
         _fail_if_contains_errors(response)
 
 
-class TodoistException(Exception):
+class TodoistError(Exception):
+
     def __init__(self, response):
         self.response = response
-        super(TodoistException, self).__init__(response.text)
+        super(TodoistError, self).__init__(response.text)
 
+
+class LoginError(TodoistError):
+    """Raised when a user's login credentials are invalid."""
+
+    def __init__(self, response):
+        super(LoginError, self).__init__(response)
+
+
+class InternalError(TodoistError):
+    """Raised when the Todoist server is unable to connect to Google.
+
+    This exception may also be raised if the response from Google is unable to
+    be parsed. It makes sense to repeat the attempt with the same parameters
+    later.
+    """
+
+    def __init__(self, response):
+        super(InternalError, self).__init__(response)
+
+
+class EmailMismatchError(TodoistError):
+    """Raised when an oauth2_token is valid but the given user email is
+    not associated with it.
+    """
+
+    def __init__(self, response):
+        super(EmailMismatchError, self).__init__(response)
+
+class NoGoogleLinkError(TodoistError):
+    """Raised when an oauth2_token is valid but the user's Todoist account is
+    not linked to Google.
+    """
+
+    def __init__(self, response):
+        super(NoGoogleLinkError, self).__init__(response)
+
+
+class RegistrationError(TodoistError):
+    """Raised when trying to register an account with details
+    that are already associated with a current Todoist user.
+    """
+
+    def __init__(self, response):
+        super(RegistrationError, self).__init__(response)
+
+
+class BadImageError(TodoistError):
+    """Raised when a user tries to use an invalid image as their
+    avatar.
+    """
+
+    def __init__(self, response):
+        super(BadImageError, self).__init__(response)
+
+
+class NotFoundError(TodoistError):
+    """Raised when a user tries to access an item or project that
+    does not exist.
+    """
+
+    def __init__(self, response):
+        super(NotFoundError, self).__init__(response)
+
+
+ERROR_RESPONSE_MAPPING = {
+    '"LOGIN_ERROR"':                       LoginError,
+    '"INTERNAL_ERROR"':                    InternalError,
+    '"EMAIL_MISMATCH"':                    EmailMismatchError,
+    '"ACCOUNT_NOT_CONNECTED_WITH_GOOGLE"': NoGoogleLinkError,
+    '"ALREADY_REGISTRED"':                 RegistrationError,
+    '"TOO_SHORT_PASSWORD"':                ValueError,
+    '"INVALID_EMAIL"':                     ValueError,
+    '"INVALID_TIMEZONE"':                  ValueError,
+    '"INVALID_FULL_NAME"':                 ValueError,
+    '"UNKNOWN_ERROR"':                     TodoistError,
+    '"ERROR_PASSWORD_TOO_SHORT"':          ValueError,
+    '"ERROR_EMAIL_FOUND"':                 ValueError,
+    '"UNKNOWN_IMAGE_FORMAT"':              BadImageError,
+    '"UNABLE_TO_RESIZE_IMAGE"':            BadImageError,
+    '"IMAGE_TOO_BIG"':                     BadImageError,
+    '"ERROR_PROJECT_NOT_FOUND"':           NotFoundError,
+    '"ERROR_NAME_IS_EMPTY"':               ValueError,
+    '"ERROR_WRONG_DATE_SYNTAX"':           ValueError,
+    '"ERROR_ITEM_NOT_FOUND"':              NotFoundError
+}
+
+ERROR_RESPONSES = ERROR_RESPONSE_MAPPING.keys()
+
+def _get_associated_exception(error_text):
+    return ERROR_RESPONSE_MAPPING[error_text]
 
 def _fail_if_contains_errors(response):
     if _contains_errors(response):
+        if response.text in ERROR_RESPONSES:
+            exception = _get_associated_exception(response.text)
+            raise exception(response)
         raise TodoistException(response)
 
 def _contains_errors(response):
-    return response.status_code != 200 or response.text in API.ERRORS
+    return response.status_code != 200 or response.text in ERROR_RESPONSES

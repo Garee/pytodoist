@@ -17,27 +17,6 @@ class TodoistAPI(object):
 
     URL = 'https://www.todoist.com/API/'
 
-    ERRORS = ['"LOGIN_ERROR"',
-              '"INTERNAL_ERROR"',
-              '"EMAIL_MISMATCH"',
-              '"ACCOUNT_NOT_CONNECTED_WITH_GOOGLE"',
-              '"ALREADY_REGISTRED"', # This isn't a typo - see the API doc.
-              '"TOO_SHORT_PASSWORD"',
-              '"INVALID_EMAIL"',
-              '"INVALID_TIMEZONE"',
-              '"INVALID_FULL_NAME"',
-              '"UNKNOWN_ERROR"'
-              '"ERROR_PASSWORD_TOO_SHORT"',
-              '"ERROR_EMAIL_FOUND"',
-              '"UNKNOWN_IMAGE_FORMAT"',
-              '"UNABLE_TO_RESIZE_IMAGE"',
-              '"IMAGE_TOO_BIG"',
-              '"UNABLE_TO_RESIZE_IMAGE"',
-              '"ERROR_PROJECT_NOT_FOUND"',
-              '"ERROR_NAME_IS_EMPTY"',
-              '"ERROR_WRONG_DATE_SYNTAX"',
-              '"ERROR_ITEM_NOT_FOUND"']
-
     def login(self, email, password):
         """Login to Todoist.
 
