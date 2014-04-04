@@ -416,6 +416,14 @@ class BadImageError(TodoistError):
     def __init__(self, response):
         super(BadImageError, self).__init__(response)
 
+class TodoistValueError(TodoistError):
+    """Raised when an invalid value is passed in a requested to the
+    Todoist server.
+    """
+
+    def __init__(self, response):
+        super(TodoistValueError, self).__init__(response)
+
 
 class NotFoundError(TodoistError):
     """Raised when a user tries to access an item or project that
@@ -432,19 +440,19 @@ ERROR_RESPONSE_MAPPING = {
     '"EMAIL_MISMATCH"':                    EmailMismatchError,
     '"ACCOUNT_NOT_CONNECTED_WITH_GOOGLE"': NoGoogleLinkError,
     '"ALREADY_REGISTRED"':                 RegistrationError,
-    '"TOO_SHORT_PASSWORD"':                ValueError,
-    '"INVALID_EMAIL"':                     ValueError,
-    '"INVALID_TIMEZONE"':                  ValueError,
-    '"INVALID_FULL_NAME"':                 ValueError,
+    '"TOO_SHORT_PASSWORD"':                TodoistValueError,
+    '"INVALID_EMAIL"':                     TodoistValueError,
+    '"INVALID_TIMEZONE"':                  TodoistValueError,
+    '"INVALID_FULL_NAME"':                 TodoistValueError,
     '"UNKNOWN_ERROR"':                     TodoistError,
-    '"ERROR_PASSWORD_TOO_SHORT"':          ValueError,
-    '"ERROR_EMAIL_FOUND"':                 ValueError,
+    '"ERROR_PASSWORD_TOO_SHORT"':          TodoistValueError,
+    '"ERROR_EMAIL_FOUND"':                 TodoistValueError,
     '"UNKNOWN_IMAGE_FORMAT"':              BadImageError,
     '"UNABLE_TO_RESIZE_IMAGE"':            BadImageError,
     '"IMAGE_TOO_BIG"':                     BadImageError,
     '"ERROR_PROJECT_NOT_FOUND"':           NotFoundError,
-    '"ERROR_NAME_IS_EMPTY"':               ValueError,
-    '"ERROR_WRONG_DATE_SYNTAX"':           ValueError,
+    '"ERROR_NAME_IS_EMPTY"':               TodoistValueError,
+    '"ERROR_WRONG_DATE_SYNTAX"':           TodoistValueError,
     '"ERROR_ITEM_NOT_FOUND"':              NotFoundError
 }
 
@@ -455,8 +463,8 @@ def _get_associated_exception(error_text):
 
 def _fail_if_contains_errors(response):
     if _contains_errors(response):
-        if response.text in ERROR_RESPONSES:
-            exception = _get_associated_exception(response.text)
+        exception = _get_associated_exception(response.text)
+        if exception:
             raise exception(response)
         raise TodoistException(response)
 
