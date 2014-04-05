@@ -1,18 +1,39 @@
-"""This module provides an abstract method for interacting with the Todoist API.
+"""This module abstracts underlying calls to the Todoist API so that they
+may be performed in a simpler way. It is fundamentally a wrapper module that
+neither adds nor takes away any functionality that is provided by Todoist.
 
-Classes:
-    TodoistAPI: A simple wrapper around the Todoist API.
-    using the requests module.
+If you do not need access to the raw HTTP response to the request, consider
+using the higher level abstractions implemented in the :mod:`todoist` module.
+
+
+*Example:*
+
+>>> from pytodoist.api import TodoistAPI
+>>> api = TodoistAPI()
+>>> response = api.login('john.doe@gmail.com', 'passwd')
+>>> user_info = response.json()
+>>> user_info['email']
+u'john.doe@gmail.com'
+>>> user_info['full_name']
+u'John Doe'
+>>> user_token = user_info['token']
+>>> response = api.ping(user_token)
+>>> response.text
+u'ok'
+>>> response = api.get_projects(user_token)
+>>> projects = response.json()
+>>> len(projects)
+2
 """
 import requests
 
 class TodoistAPI(object):
-    """A wrapper around the Todoist web API: https://todoist.com/API
+    """A wrapper around the Todoist web API: https://todoist.com/API.
 
-    Attributes:
-      URL (str): The URL of the Todoist API.
-      ERRORS (list): A list of error strings that are returned in the
-          http response body upon encountering an error.
+    >>> from pytodoist.api import TodoistAPI
+    >>> api = TodoistAPI()
+    >>> api.URL
+    'https://www.todoist.com/API/'
     """
 
     URL = 'https://www.todoist.com/API/'
@@ -20,17 +41,20 @@ class TodoistAPI(object):
     def login(self, email, password):
         """Login to Todoist.
 
-        Args:
-            email (str): A Todoist user's email.
-            password (str):  A Todoist user's password.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param email: A Todoist user's email.
+        :type email: string
+        :param password: A Todoist user's password.
+        :type password: string
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain the user details.
+        :on failure: ``response.text`` will contain ``"LOGIN_ERROR"``.
 
-            On success:
-              response.json(): The user's details.
-
-            On failure:
-              response.text: "LOGIN_ERROR".
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_info['email']
+        u'john.doe@gmail.com'
         """
         params = {
             'email': email,
@@ -39,48 +63,39 @@ class TodoistAPI(object):
         return self._get('login', params)
 
     def login_with_google(self, email, oauth2_token, **kwargs):
-        """Login to Todoist using Google oauth2 authentication.
+        """Login to Todoist using Google's oauth2 authentication.
 
-        Args:
-            email (str): A Todoist user's Google email.
+        :param email: A Todoist user's Google email.
+        :type email: string
+        :param oauth2_token:
+            A valid oauth2_token for the user retrieved from Google's oauth2
+            service.
+        :type oauth2_token: string
+        :param auto_signup:
+            Register an account if this is ``1`` and no user is found.
+        :type auto_signup: int
+        :param full_name:
+            A full name to use if the user is registering. If no name is
+            given, an email based nickname is used.
+        :type full_name: string
+        :param timezone:
+            A timezone to use if the user is registering. If not set, one is
+            chosen based on the user's IP address.
+        :type timezone: string
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain the user details.
+        :on failure: ``response.text`` will contain ``"LOGIN_ERROR"``,
+            ``"INTERNAL_ERROR"``, ``"EMAIL_MISMATCH"`` or
+            ``"ACCOUNT_NOT_CONNECTED_WITH_GOOGLE"``.
 
-            oauth2_token (str):
-                A valid oauth2_token for the user retrieved from Google's oauth2
-                service.
-
-            auto_signup (int):
-                If 1 and a new user, automatically register an account.
-
-            full_name (str):
-                A full name to use if the user is registering. If no name is
-                given, an email based nickname is used.
-
-            timezone (str):
-                A timezone to use if the user is registering. If not set, one is
-                chosen based on the user's IP address.
-
-        Returns:
-            response (requests.Response): The HTTP response to the request.
-
-            On success:
-                response.json(): The user's details.
-
-            On failure:
-                response.text:
-                    "LOGIN_ERROR": The oauth2_token is invalid or outdated.
-
-                    "INTERNAL_ERROR":
-                        The server is unable to check the token validity. It is
-                        a signal to try again later.
-
-
-                    "EMAIL_MISMATCH":
-                        The token is valid but the email is not associated with
-                        it.
-
-                    "ACCOUNT_NOT_CONNECTED_WITH_GOOGLE":
-                        The token and email are valid but the account is not
-                        connected using Google.
+        >>> oauth2_token = get_token() # You must get the token somehow!
+        >>> api = TodoistAPI()
+        >>> response = api.login_with_google('john.doe@gmail.com', oauth2_token,
+                                              auto_signup=1)
+        >>> user_info = response.json()
+        >>> user_info['email']
+        u'john.doe@gmail.com'
         """
         params = {
             'email': email,
@@ -91,16 +106,22 @@ class TodoistAPI(object):
     def ping(self, token):
         """Test a user's login token.
 
-        Args:
-            token (str): A Todoist user's login token.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        A valid token is required to perform many of the API operations.
 
-            On success:
-                response.text: "ok"
+        :param token: A Todoist user's login token.
+        :type token: string
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.text`` will contain ``"ok"``.
+        :on failure: ``response.status_code`` will be ``401``.
 
-            On failure:
-                response.status_code: 401
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> response = api.ping(user_token)
+        >>> response.text
+        u"ok"
         """
         params = {
             'token': token
@@ -110,37 +131,43 @@ class TodoistAPI(object):
     def get_timezones(self):
         """Return the timezones that Todoist supports.
 
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain the supported timezones.
 
-            On success:
-                response.json(): The supported timezones.
+        >>> api = TodoistAPI()
+        >>> response = api.get_timezones()
+        >>> response.json()
+        [[u'US/Hawaii', u'(GMT-1000) Hawaii'], ...]
         """
         return self._get('getTimezones')
 
     def register(self, email, full_name, password, **kwargs):
         """Register a new user on Todoist.
 
-        Args:
-            email (str): The user's email.
-            full_name (str): The user's full name.
-            password (str): The user's password. Must be > 4 chars.
-            lang (str): The user's language.
-            timezone (str): The user's timezone.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param email: The user's email.
+        :type email: string
+        :param full_name: The user's full name.
+        :type full_name: string
+        :param password: The user's password. Must be 4 chars.
+        :type password: string
+        :param lang: The user's language.
+        :type lang: string
+        :param timezone: The user's timezone.
+        :type timezone: string
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain the user's details.
+        :on failure: ``response.text`` will contain ``"ALREADY_REGISTRED"``,
+            ``"TOO_SHORT_PASSWORD"``, ``"INVALID_EMAIL"``,
+            ``"INVALID_TIMEZONE"``, ``"INVALID_FULL_NAME"`` or
+            ``"UNKNOWN_ERROR"``.
 
-            On success:
-                response.json(): The user's details.
-
-            On failure:
-                response.text:
-                    "ALREADY_REGISTRED"
-                    "TOO_SHORT_PASSWORD"
-                    "INVALID_EMAIL"
-                    "INVALID_TIMEZONE"
-                    "INVALID_FULL_NAME"
-                    "UNKNOWN_ERROR"
+        >>> api = TodoistAPI()]
+        >>> response = api.register('john.doe@gmail.com', 'John Doe', 'passwd')
+        >>> user_info = response.json()
+        >>> user_info['email']
+        u'john.doe@gmail.com'
         """
         params = {
             'email': email,
@@ -152,21 +179,26 @@ class TodoistAPI(object):
     def delete_user(self, token, password, **kwargs):
         """Delete a registered Todoist user's account.
 
-        Args:
-            token (str): The user's login token.
-            password (str): The user's password.
-            reason_for_delete (str): The reason for deletion.
-            in_background (int, default=1):
-                If set to 0 if the user should be deleted instantly.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: A Todoist user's login token.
+        :type token: string
+        :param password: The user's password.
+        :type password: string
+        :param reason_for_delete: The reason for deletion.
+        :type reason_for_delete: string
+        :param in_background: If 0, delete the user instantly.
+        :type in_background: int
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.text`` will contain ``"ok"``.
+        :on failure: ``response.status_code`` will be ``403``.
 
-            On success:
-                response.status_code: 200
-                response.text: "ok"
-
-            On failure:
-                response.status_code: 403 (The password doesn't match.)
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> response = api.delete_user(user_token, 'passwd')
+        >>> response.text
+        u'ok'
         """
         params = {
             'token': token,
@@ -177,37 +209,47 @@ class TodoistAPI(object):
     def update_user(self, token, **kwargs):
         """Update a registered Todoist user's account.
 
-        Args:
-            token (str): The user's login token.
-            email (str): The updated email address.
-            full_name (str): The updated full name.
-            password (str): The updated password. Must be > 4 chars.
-            timezone (str): The updated Todoist supported timezone.
-            date_format (int): If 0: DD-MM-YYYY. If 1: MM-DD-YYYY.
-            time_format (int): If 0: '13:00'. If 1: '1:00pm'.
-            start_day (int): The first day of the week (1-7 - Mon-Sun).
-            next_week (int): Which day to use when postponing (1-7 - Mon-Sun).
+        :param token: The user's login token.
+        :type token: string
+        :param email: The new email address.
+        :type email: string
+        :param full_name: The new full name.
+        :type full_name: string
+        :param password: The new password.
+        :type password: string
+        :param timezone: The new timezone.
+        :type timezone: string
+        :param date_format: ``0``: ``DD-MM-YYYY``, ``1``: ``MM-DD-YYYY``.
+        :type date_format: int
+        :param time_format: ``0``: ``13:00``. ``1``: ``1:00pm``.
+        :type time_format: int
+        :param start_day: The new first day of the week ``(1-7, Mon-Sun)``.
+        :type start_day: int
+        :param next_week: The new day to use when postponing ``(1-7, Mon-Sun)``.
+        :type next_week: int
+        :param start_page: The new start page. ``_blank``: for a blank page,
+            ``_info_page`` for the info page, ``_project_$PROJECT_ID`` for a
+            project page or ``$ANY_QUERY`` to show query results.
+        :type start_page: string
+        :param default_reminder: ``email`` for email, ``mobile`` for SMS,
+            ``push`` for smart device notifications or ``no_default`` to
+            turn off notifications.
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain the updated user details.
+        :on failure: ``response.status_code`` will be ``400`` or
+            ``response.text`` will contain ``"ERROR_EMAIL_FOUND"``.
 
-            start_page (str):
-                "_blank": Show a blank page.
-                "_info_page": Show the info page.
-                "_project_$PROJECT_ID": Show a project page.
-                "$ANY_QUERY": To show query results.
-
-            default_reminder (str):
-                "email": Reminders by email.
-                "mobile" Reminders via sms.
-                "push": Reminders to smart devices.
-                "no_default": Turn off notifications.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
-
-            On success:
-                response.json(): The updated user's details.
-
-            On failure:
-              response.status_code: 400 (Password is too short.)
-              response.text: "ERROR_EMAIL_FOUND"
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_info['full_name']
+        u'John Doe'
+        >>> user_token = user_info['token']
+        >>> response = api.update_user(user_token, full_name='John Smith')
+        >>> user_info = response.json()
+        >>> user_info['full_name']
+        u'John Smith'
         """
         params = {
             'token': token
@@ -217,25 +259,24 @@ class TodoistAPI(object):
     def update_avatar(self, token, **kwargs):
         """Update a registered Todoist user's avatar.
 
-        Args:
-            token (str): The user's login token.
-            image (str):
-                The avatar image. Must be encoded with multipart/form-data.
-                Max size: 2mb.
+        :param token: The user's login token.
+        :type token: string
+        :param image: The image. Must be encoded with multipart/form-data.
+            The maximum size is 2mb.
+        :type image: string
+        :param delete: If ``1``, delete the current avatar and use the default.
+        :type delete: int
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain the updated user details.
+        :on failure: ``response.text`` will contain ``"UNKNOWN_IMAGE_FORMAT"``,
+            ``"UNABLE_TO_RESIZE_IMAGE"`` or ``"IMAGE_TOO_BIG"``.
 
-            delete (int):
-                If 1, delete current avatar and use a default.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
-
-            On success:
-                response.json(): The updated user's details.
-
-            On failure:
-                response.text:
-                    "UNKNOWN_IMAGE_FORMAT"
-                    "UNABLE_TO_RESIZE_IMAGE"
-                    "IMAGE_TOO_BIG"
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> api.update_avatar(user_token, delete=1) # Use default avatar.
         """
         params = {
             'token': token
@@ -245,13 +286,22 @@ class TodoistAPI(object):
     def get_projects(self, token):
         """Return a list of all of a user's projects.
 
-        Args:
-            token (str): The user's login token.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain a list of projects.
 
-            On success:
-              response.json(): A list of projects.
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> response = api.get_projects(user_token)
+        >>> projects = response.json()
+        >>> for project in projects:
+        ...     project['name']
+        ...
+        u'Inbox'
         """
         params = {
             'token': token
@@ -261,17 +311,23 @@ class TodoistAPI(object):
     def get_project(self, token, project_id):
         """Return a project's details.
 
-        Args:
-            token (str): The user's login token.
-            project_id (str): The id of a project.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :param project_id: The ID of a project.
+        :type project_id: string
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain the project details.
+        :on failure: ``response.status_code`` will be ``400``.
 
-            On success:
-                response.json(): Contains the project data.
-
-            On failure:
-                response.status_code: 400 (Invalid project ID).
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> response = api.get_project(user_token, '4325')
+        >>> project = response.json()
+        >>> project['name']
+        u'Inbox'
         """
         params = {
             'token': token,
@@ -282,20 +338,29 @@ class TodoistAPI(object):
     def add_project(self, token, project_name, **kwargs):
         """Add a new project to a user's account.
 
-        Args:
-            token (str): The user's login token.
-            name (str): The name of the new project.
-            color (int): The color of the new project.
-            indent (int): The indentation of the project: (1-4).
-            order (int): The order of the project: (1+).
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :param project_name: The name of the new project.
+        :type project_id: string
+        :param color: The color of the new project.
+        :type color: int
+        :param indent: The indentation of the new project ``(1-4)``.
+        :type indent: int
+        :param order: The order of the new project ``(1+)``.
+        :type order: int
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain the project details.
+        :on failure: ``response.text`` will contain ``"ERROR_NAME_IS_EMPTY"``.
 
-            On success:
-                response.json(): The project details.
-
-            On failure:
-                response.text: "ERROR_NAME_IS_EMPTY"
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> response = api.add_project(user_token, 'Work')
+        >>> project = response.json()
+        >>> project['name']
+        u'Work'
         """
         params = {
             'token': token,
@@ -306,22 +371,38 @@ class TodoistAPI(object):
     def update_project(self, token, project_id, **kwargs):
         """Update a user's project.
 
-        Args:
-            token (str): The user's login token.
-            project_id (str): The id of the project to update.
-            name (str): The name of the new project.
-            color (int): The color of the new project.
-            indent (int): The indent of the project: (1-4).
-            order (int): The order of the project: (1+).
-            collapsed (int): If set to 1 the project is collapsed.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :param project_id: The ID of a project.
+        :type project_id: string
+        :param name: The new name.
+        :type name: string
+        :param color: The new color.
+        :type color: int
+        :param indent: The new indentation ``(1-4)``.
+        :type indent: int
+        :param order: The new order ``(1+)``.
+        :type order: int
+        :param collapsed: If ``1``, collapse the project.
+        :type collapsed: int
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain the updated details.
+        :on failure: ``response.status_code`` will be ``400``.
 
-            On success:
-                response.json(): Contains the updated project data.
-
-            On failure:
-                response.status_code: 400 (Invalid project ID).
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> response = api.get_project(user_token, '5436')
+        >>> project = response.json()
+        >>> project['name']
+        u'Work'
+        >>> project_id = project['id']
+        >>> response = api.update_project(user_token, project_id, name='Play')
+        >>> project = response.json()
+        >>> project['name']
+        u'Play'
         """
         params = {
             'token': token,
@@ -332,17 +413,22 @@ class TodoistAPI(object):
     def update_project_orders(self, token, ordered_project_ids):
         """Update a user's project orderings.
 
-        Args:
-            token (str): The user's login token.
-            ordered_project_ids (list): An ordered list of project ids.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :param ordered_project_ids: An ordered list of project IDs.
+        :type ordered_project_ids: string
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.text`` will contain ``"ok"``.
 
-            On success:
-                response.text: "ok"
-
-            On failure:
-                response.text: "ERROR_PROJECT_NOT_FOUND"
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> response = api.get_projects(user_token)
+        >>> projects = response.json()
+        >>> reverse_order = [project['id'] for project in projects]
+        >>> api.update_project_orders(user_token, str(reverse_order))
         """
         params = {
             'token': token,
@@ -353,14 +439,27 @@ class TodoistAPI(object):
     def delete_project(self, token, project_id):
         """Delete a user's project.
 
-        Args:
-            token (str): The user's login token.
-            project_id (str): The id of the project to delete.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :param project_id: The ID of the project to delete.
+        :type project_id: string
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.text`` will contain ``"ok"``.
 
-            On success:
-                response.text: "ok"
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> response = api.get_project(user_token, '5436')
+        >>> project = response.json()
+        >>> project['name']
+        u'Work'
+        >>> project_id = project['id']
+        >>> api.delete_project(user_token, project_id)
+        >>> response = api.get_project(user_token, project_id)
+        >>> response.text
+        u'"ERROR_PROJECT_NOT_FOUND"'
         """
         params = {
             'token': token,
@@ -371,18 +470,26 @@ class TodoistAPI(object):
     def archive_project(self, token, project_id):
         """Archive a user's project.
 
-        Note:
-            Affects only Todoist premium users.
-        Args:
-            token (str): The user's login token.
-            project_id (str): The id of the project to archive.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        .. warning:: Only works if the user has Todoist premium.
 
-            On success:
-                response.json():
-                    A list of archived project_ids e.g. [1234,4324,3242].
-                    [] if the user does not have Todoist premium.
+        :param token: The user's login token.
+        :type token: string
+        :param project_id: The ID of the project to archive.
+        :type project_id: string
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain a list of archived
+            project IDs. e.g. ``[1234, 3435, 5235]``. The list will be empty
+            if the user does not have Todoist premium.
+
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> response = api.archive_project(user_token, '4837')
+        >>> archived_project_ids = response.json()
+        >>> archived_project_ids
+        [4837]
         """
         params = {
             'token': token,
@@ -393,18 +500,26 @@ class TodoistAPI(object):
     def unarchive_project(self, token, project_id):
         """Unarchive a user's project.
 
-        Note:
-            Affects only Todoist premium users.
-        Args:
-            token (str): The user's login token.
-            project_id (str): The id of the project to unarchive.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        .. warning:: Only works if the user has Todoist premium.
 
-            On success:
-                response.json():
-                    A list of unarchived project_ids e.g. [1234,4324,3242].
-                    [] if the user does not have Todoist premium.
+        :param token: The user's login token.
+        :type token: string
+        :param project_id: The ID of the project to unarchive.
+        :type project_id: string
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain a list of unarchived
+            project IDs. e.g. ``[1234, 3435, 5235]``. The list will be empty
+            if the user does not have Todoist premium.
+
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> response = api.unarchive_project(user_token, '4837')
+        >>> unarchived_project_ids = response.json()
+        >>> unarchived_project_ids
+        [4837]
         """
         params = {
             'token': token,
@@ -415,14 +530,26 @@ class TodoistAPI(object):
     def get_labels(self, token, **kwargs):
         """Return all of a user's labels.
 
-        Args:
-            token (str): The user's login token.
-            as_list (int): If 1 return a list of names rather than objects.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :param as_list: If ``1``, return a list of label names only.
+        :type as_list: int
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain a map of
+            label name -> label details.
 
-            On success:
-                response.json(): A list of labels.
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> api.add_label(user_token, 'football')
+        >>> response = api.get_labels(user_token)
+        >>> labels = response.json()
+        >>> for label in labels.values():
+        ...     label['name']
+        ...
+        u'football'
         """
         params = {
           'token': token
@@ -430,17 +557,28 @@ class TodoistAPI(object):
         return self._get('getLabels', params, **kwargs)
 
     def add_label(self, token, label_name, **kwargs):
-        """Add a label or return an existing one.
+        """Add a label.
 
-        Args:
-            token (str): The user's login token.
-            label_name (str): The name of the label.
-            color (int): The color of the label.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        If a label with the name already exists it will be returned.
 
-            On success:
-                response.json(): The label details.
+        :param token: The user's login token.
+        :type token: string
+        :param label_name: The name of the label.
+        :type label_name: string
+        :param color: The color of the label.
+        :type color: int
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain the label details.
+
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> response = api.add_label(user_token, 'football')
+        >>> label = response.json()
+        >>> label['name']
+        u'football'
         """
         params = {
           'token': token,
@@ -451,15 +589,28 @@ class TodoistAPI(object):
     def update_label_name(self, token, label_name, new_name):
         """Update the name of a user's label.
 
-        Args:
-            token (str): The user's login token.
-            label_name (str): The name of the label.
-            new_name (str): The name to change to.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :param label_name: The current name of the label.
+        :type label_name: string
+        :param new_name: The new name of the label.
+        :type new_name: string
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain the label details.
 
-            On success:
-                response.json(): The updated label details.
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> response = api.add_label(user_token, 'football')
+        >>> label = response.json()
+        >>> label['name']
+        u'football'
+        >>> response = api.update_label_name(user_token, 'football', 'soccer')
+        >>> label = response.json()
+        >>> label['name']
+        u'soccer'
         """
         params = {
           'token': token,
@@ -471,15 +622,28 @@ class TodoistAPI(object):
     def update_label_color(self, token, label_name, color):
         """Update the color of a user's label.
 
-        Args:
-            token (str): The user's login token.
-            label_name (str): The name of the label.
-            color (int): The color to change to.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :param label_name: The name of the label.
+        :type label_name: string
+        :param color: The new color of the label.
+        :type color: int
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain the label details.
 
-            On success:
-                response.json(): The updated label details.
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> response = api.add_label(user_token, 'football', color=1)
+        >>> label = response.json()
+        >>> label['color']
+        1
+        >>> response = api.update_label_name(user_token, 'football', color=2)
+        >>> label = response.json()
+        >>> label['color']
+        2
         """
         params = {
           'token': token,
@@ -491,14 +655,21 @@ class TodoistAPI(object):
     def delete_label(self, token, label_name):
         """Delete a user's label.
 
-          Args:
-              token (str): The user's login token.
-              label_name (str): The name of the label.
-          Returns:
-              response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :param label_name: The name of the label.
+        :type label_name: string
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.text`` will contain ``"ok"``.
 
-              On success:
-                  response.text: "ok"
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> response = api.delete_label(token, 'football')
+        >>> response.text
+        u'"ok"'
         """
         params = {
           'token': token,
@@ -509,20 +680,29 @@ class TodoistAPI(object):
     def get_uncompleted_tasks(self, token, project_id, **kwargs):
         """Return a list of a project's uncompleted tasks.
 
-        Args:
-            token (str): The user's login token.
-            project_id (str): The id of the project.
-            js_date (int):
-                if 1: 'new Date("Sun Apr 29 2007 23:59:59")'
-                otherwise: 'Sun Apr 2007 23:59:59'
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :param project_id: The ID of the project to get tasks from.
+        :type project_id: string
+        :param js_date: If ``1``: ``new Date("Sun Apr 29 2007 23:59:59")``,
+            otherwise ``Sun Apr 2007 23:59:59``.
+        :type js_date: int
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain a list of tasks.
+        :on failure: ``response.status_code`` will be ``400``.
 
-            On success:
-               response.json(): A list of uncompleted tasks.
-
-            On failure:
-                response.status_code: 400 (Invalid project ID).
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> response = api.get_projects(user_token)
+        >>> projects = response.json()
+        >>> project_id = projects[0]['id']
+        >>> response = api.get_uncompleted_tasks(user_token, project_id)
+        >>> uncompleted_tasks = response.json()
+        >>> len(uncompleted_tasks)
+        0
         """
         params = {
             'token': token,
@@ -533,23 +713,34 @@ class TodoistAPI(object):
     def get_all_completed_tasks(self, token, **kwargs):
         """Return a list of a user's completed tasks.
 
-        Note:
-            Will return an empty list for non-premium users.
-        Args:
-            token (str): The user's login token.
-            js_date (int):
-                if 1: 'new Date("Sun Apr 29 2007 23:59:59")'
-                otherwise: 'Sun Apr 2007 23:59:59'
-            project_id (str): Filter by tasks by project ID.
-            label (str): Filter the tasks by label.
-            interval (str, default=past 2 weeks): Restrict the time range.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        .. warning:: Only works if the user has Todoist premium.
 
-            On success:
-                response.json(): A list of completed tasks.
-            On failure:
-                response.status_code: 400 (Invalid project ID).
+        :param token: The user's login token.
+        :type token: string
+        :param project_id: Filter the tasks by project.
+        :type project_id: string
+        :param js_date: If ``1``: ``new Date("Sun Apr 29 2007 23:59:59")``,
+            otherwise ``Sun Apr 2007 23:59:59``.
+        :type js_date: int
+        :param label: Filter the tasks by label.
+        :type label: string
+        :param interval: Filter the tasks by time range.
+            Defaults to ``past 2 weeks``.
+        :type interval: string
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain a list of tasks. The list
+            will be empty is the user does not have Todoist premium.
+        :on failure: ``response.status_code`` will be ``400``.
+
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> response = api.get_all_completed_tasks(user_token)
+        >>> completed_tasks = response.json()
+        >>> len(uncompleted_tasks)
+        0
         """
         params = {
             'token': token
@@ -559,19 +750,29 @@ class TodoistAPI(object):
     def get_completed_tasks(self, token, project_id, **kwargs):
         """Return a list of a project's completed tasks.
 
-        Args:
-            token (str): The user's login token.
-            project_id (str): The id of the project.
-            js_date (int):
-                if 1: 'new Date("Sun Apr 29 2007 23:59:59")'
-                otherwise: 'Sun Apr 2007 23:59:59'
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :param project_id: The project to get tasks from.
+        :type project_id: string
+        :param js_date: If ``1``: ``new Date("Sun Apr 29 2007 23:59:59")``,
+            otherwise ``Sun Apr 2007 23:59:59``.
+        :type js_date: int
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain a list of tasks.
+        :on failure: ``response.status_code`` will be ``400``.
 
-            On success:
-                response.json(): A list of completed tasks.
-            On failure:
-                response.status_code: 400 (Invalid project ID).
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> response = api.get_projects(user_token)
+        >>> projects = response.json()
+        >>> project_id = projects[0]['id']
+        >>> response = api.get_completed_tasks(user_token, project_id)
+        >>> completed_tasks = response.json()
+        >>> len(uncompleted_tasks)
+        0
         """
         params = {
             'token': token,
@@ -582,17 +783,26 @@ class TodoistAPI(object):
     def get_tasks_by_id(self, token, task_ids, **kwargs):
         """Return a list of tasks with given IDs.
 
-        Args:
-            token (str): The user's login token.
-            task_ids (list): Return tasks with these ids.
-            js_date (int):
-                if 1: 'new Date("Sun Apr 29 2007 23:59:59")'
-                otherwise: 'Sun Apr 2007 23:59:59'
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :param task_ids: A list of task IDs.
+        :type task_ids: string
+        :param js_date: If ``1``: ``new Date("Sun Apr 29 2007 23:59:59")``,
+            otherwise ``Sun Apr 2007 23:59:59``.
+        :type js_date: int
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain a list of tasks.
 
-            On success:
-                response.json(): A list of tasks.
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> task_ids = ['1324']
+        >>> response = api.get_tasks_by_id(user_token, str(task_ids))
+        >>> tasks = response.json()
+        >>> len(tasks)
+        1
         """
         params = {
             'token': token,
@@ -603,38 +813,53 @@ class TodoistAPI(object):
     def add_task(self, token, content, **kwargs):
         """Add a task to a project.
 
-        Args:
-            token (str): The user's login token.
-            content (str): The task description.
-            project_id (str, default=Inbox): The id of the project.
-            date_string (str): The date of the task.
-            priority (int): Natural -> Very Urgent (1 -> 4).
-            indent (int): The task indentation (1-4).
-            js_date (int):
-                if 1: 'new Date("Sun Apr 29 2007 23:59:59")'
-                otherwise: 'Sun Apr 2007 23:59:59'
-            item_order (int): The task order.
-            children (list): A list of child tasks IDs.
-            labels (list): A list of label IDs.
-            assigned_by_uid (str): The id of user who assigns current task.
-                Accepts 0 or any user id from the list of project collaborators.
-                If value is unset or invalid it will automatically be set up by
-                your uid.
-            responsible_uid (str): The id of user who is responsible for
-                accomplishing the current task. Accepts 0 or any user id from
-                the list of project collaborators. If the value is unset or
-                invalid it will automatically be set to null.
-            note (str): A task note.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :param content: The task description.
+        :type content: string
+        :param project_id: The project to add the task to. Defaults to ``Inbox``
+        :type project_id: string
+        :param date_string: The deadline date for the task.
+        :type date_string: string
+        :param priority: The task priority ``(1-4)``.
+        :type priority: int
+        :param indent: The task indentation ``(1-4)``.
+        :type indent: int
+        :param js_date: If ``1``: ``new Date("Sun Apr 29 2007 23:59:59")``,
+            otherwise ``Sun Apr 2007 23:59:59``.
+        :type js_date: int
+        :param item_order: The task order.
+        :type item_order: int
+        :param children: A list of child tasks IDs.
+        :type children: string
+        :param labels: A list of label IDs.
+        :type labels: string
+        :param assigned_by_uid: The ID of the user who assigns current task.
+            Accepts 0 or any user id from the list of project collaborators.
+            If value is unset or invalid it will automatically be set up by
+            your uid.
+        :type assigned_by_uid: string
+        :param assigned_by_uid: The id of user who is responsible for
+            accomplishing the current task. Accepts 0 or any user id from
+            the list of project collaborators. If the value is unset or
+            invalid it will automatically be set to null.
+        :type assigned_by_uid: string
+        :param note: Content of a note to add.
+        :type note: string
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain the task details.
+        :on failure: ``response.status_code`` will be ``400`` or
+            ``response.text`` will contain ``"ERROR_WRONG_DATE_SYNTAX"``
 
-            On success:
-                response.json(): The task details.
-
-            On failure:
-                response.status_code: 400 (Invalid project ID).
-                response.text:
-                    "ERROR_WRONG_DATE_SYNTAX"
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> response = api.add_task(user_token, 'Buy Milk')
+        >>> task = response.json()
+        >>> task['content']
+        u'Buy Milk'
         """
         params = {
             'token': token,
@@ -643,38 +868,61 @@ class TodoistAPI(object):
         return self._get('addItem', params, **kwargs)
 
     def update_task(self, token, task_id, **kwargs):
-        """Add a task to a project.
+        """Update the details of a task.
 
-        Args:
-            token (str): The user's login token.
-            task_id (str): The id of the task to update.
-            content (str): The task description.
-            project_id (str, default=Inbox): The id of the project.
-            date_string (str): The date of the task.
-            priority (int): Natural -> Very Urgent (1 -> 4).
-            indent (int): The task indentation (1-4).
-            js_date (int):
-                if 1: 'new Date("Sun Apr 29 2007 23:59:59")'
-                otherwise: 'Sun Apr 2007 23:59:59'
-            item_order (int): The task order.
-            children (list): A list of child tasks IDs.
-            labels (list): A list of label IDs.
-            assigned_by_uid (str): The id of user who assigns current task.
-                Accepts 0 or any user id from the list of project collaborators.
-                If value is unset or invalid it will automatically be set up by
-                your uid.
-            responsible_uid (str): The id of user who is responsible for
-                accomplishing the current task. Accepts 0 or any user id from
-                the list of project collaborators. If the value is unset or
-                invalid it will automatically be set to null.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :param task_id: The ID of the task to update.
+        :type task_id: string
+        :param content: The new task description.
+        :type content: string
+        :param project_id: The new project.
+        :type project_id: string
+        :param date_string: The new deadline date for the task.
+        :type date_string: string
+        :param priority: The newtask priority ``(1-4)``.
+        :type priority: int
+        :param indent: The new task indentation ``(1-4)``.
+        :type indent: int
+        :param js_date: If ``1``: ``new Date("Sun Apr 29 2007 23:59:59")``,
+            otherwise ``Sun Apr 2007 23:59:59``.
+        :type js_date: int
+        :param item_order: The new task order.
+        :type item_order: int
+        :param children: The new list of child tasks IDs.
+        :type children: string
+        :param labels: The new list of label IDs.
+        :type labels: string
+        :param assigned_by_uid: The new ID of the user who assigns current task.
+            Accepts 0 or any user id from the list of project collaborators.
+            If value is unset or invalid it will automatically be set up by
+            your uid.
+        :type assigned_by_uid: string
+        :param assigned_by_uid: The new id of user who is responsible for
+            accomplishing the current task. Accepts 0 or any user id from
+            the list of project collaborators. If the value is unset or
+            invalid it will automatically be set to null.
+        :type assigned_by_uid: string
+        :param note: Content of a note to add.
+        :type note: string
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain the updated task details.
+        :on failure: ``response.text`` will contain ``"ERROR_ITEM_NOT_FOUND"``
 
-            On success:
-                response.json(): The updated task details.
-
-            On failure:
-                response.text: "ERROR_ITEM_NOT_FOUND"
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> response = api.add_task(user_token, 'Buy Milk')
+        >>> task = response.json()
+        >>> task['content']
+        u'Buy Milk'
+        >>> task_id = task['id']
+        >>> response = api.update_task(user_token, task_id, content='Buy Bread')
+        >>> task = response.json()
+        >>> task['content']
+        u'Buy Bread'
         """
         params = {
             'token': token,
@@ -685,18 +933,29 @@ class TodoistAPI(object):
     def update_task_ordering(self, token, project_id, task_ids):
         """Update the order of a project's tasks.
 
-        Args:
-            token (str): The user's login token.
-            project_id (str): The project to update.
-            task_ids (list): The task ordering.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :param project_id: The new project.
+        :type project_id: string
+        :param task_ids: An ordered list of task IDs.
+        :type task_ids: string
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.text`` will contain ``"ok"``
+        :on failure: ``response.status_code`` will be ``400``
 
-            On success:
-                response.text: "ok"
-
-            On failure:
-                response.status_code: 400 (Invalid project ID).
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        ... # Get Inbox project_id
+        >>> response = api.get_uncompleted_tasks(user_token, project_id)
+        >>> tasks = response.json()
+        >>> task_ids = [task['id'] for task in tasks]
+        >>> reverse_task_ids = str(task_ids[::-1])
+        >>> response = api.update_task_ordering(user_token, reverse_task_ids)
+        >>> response.text
+        u'"ok"'
         """
         params = {
             'token': token,
@@ -708,19 +967,27 @@ class TodoistAPI(object):
     def move_tasks(self, token, task_locations, project_id):
         """Move tasks to another project.
 
-        Args:
-            token (str): The user's login token.
-            task_locations (map):
-                Where the tasks are currently located. A mapping
-                of project_id->task_id e.g. {"1534": ["23454"]}.
-            project_id (str): The project to move the tasks to.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :param task_locations: The current locations of the tasks to move. It is
+            a map of ``project_id -> task_id`` e.g. ``{'1534': ['23453']}``.
+        :type task_locations: string
+        :param project_id: The project to move the tasks to.
+        :type project_id: string
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain the task counts of each
+            project e.g. ``{"counts": {"1523": 0, "1245": 1}}``.
 
-            On success:
-                response.json():
-                    The task counts of each project. e.g.
-                    {"counts": {"1523": 0, "1245": 1}}
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        ... # Get the locations of the tasks to move.
+        ... # and the project to move them to.
+        >>> response = api.move_tasks(user_token, task_locations, project_id)
+        >>> response.json()
+        {"counts": {"1523": 0, "1245": 1}}
         """
         params = {
             'token': token,
@@ -733,17 +1000,26 @@ class TodoistAPI(object):
         """Update the recurring dates of a list of tasks. The date
         will be advanced to the next date with respect to their 'date_string'.
 
-        Args:
-            token (str): The user's login token.
-            task_ids (list): Advance the dates of these tasks.
-            js_date (int):
-                if 1: 'new Date("Sun Apr 29 2007 23:59:59")'
-                otherwise: 'Sun Apr 2007 23:59:59'
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :param task_ids: The IDs of the tasks to update.
+        :type task_ids: string
+        :param js_date: If ``1``: ``new Date("Sun Apr 29 2007 23:59:59")``,
+            otherwise ``Sun Apr 2007 23:59:59``.
+        :type js_date: int
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain the list of updated tasks.
 
-            On success:
-                response.json(): A list of updated tasks.
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> task_ids = ['2342', '4324']
+        >>> response = api.advance_recurring_dates(user_token, str(task_ids))
+        >>> tasks = response.json()
+        >>> len(tasks)
+        2
         """
         params = {
             'token': token,
@@ -754,14 +1030,25 @@ class TodoistAPI(object):
     def delete_tasks(self, token, task_ids):
         """Delete a given list of tasks.
 
-        Args:
-            token (str): The user's login token.
-            task_ids (list): A list of task IDs to delete.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :param task_ids: The IDs of the tasks to delete.
+        :type task_ids: string
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.text`` will contain ``"ok"``.
 
-            On success:
-                response.text: "ok"
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> response = api.add_task(user_token, 'Buy Milk')
+        >>> task = response.json()
+        >>> task_id = task['id']
+        >>> task_ids = [task_id]
+        >>> response = api.delete_tasks(user_token, str(task_ids))
+        >>> response.text
+        u'"ok"'
         """
         params = {
             'token': token,
@@ -772,16 +1059,27 @@ class TodoistAPI(object):
     def complete_tasks(self, token, task_ids, **kwargs):
         """Complete a given list of tasks.
 
-        Args:
-            token (str): The user's login token.
-            task_ids (list): A list of task IDs to complete.
-            in_history (int, default=1):
-                If 0 the tasks will not be moved to the task history.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :param task_ids: The IDs of the tasks to complete.
+        :type task_ids: string
+        :param in_history: If ``0``, the tasks will not be moved to the history.
+        :type in_history: int
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.text`` will contain ``"ok"``.
 
-            On success:
-                response.text: "ok"
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> response = api.add_task(user_token, 'Buy Milk')
+        >>> task = response.json()
+        >>> task_id = task['id']
+        >>> task_ids = [task_id]
+        >>> response = api.complete_tasks(user_token, str(task_ids))
+        >>> response.text
+        u'"ok"'
         """
         params = {
             'token': token,
@@ -792,14 +1090,28 @@ class TodoistAPI(object):
     def uncomplete_tasks(self, token, task_ids):
         """Uncomplete a given list of tasks.
 
-        Args:
-            token (str): The user's login token.
-            task_ids (list): A list of task IDs to uncomplete.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :param task_ids: The IDs of the tasks to complete.
+        :type task_ids: string
+        :param in_history: If ``0``, the tasks will not be moved to the history.
+        :type in_history: int
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.text`` will contain ``"ok"``.
 
-            On success:
-                response.text: "ok"
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> response = api.add_task(user_token, 'Buy Milk')
+        >>> task = response.json()
+        >>> task_id = task['id']
+        >>> task_ids = [task_id]
+        >>> api.complete_tasks(user_token, str(task_ids))
+        >>> response = api.complete_tasks(user_token, str(task_ids))
+        >>> response.text
+        u'"ok"'
         """
         params = {
             'token': token,
@@ -810,15 +1122,25 @@ class TodoistAPI(object):
     def add_note(self, token, task_id, note_content):
         """Add a note to a task.
 
-        Args:
-            token (str): The user's login token.
-            task_id (str): The ID of the task.
-            note_content (str): The note to add.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :param task_id: The ID of the task to add the note to.
+        :type task_id: string
+        :param note_content: The note to add.
+        :type note_content: string
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain the note details.
 
-            On success:
-                response.json(): The note details.
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        ... # Get a task_id
+        >>> response = api.add_note(user_token, task_id, 'Call 0783766273')
+        >>> note = response.json()
+        >>> note['content']
+        u'Call 0783766273'
         """
         params = {
             'token': token,
@@ -830,15 +1152,30 @@ class TodoistAPI(object):
     def update_note(self, token, note_id, new_content):
         """Update the content of a note.
 
-        Args:
-            token (str): The user's login token.
-            note_id (str): The ID of the note to update.
-            new_content (str): The updated note content.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :param note_id: The ID of the note to update.
+        :type note_id: string
+        :param note_content: The new note content.
+        :type note_content: string
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.text`` will contain ``"ok"``.
 
-            On success:
-                response.text: "ok"
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        ... # Get a task_id
+        >>> response = api.add_note(user_token, task_id, 'Call 0783766273')
+        >>> note = response.json()
+        >>> note['content']
+        u'Call 0783766273'
+        >>> note_id = note['id']
+        >>> response = api.update_note(user_token, note_id, 'Don't Call!')
+        >>> note = response.json()
+        >>> note['content']
+        u'Don't Call!'
         """
         params = {
             'token': token,
@@ -850,15 +1187,24 @@ class TodoistAPI(object):
     def delete_note(self, token, task_id, note_id):
         """Delete a note from a task.
 
-        Args:
-            token (str): The user's login token.
-            task_id (str): The ID of the task.
-            note_id (str): The ID of the note to delete.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :param task_id: The ID of the task to delete the note from.
+        :type task_id: string
+        :param note_id: The ID of the note to delete.
+        :type note_id: string
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.text`` will contain ``"ok"``.
 
-            On success:
-                response.text: ok
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        ... # Get a task_id and note_id.
+        >>> response = api.delete_note(user_token, task_id, note_id)
+        >>> response.text
+        u'"ok"'
         """
         params = {
             'token': token,
@@ -870,14 +1216,23 @@ class TodoistAPI(object):
     def get_notes(self, token, task_id):
         """Return the list of notes for a task.
 
-        Args:
-            token (str): The user's login token.
-            task_id (str): The ID of the task.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :param task_id: The ID of the task to get the notes from.
+        :type task_id: string
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain a list of notes.
 
-            On success:
-                response.json(): A list of notes.
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        ... # Get a task_id
+        >>> response = api.get_notes(user_token, task_id)
+        >>> notes = response.json()
+        >>> len(notes)
+        0
         """
         params = {
             'token': token,
@@ -889,31 +1244,33 @@ class TodoistAPI(object):
         """Return the list of tasks, each of which matches one of the
         provided queries.
 
-        Note:
-            See https://todoist.com/Help/timeQuery for valid queries.
-        Args:
-            token (str): The user's login token.
-            queries (list): A list of queries.
-            as_count (int): If 1, a count of tasks will be returned.
-            js_date (int):
-                if 1: 'new Date("Sun Apr 29 2007 23:59:59")'
-                otherwise: 'Sun Apr 2007 23:59:59'
-        Returns:
-            response (requests.Response): The HTTP response to the request.
 
-            On success:
-                response.json(): A list of query matching notes.
-                    [{
-                        "type": "date",
-                        "query": "2007-4-29T10:13",
-                        "data": [
-                            [...]
-                        ]
-                    }, {
-                        "type": "overdue",
-                        "data": [...]
-                    },
-                    ...]
+
+        :param token: The user's login token.
+        :type token: string
+        :param queries: A list of queries.
+        :type queries: string
+        :param as_count: If ``1``, a count of the tasks will be returned.
+        :type as_count: int
+        :param js_date: If ``1``: ``new Date("Sun Apr 29 2007 23:59:59")``,
+            otherwise ``Sun Apr 2007 23:59:59``.
+        :type js_date: int
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain a list of queries and
+            the tasks that matched them.
+
+        .. note:: See https://todoist.com/Help/timeQuery for valid queries.
+
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> queries = str(['tomorrow'])
+        >>> response = api.search_tasks(user_token, queries, as_count=1)
+        >>> counts = response.json()
+        >>> counts
+        '[{"count": 0, "query": "tomorrow", "type": "date"}]'
         """
         params = {
             'token': token,
@@ -924,19 +1281,23 @@ class TodoistAPI(object):
     def get_notes_and_task(self, token, task_id):
         """Return the list of notes for a task and the task itself.
 
-        Args:
-            token (str): The user's login token.
-            task_id (str): The ID of the task.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :param task_id: The ID of the task.
+        :type task_id: string
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain the task and notes.
 
-            On success:
-                response.json():
-                    {
-                        "item": {},
-                        "project": {},
-                        "notes": [{...}, ..., {...}]
-                    }
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        ... # Get task_id
+        >>> response = api.get_notes_and_task(user_token, task_id)
+        >>> results = response.json()
+        >>> notes = results['notes']
+        >>> task = results['item']
         """
         params = {
             'token': token,
@@ -947,13 +1308,21 @@ class TodoistAPI(object):
     def get_notification_settings(self, token):
         """Return a user's notification settings.
 
-        Args:
-            token (str): The user's login token.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain a list of settings.
 
-            On success:
-                response.json(): A list of notification settings.
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> response = api.get_notification_settings(user_token)
+        >>> response.json()
+        {u'user_left_project':
+            {u'notify_push': True, u'notify_email': False},
+        ...}
         """
         params = {
             'token': token
@@ -964,16 +1333,27 @@ class TodoistAPI(object):
                                      service, should_notify):
         """Update a user's notification settings.
 
-        Args:
-            token (str): The user's login token.
-            notification_type (str): The notification to update.
-            service (str): email or push.
-            should_notify (int): If 0 notify, otherwise do not send.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param token: The user's login token.
+        :type token: string
+        :param notification_type: The notification to update.
+        :type notification_type: string
+        :param service: ``email`` or ``push``
+        :type service: string
+        :param should_notify: If ``0`` notify, otherwise do not.
+        :type should_notify: int
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.text`` will contain ``"ok"``
 
-            On success:
-                response.text: "ok"
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'passwd')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> response = api.update_notification_settings(user_token,
+        ...                                             'user_left_project',
+        ...                                             'email', 0)
+        >>> response.text
+        u'"ok"'
         """
         params = {
             'token': token,
@@ -986,12 +1366,14 @@ class TodoistAPI(object):
     def _get(self, end_point, params=None, **kwargs):
         """Send a HTTP GET request to a Todoist API end-point.
 
-        Args:
-            end_point (str): The Todoist API end-point.
-            params (dict): The required request parameters.
-            kwargs (dict): Any additional parameters.
-        Returns:
-            response (requests.Response): The HTTP response to the request.
+        :param end_point: The Todoist API end-point.
+        :type end_point: string
+        :param params: The required request parameters.
+        :type params: dict
+        :param kwargs: Any optional parameters.
+        :type kwargs: dict
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
         """
         url = self.URL + end_point
         if params and kwargs:

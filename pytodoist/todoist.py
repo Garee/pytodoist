@@ -222,6 +222,10 @@ class Project(TodoistObject):
         response = API.unarchive_project(self.owner.token, self.id)
         _fail_if_contains_errors(response)
 
+    def collapse(self):
+        response = api.update_project(self.owner.token, self.id, collapsed=1)
+        _fail_if_contains_errors(response)
+
     def add_task(self, content, date=None, priority=None):
         response = API.add_task(self.owner.token, content, project_id=self.id,
                                 date_string=date, priority=priority)
