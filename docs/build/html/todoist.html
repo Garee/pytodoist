@@ -1,0 +1,160 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>&lt;no title&gt; &mdash; PyTodoist 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="PyTodoist 1.0 documentation" href="index.html" />
+    <link rel="prev" title="api" href="api.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="api.html" title="api"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PyTodoist 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-pytodoist.todoist"></span><dl class="exception">
+<dt id="pytodoist.todoist.BadImageError">
+<em class="property">exception </em><tt class="descclassname">pytodoist.todoist.</tt><tt class="descname">BadImageError</tt><big>(</big><em>response</em><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#BadImageError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.BadImageError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when a user tries to use an invalid image as their
+avatar.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="pytodoist.todoist.EmailMismatchError">
+<em class="property">exception </em><tt class="descclassname">pytodoist.todoist.</tt><tt class="descname">EmailMismatchError</tt><big>(</big><em>response</em><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#EmailMismatchError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.EmailMismatchError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when an oauth2_token is valid but the given user email is
+not associated with it.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="pytodoist.todoist.InternalError">
+<em class="property">exception </em><tt class="descclassname">pytodoist.todoist.</tt><tt class="descname">InternalError</tt><big>(</big><em>response</em><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#InternalError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.InternalError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when the Todoist server is unable to connect to Google.</p>
+<p>This exception may also be raised if the response from Google is unable to
+be parsed. It makes sense to repeat the attempt with the same parameters
+later.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="pytodoist.todoist.LoginError">
+<em class="property">exception </em><tt class="descclassname">pytodoist.todoist.</tt><tt class="descname">LoginError</tt><big>(</big><em>response</em><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#LoginError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.LoginError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when a user&#8217;s login credentials are invalid.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="pytodoist.todoist.NoGoogleLinkError">
+<em class="property">exception </em><tt class="descclassname">pytodoist.todoist.</tt><tt class="descname">NoGoogleLinkError</tt><big>(</big><em>response</em><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#NoGoogleLinkError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.NoGoogleLinkError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when an oauth2_token is valid but the user&#8217;s Todoist account is
+not linked to Google.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="pytodoist.todoist.NotFoundError">
+<em class="property">exception </em><tt class="descclassname">pytodoist.todoist.</tt><tt class="descname">NotFoundError</tt><big>(</big><em>response</em><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#NotFoundError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.NotFoundError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when a user tries to access an item or project that
+does not exist.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="pytodoist.todoist.RegistrationError">
+<em class="property">exception </em><tt class="descclassname">pytodoist.todoist.</tt><tt class="descname">RegistrationError</tt><big>(</big><em>response</em><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#RegistrationError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.RegistrationError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when trying to register an account with details
+that are already associated with a current Todoist user.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="pytodoist.todoist.TodoistValueError">
+<em class="property">exception </em><tt class="descclassname">pytodoist.todoist.</tt><tt class="descname">TodoistValueError</tt><big>(</big><em>response</em><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#TodoistValueError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.TodoistValueError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when an invalid value is passed in a requested to the
+Todoist server.</p>
+</dd></dl>
+
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="api.html"
+                        title="previous chapter">api</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/todoist.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="api.html" title="api"
+             >previous</a> |</li>
+        <li><a href="index.html">PyTodoist 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Gary Blackwood.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

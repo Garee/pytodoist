@@ -1,0 +1,568 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pytodoist.todoist &mdash; PyTodoist 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="PyTodoist 1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">PyTodoist 1.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pytodoist.todoist</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">from</span> <span class="nn">pytodoist.api</span> <span class="kn">import</span> <span class="n">TodoistAPI</span>
+
+<span class="n">API</span> <span class="o">=</span> <span class="n">TodoistAPI</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">login</span><span class="p">(</span><span class="n">email</span><span class="p">,</span> <span class="n">password</span><span class="p">):</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">_login</span><span class="p">(</span><span class="n">API</span><span class="o">.</span><span class="n">login</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
+    <span class="n">user</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="n">password</span>
+    <span class="k">return</span> <span class="n">user</span>
+
+<span class="k">def</span> <span class="nf">login_with_google</span><span class="p">(</span><span class="n">email</span><span class="p">,</span> <span class="n">oauth2_token</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">_login</span><span class="p">(</span><span class="n">API</span><span class="o">.</span><span class="n">login_with_google</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">oauth2_token</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_login</span><span class="p">(</span><span class="n">login_func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">login_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+    <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+    <span class="n">user_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">User</span><span class="p">(</span><span class="n">user_as_json</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="n">full_name</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">lang</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">timezone</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">email</span><span class="p">,</span> <span class="n">full_name</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span>
+                            <span class="n">lang</span><span class="o">=</span><span class="n">lang</span><span class="p">,</span> <span class="n">timezone</span><span class="o">=</span><span class="n">timezone</span><span class="p">)</span>
+    <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+    <span class="n">user_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="n">user_as_json</span><span class="p">)</span>
+    <span class="n">user</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="n">password</span>
+    <span class="k">return</span> <span class="n">user</span>
+
+<span class="k">def</span> <span class="nf">get_timezones</span><span class="p">():</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">get_timezones</span><span class="p">()</span>
+    <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+    <span class="n">timezones_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">timezone</span> <span class="k">for</span> <span class="n">timezone</span> <span class="ow">in</span> <span class="n">timezones_as_json</span><span class="p">]</span>
+
+<span class="k">class</span> <span class="nc">TodoistObject</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">json</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">json</span><span class="p">[</span><span class="n">attr</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">TodoistObject</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">token</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">is_logged_in</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">ping</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">)</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="n">_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;password&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">TodoistError</span><span class="p">(</span><span class="s">&quot;Account is linked to Google.&quot;</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">delete_user</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="p">,</span>
+                                   <span class="n">reason</span><span class="o">=</span><span class="n">reason</span><span class="p">,</span> <span class="n">in_background</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">update_user</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">change_avatar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">update_avatar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">use_default_avatar</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">update_avatar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">add_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">add_project</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span>
+                                   <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="n">project_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">Project</span><span class="p">(</span><span class="n">project_as_json</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_projects</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">get_projects</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="n">projects_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">Project</span><span class="p">(</span><span class="n">json</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span> <span class="k">for</span> <span class="n">json</span> <span class="ow">in</span> <span class="n">projects_as_json</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">get_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_name</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">project</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_projects</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">project</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">project_name</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">project</span>
+
+    <span class="k">def</span> <span class="nf">get_project_with_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">get_project</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">project_id</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="n">project_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">Project</span><span class="p">(</span><span class="n">project_as_json</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">update_project_orders</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">projects</span><span class="p">):</span>
+        <span class="n">project_ids</span> <span class="o">=</span> <span class="nb">str</span><span class="p">([</span><span class="n">project</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">project</span> <span class="ow">in</span> <span class="n">projects</span><span class="p">])</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">update_project_orders</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">project_ids</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_uncompleted_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">tasks</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">get_uncompleted_tasks</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_projects</span><span class="p">())</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">tasks</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">get_completed_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">tasks</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">get_completed_tasks</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_projects</span><span class="p">())</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">tasks</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">search_completed_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">get_all_completed_tasks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span>
+                                               <span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="n">tasks_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s">&#39;items&#39;</span><span class="p">]</span>
+        <span class="n">tasks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">json</span> <span class="ow">in</span> <span class="n">tasks_as_json</span><span class="p">:</span>
+            <span class="n">project_id</span> <span class="o">=</span> <span class="n">json</span><span class="p">[</span><span class="s">&#39;project_id&#39;</span><span class="p">]</span>
+            <span class="n">project</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_project_with_id</span><span class="p">(</span><span class="n">project_id</span><span class="p">)</span>
+            <span class="n">tasks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Task</span><span class="p">(</span><span class="n">json</span><span class="p">,</span> <span class="n">project</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">tasks</span>
+
+    <span class="k">def</span> <span class="nf">get_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_uncompleted_tasks</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_completed_tasks</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">search_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queries</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">search_tasks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">queries</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="n">query_results</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">tasks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">query</span> <span class="ow">in</span> <span class="n">query_results</span><span class="p">:</span>
+            <span class="n">projects_with_results</span> <span class="o">=</span> <span class="n">query</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">project</span> <span class="ow">in</span> <span class="n">projects_with_results</span><span class="p">:</span>
+                <span class="n">uncompleted_tasks</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;uncompleted&#39;</span><span class="p">,</span> <span class="p">[])</span>
+                <span class="n">completed_tasks</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;completed&#39;</span><span class="p">,</span> <span class="p">[])</span>
+                <span class="n">found_tasks</span> <span class="o">=</span> <span class="n">uncompleted_tasks</span> <span class="o">+</span> <span class="n">completed_tasks</span>
+                <span class="k">for</span> <span class="n">task_as_json</span> <span class="ow">in</span> <span class="n">found_tasks</span><span class="p">:</span>
+                    <span class="n">project_id</span> <span class="o">=</span> <span class="n">task_as_json</span><span class="p">[</span><span class="s">&#39;project_id&#39;</span><span class="p">]</span>
+                    <span class="n">project</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_project_with_id</span><span class="p">(</span><span class="n">project_id</span><span class="p">)</span>
+                    <span class="n">task</span> <span class="o">=</span> <span class="n">Task</span><span class="p">(</span><span class="n">task_as_json</span><span class="p">,</span> <span class="n">project</span><span class="p">)</span>
+                    <span class="n">tasks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tasks</span>
+
+    <span class="k">def</span> <span class="nf">get_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label_name</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_labels</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">label</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">label_name</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">label</span>
+
+    <span class="k">def</span> <span class="nf">get_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">get_labels</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="n">labels_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">Label</span><span class="p">(</span><span class="n">json</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span> <span class="k">for</span> <span class="n">json</span> <span class="ow">in</span> <span class="n">labels_as_json</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">add_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">add_label</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="n">label_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">Label</span><span class="p">(</span><span class="n">label_as_json</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_notification_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">get_notification_settings</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_update_notification_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">notification_type</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span>
+                                         <span class="n">should_notify</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">update_notification_settings</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">,</span>
+                                                    <span class="n">notification_type</span><span class="p">,</span>
+                                                    <span class="n">service</span><span class="p">,</span>
+                                                    <span class="n">should_notify</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_notification_types</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_notification_settings</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">is_receiving_email_notifications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">notification_type</span><span class="p">):</span>
+        <span class="n">notification_settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_notification_settings</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">notification_settings</span><span class="p">[</span><span class="n">notification_type</span><span class="p">][</span><span class="s">&#39;notify_email&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">is_receiving_push_notifications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">notification_type</span><span class="p">):</span>
+        <span class="n">notification_settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_notification_settings</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">notification_settings</span><span class="p">[</span><span class="n">notification_type</span><span class="p">][</span><span class="s">&#39;notify_push&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">enable_push_notifications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">notification_type</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_notification_settings</span><span class="p">(</span><span class="n">notification_type</span><span class="p">,</span> <span class="s">&#39;push&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">disable_push_notifications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">notification_type</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_notification_settings</span><span class="p">(</span><span class="n">notification_type</span><span class="p">,</span> <span class="s">&#39;push&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">enable_email_notifications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">notification_type</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_notification_settings</span><span class="p">(</span><span class="n">notification_type</span><span class="p">,</span> <span class="s">&#39;email&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">disable_email_notifications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">notification_type</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_notification_settings</span><span class="p">(</span><span class="n">notification_type</span><span class="p">,</span> <span class="s">&#39;email&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Project</span><span class="p">(</span><span class="n">TodoistObject</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">owner</span> <span class="o">=</span> <span class="n">owner</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Project</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">delete_project</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">update_project</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                      <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">archive</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">archive_project</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">unarchive</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">unarchive_project</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">collapse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">update_project</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">collapsed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">add_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">date</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">add_task</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">project_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                <span class="n">date_string</span><span class="o">=</span><span class="n">date</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="n">priority</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="n">task_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">Task</span><span class="p">(</span><span class="n">task_as_json</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_uncompleted_tasks</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_completed_tasks</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">get_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task_id</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_tasks</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">task_id</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">task</span>
+
+    <span class="k">def</span> <span class="nf">get_uncompleted_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">get_uncompleted_tasks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="n">tasks_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">Task</span><span class="p">(</span><span class="n">json</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span> <span class="k">for</span> <span class="n">json</span> <span class="ow">in</span> <span class="n">tasks_as_json</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">get_completed_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">get_completed_tasks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="n">tasks_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">Task</span><span class="p">(</span><span class="n">json</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span> <span class="k">for</span> <span class="n">json</span> <span class="ow">in</span> <span class="n">tasks_as_json</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">update_task_orders</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tasks</span><span class="p">):</span>
+        <span class="n">task_ids</span> <span class="o">=</span> <span class="nb">str</span><span class="p">([</span><span class="n">task</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">])</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">update_task_ordering</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">task_ids</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Task</span><span class="p">(</span><span class="n">TodoistObject</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span> <span class="o">=</span> <span class="n">project</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Task</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">update_task</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                   <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">task_ids</span> <span class="o">=</span> <span class="s">&#39;[{id}]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">delete_tasks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">task_ids</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">task_ids</span> <span class="o">=</span> <span class="s">&#39;[{id}]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">complete_tasks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">task_ids</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">uncomplete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">task_ids</span> <span class="o">=</span> <span class="s">&#39;[{id}]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">uncomplete_tasks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">task_ids</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">add_note</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">add_note</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">content</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="n">note_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">Note</span><span class="p">(</span><span class="n">note_as_json</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_note_with_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">note_id</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">note</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_notes</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">note</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">note_id</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">note</span>
+
+    <span class="k">def</span> <span class="nf">get_notes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">get_notes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="n">notes_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">Note</span><span class="p">(</span><span class="n">json</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span> <span class="k">for</span> <span class="n">json</span> <span class="ow">in</span> <span class="n">notes_as_json</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">advance_recurring_date</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">task_ids</span> <span class="o">=</span> <span class="s">&#39;[{id}]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">advance_recurring_dates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span>
+                                               <span class="n">task_ids</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="n">task_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">task_as_json</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+        <span class="n">current_pos</span> <span class="o">=</span> <span class="s">&#39;{{&quot;{p_id}&quot;:[&quot;{t_id}&quot;]}}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">p_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                                       <span class="n">t_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">move_tasks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">current_pos</span><span class="p">,</span>
+                                  <span class="n">project</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span> <span class="o">=</span> <span class="n">project</span>
+
+
+<span class="k">class</span> <span class="nc">Note</span><span class="p">(</span><span class="n">TodoistObject</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json</span><span class="p">,</span> <span class="n">task</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">content</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="o">=</span> <span class="n">task</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Note</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">update_note</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                   <span class="bp">self</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">delete_note</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span>
+                                   <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Label</span><span class="p">(</span><span class="n">TodoistObject</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">owner</span> <span class="o">=</span> <span class="n">owner</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Label</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">update_label_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">update_label_color</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">delete_label</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">TodoistError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">response</span> <span class="o">=</span> <span class="n">response</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="LoginError"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.LoginError">[docs]</a><span class="k">class</span> <span class="nc">LoginError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised when a user&#39;s login credentials are invalid.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LoginError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="InternalError"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.InternalError">[docs]</a><span class="k">class</span> <span class="nc">InternalError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised when the Todoist server is unable to connect to Google.</span>
+
+<span class="sd">    This exception may also be raised if the response from Google is unable to</span>
+<span class="sd">    be parsed. It makes sense to repeat the attempt with the same parameters</span>
+<span class="sd">    later.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">InternalError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="EmailMismatchError"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.EmailMismatchError">[docs]</a><span class="k">class</span> <span class="nc">EmailMismatchError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised when an oauth2_token is valid but the given user email is</span>
+<span class="sd">    not associated with it.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">EmailMismatchError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="NoGoogleLinkError"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.NoGoogleLinkError">[docs]</a><span class="k">class</span> <span class="nc">NoGoogleLinkError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised when an oauth2_token is valid but the user&#39;s Todoist account is</span>
+<span class="sd">    not linked to Google.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">NoGoogleLinkError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="RegistrationError"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.RegistrationError">[docs]</a><span class="k">class</span> <span class="nc">RegistrationError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised when trying to register an account with details</span>
+<span class="sd">    that are already associated with a current Todoist user.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RegistrationError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="BadImageError"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.BadImageError">[docs]</a><span class="k">class</span> <span class="nc">BadImageError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised when a user tries to use an invalid image as their</span>
+<span class="sd">    avatar.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BadImageError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TodoistValueError"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.TodoistValueError">[docs]</a><span class="k">class</span> <span class="nc">TodoistValueError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised when an invalid value is passed in a requested to the</span>
+<span class="sd">    Todoist server.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TodoistValueError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="NotFoundError"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.NotFoundError">[docs]</a><span class="k">class</span> <span class="nc">NotFoundError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised when a user tries to access an item or project that</span>
+<span class="sd">    does not exist.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">NotFoundError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+</div>
+<span class="n">ERROR_RESPONSE_MAPPING</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;&quot;LOGIN_ERROR&quot;&#39;</span><span class="p">:</span>                       <span class="n">LoginError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;INTERNAL_ERROR&quot;&#39;</span><span class="p">:</span>                    <span class="n">InternalError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;EMAIL_MISMATCH&quot;&#39;</span><span class="p">:</span>                    <span class="n">EmailMismatchError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;ACCOUNT_NOT_CONNECTED_WITH_GOOGLE&quot;&#39;</span><span class="p">:</span> <span class="n">NoGoogleLinkError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;ALREADY_REGISTRED&quot;&#39;</span><span class="p">:</span>                 <span class="n">RegistrationError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;UNKNOWN_ERROR&quot;&#39;</span><span class="p">:</span>                     <span class="n">TodoistError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;TOO_SHORT_PASSWORD&quot;&#39;</span><span class="p">:</span>                <span class="n">TodoistValueError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;INVALID_EMAIL&quot;&#39;</span><span class="p">:</span>                     <span class="n">TodoistValueError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;INVALID_TIMEZONE&quot;&#39;</span><span class="p">:</span>                  <span class="n">TodoistValueError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;INVALID_FULL_NAME&quot;&#39;</span><span class="p">:</span>                 <span class="n">TodoistValueError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;ERROR_PASSWORD_TOO_SHORT&quot;&#39;</span><span class="p">:</span>          <span class="n">TodoistValueError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;ERROR_EMAIL_FOUND&quot;&#39;</span><span class="p">:</span>                 <span class="n">TodoistValueError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;ERROR_NAME_IS_EMPTY&quot;&#39;</span><span class="p">:</span>               <span class="n">TodoistValueError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;ERROR_WRONG_DATE_SYNTAX&quot;&#39;</span><span class="p">:</span>           <span class="n">TodoistValueError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;UNKNOWN_IMAGE_FORMAT&quot;&#39;</span><span class="p">:</span>              <span class="n">BadImageError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;UNABLE_TO_RESIZE_IMAGE&quot;&#39;</span><span class="p">:</span>            <span class="n">BadImageError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;IMAGE_TOO_BIG&quot;&#39;</span><span class="p">:</span>                     <span class="n">BadImageError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;ERROR_PROJECT_NOT_FOUND&quot;&#39;</span><span class="p">:</span>           <span class="n">NotFoundError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;ERROR_ITEM_NOT_FOUND&quot;&#39;</span><span class="p">:</span>              <span class="n">NotFoundError</span>
+<span class="p">}</span>
+
+<span class="n">ERROR_RESPONSES</span> <span class="o">=</span> <span class="n">ERROR_RESPONSE_MAPPING</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">_get_associated_exception</span><span class="p">(</span><span class="n">error_text</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">ERROR_RESPONSE_MAPPING</span><span class="p">[</span><span class="n">error_text</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
+        <span class="n">exception</span> <span class="o">=</span> <span class="n">_get_associated_exception</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">exception</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exception</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">TodoistError</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span> <span class="ow">or</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span> <span class="ow">in</span> <span class="n">ERROR_RESPONSES</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">PyTodoist 1.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Gary Blackwood.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>
