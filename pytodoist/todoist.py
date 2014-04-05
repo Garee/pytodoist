@@ -438,7 +438,7 @@ class NotFoundError(TodoistError):
         super(NotFoundError, self).__init__(response)
 
 
-ERROR_RESPONSE_MAPPING = {
+_ERROR_RESPONSE_MAPPING = {
     '"LOGIN_ERROR"':                       LoginError,
     '"INTERNAL_ERROR"':                    InternalError,
     '"EMAIL_MISMATCH"':                    EmailMismatchError,
@@ -460,10 +460,10 @@ ERROR_RESPONSE_MAPPING = {
     '"ERROR_ITEM_NOT_FOUND"':              NotFoundError
 }
 
-ERROR_RESPONSES = ERROR_RESPONSE_MAPPING.keys()
+_ERROR_RESPONSES = ERROR_RESPONSE_MAPPING.keys()
 
 def _get_associated_exception(error_text):
-    return ERROR_RESPONSE_MAPPING[error_text]
+    return _ERROR_RESPONSE_MAPPING[error_text]
 
 def _fail_if_contains_errors(response):
     if _contains_errors(response):
@@ -473,4 +473,4 @@ def _fail_if_contains_errors(response):
         raise TodoistError(response)
 
 def _contains_errors(response):
-    return response.status_code != 200 or response.text in ERROR_RESPONSES
+    return response.status_code != 200 or response.text in _ERROR_RESPONSES
