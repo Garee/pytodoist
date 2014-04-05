@@ -466,7 +466,7 @@ def _fail_if_contains_errors(response):
         exception = _get_associated_exception(response.text)
         if exception:
             raise exception(response)
-        raise TodoistException(response)
+        raise TodoistError(response)
 
 def _contains_errors(response):
     return response.status_code != 200 or response.text in ERROR_RESPONSES
