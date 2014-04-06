@@ -487,7 +487,7 @@
         <span class="nb">super</span><span class="p">(</span><span class="n">NotFoundError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
 </div>
-<span class="n">ERROR_RESPONSE_MAPPING</span> <span class="o">=</span> <span class="p">{</span>
+<span class="n">_ERROR_RESPONSE_MAPPING</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s">&#39;&quot;LOGIN_ERROR&quot;&#39;</span><span class="p">:</span>                       <span class="n">LoginError</span><span class="p">,</span>
     <span class="s">&#39;&quot;INTERNAL_ERROR&quot;&#39;</span><span class="p">:</span>                    <span class="n">InternalError</span><span class="p">,</span>
     <span class="s">&#39;&quot;EMAIL_MISMATCH&quot;&#39;</span><span class="p">:</span>                    <span class="n">EmailMismatchError</span><span class="p">,</span>
@@ -509,10 +509,10 @@
     <span class="s">&#39;&quot;ERROR_ITEM_NOT_FOUND&quot;&#39;</span><span class="p">:</span>              <span class="n">NotFoundError</span>
 <span class="p">}</span>
 
-<span class="n">ERROR_RESPONSES</span> <span class="o">=</span> <span class="n">ERROR_RESPONSE_MAPPING</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+<span class="n">_ERROR_RESPONSES</span> <span class="o">=</span> <span class="n">_ERROR_RESPONSE_MAPPING</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
 
 <span class="k">def</span> <span class="nf">_get_associated_exception</span><span class="p">(</span><span class="n">error_text</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">ERROR_RESPONSE_MAPPING</span><span class="p">[</span><span class="n">error_text</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">_ERROR_RESPONSE_MAPPING</span><span class="p">[</span><span class="n">error_text</span><span class="p">]</span>
 
 <span class="k">def</span> <span class="nf">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
@@ -522,7 +522,7 @@
         <span class="k">raise</span> <span class="n">TodoistError</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span> <span class="ow">or</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span> <span class="ow">in</span> <span class="n">ERROR_RESPONSES</span>
+    <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span> <span class="ow">or</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span> <span class="ow">in</span> <span class="n">_ERROR_RESPONSES</span>
 </pre></div>
 
           </div>
