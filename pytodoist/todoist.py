@@ -460,7 +460,7 @@ _ERROR_RESPONSE_MAPPING = {
     '"ERROR_ITEM_NOT_FOUND"':              NotFoundError
 }
 
-_ERROR_RESPONSES = ERROR_RESPONSE_MAPPING.keys()
+_ERROR_RESPONSES = _ERROR_RESPONSE_MAPPING.keys()
 
 def _get_associated_exception(error_text):
     return _ERROR_RESPONSE_MAPPING[error_text]
