@@ -1,3 +1,7 @@
 # pytodoist
 
 A Python wrapper around the Todoist API (https://todoist.com/API).
+
+# Documentation
+
+Online documentation can be found at http://pytodoist.readthedocs.org
