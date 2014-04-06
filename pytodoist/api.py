@@ -839,11 +839,11 @@ class TodoistAPI(object):
             If value is unset or invalid it will automatically be set up by
             your uid.
         :type assigned_by_uid: string
-        :param assigned_by_uid: The id of user who is responsible for
+        :param responsible_uid: The id of user who is responsible for
             accomplishing the current task. Accepts 0 or any user id from
             the list of project collaborators. If the value is unset or
             invalid it will automatically be set to null.
-        :type assigned_by_uid: string
+        :type responsible_uid: string
         :param note: Content of a note to add.
         :type note: string
         :return: The HTTP response to the request.
@@ -898,11 +898,11 @@ class TodoistAPI(object):
             If value is unset or invalid it will automatically be set up by
             your uid.
         :type assigned_by_uid: string
-        :param assigned_by_uid: The new id of user who is responsible for
+        :param responsible_uid: The new id of user who is responsible for
             accomplishing the current task. Accepts 0 or any user id from
             the list of project collaborators. If the value is unset or
             invalid it will automatically be set to null.
-        :type assigned_by_uid: string
+        :type responsible_uid: string
         :param note: Content of a note to add.
         :type note: string
         :return: The HTTP response to the request.
