@@ -4,20 +4,86 @@ from pytodoist.api import TodoistAPI
 API = TodoistAPI()
 
 def login(email, password):
+    """Login to Todoist.
+
+    :param email: A Todoist user's email address.
+    :type email: string
+    :param password: A Todoist user's password.
+    :type password: string
+    :return: The Todoist user.
+    :rtype: :mod:`pytodoist.todoist.User`
+    :raises AuthError: If the login credentials are incorrect.
+
+    >>> from pytodoist import todoist
+    >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+    >>> user.full_name
+    u'John Doe'
+    >>> user.join_date
+    u'Sun 09 Mar 2014 19:54:01 +0000'
+    """
     user = _login(API.login, email, password)
     user.password = password
     return user
 
 def login_with_google(email, oauth2_token):
+    """Login to Todoist using Google oauth2 authentication.
+
+    :param email: A Todoist user's email address.
+    :type email: string
+    :param oauth2_token: The oauth2 token associated with the email.
+    :type oauth2_token: string
+    :return: The Todoist user.
+    :rtype: :mod:`pytodoist.todoist.User`
+    :raises AuthError: If Google has refused to accept the token.
+    :raises InternalError: If a server error occurs. Try again later.
+    :raises BadValueError: If the token is valid but doesn't match the email.
+
+    .. note:: It is up to you to obtain the valid oauth2 token.
+
+    >>> from pytodoist import todoist
+    ... # Get the oauth2 token.
+    >>> user = todoist.login_with_google('john.doe@gmail.com', oauth2_token)
+    >>> user.full_name
+    u'John Doe'
+    >>> user.join_date
+    u'Sun 09 Mar 2014 19:54:01 +0000'
+    """
     return _login(API.login_with_google, email, oauth2_token)
 
 def _login(login_func, *args):
+    """A helper function for logging in.
+
+    It's purpose is to avoid duplicate code in login and login_with_google.
+    """
     response = login_func(*args)
     _fail_if_contains_errors(response)
     user_as_json = response.json()
     return User(user_as_json)
 
 def register(full_name, email, password, lang=None, timezone=None):
+    """Register a new Todoist account.
+
+    :param full_name: The user's full name.
+    :type full_name: string
+    :param email: The user's email address.
+    :type email: string
+    :param password: The user's password.
+    :type password: string
+    :param lang: The user's language.
+    :type lang: string
+    :param timezone: The user's timezone.
+    :type timezone: string
+    :return: The Todoist user.
+    :rtype: :mod:`pytodoist.todoist.User`
+    :raises RegistrationError: If an account with the given details exists.
+
+    >>> from pytodoist import todoist
+    >>> user = todoist.register('John Doe', 'john.doe@gmail.com', 'passwd')
+    >>> user.full_name
+    u'John Doe'
+    >>> user.join_date
+    u'Sun 09 Mar 2014 19:54:01 +0000'
+    """
     response = API.register(email, full_name, password,
                             lang=lang, timezone=timezone)
     _fail_if_contains_errors(response)
@@ -26,13 +92,63 @@ def register(full_name, email, password, lang=None, timezone=None):
     user.password = password
     return user
 
+def register_with_google(full_name, email, oauth2_token,
+                         lang=None, timezone=None):
+    """Register a new Todoist account by linking a Google account.
+
+    :param full_name: The user's full name.
+    :type full_name: string
+    :param email: The user's email address.
+    :type email: string
+    :param oauth2_token: The oauth2 token associated with the email.
+    :type oauth2_token: string
+    :param lang: The user's language.
+    :type lang: string
+    :param timezone: The user's timezone.
+    :type timezone: string
+    :return: The Todoist user.
+    :rtype: :mod:`pytodoist.todoist.User`
+    :raises AuthError: If Google has refused to accept the token.
+    :raises InternalError: If a server error occurs. Try again later.
+    :raises BadValueError: If the token is valid but doesn't match the email.
+
+    .. note:: It is up to you to obtain the valid oauth2 token.
+
+    >>> from pytodoist import todoist
+    ... # Get the oauth2 token.
+    >>> user = todoist.register_with_google('John Doe', 'john.doe@gmail.com',
+    ...                                      oauth2_token)
+    >>> user.full_name
+    u'John Doe'
+    >>> user.join_date
+    u'Sun 09 Mar 2014 19:54:01 +0000'
+    """
+    response = API.login_with_google(email, oauth2_token, auto_signup=1,
+                                     lang=lang, timezone=timezone)
+    _fail_if_contains_errors(response)
+    user_as_json = response.json()
+    user = User(user_as_json)
+    user.password = password
+    return user
+
 def get_timezones():
+    """Return a list of Todoist supported timezones.
+
+    :return: A list of timezones
+    :rtype: list
+
+    >>> from pytodoist import todoist
+    >>> todoist.get_timezones()
+    [u'US/Hawaii', u'US/Alaska', u'US/Pacific', u'US/Arizona, ...]
+    """
     response = API.get_timezones()
     _fail_if_contains_errors(response)
     timezones_as_json = response.json()
-    return [timezone for timezone in timezones_as_json]
+    return [timezone[0] for timezone in timezones_as_json]
 
 class TodoistObject(object):
+    # A helper class which 'converts' a JSON object
+    # into a python object. It is designed to be inherited.
 
     def __init__(self, json):
         for attr in json:
@@ -43,6 +159,10 @@ class TodoistObject(object):
 
 
 class User(TodoistObject):
+    """A Todoist User.
+
+    :ivar full_name: The user's full name.
+    """
 
     def __init__(self, json):
         self.token = None
@@ -50,12 +170,40 @@ class User(TodoistObject):
         super(User, self).__init__(json)
 
     def is_logged_in(self):
+        """Return ``True`` if the user is logged in.
+
+        A user is logged in if it's token is valid.
+
+        :return: ``True`` if the user token is valid, ``False`` otherwise.
+        :rtype: bool
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user.is_logged_in()
+        True
+        >>> user.delete()
+        >>> user.is_logged_in()
+        False
+        """
         if not self.token:
             return False
         response = API.ping(self.token)
         return not _contains_errors(response)
 
     def delete(self, reason=None):
+        """Delete the user's account from Todoist.
+
+        .. warning:: You cannot recover the user after deletion!
+
+        :param reason: The reason for deletion.
+        :type reason: string
+        :raises AuthError: If ``user.password`` is wrong.
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user.delete()
+        ... # The user token is now invalid and Todoist operations will fail.
+        """
         if not hasattr(self, 'password'):
             raise TodoistError("Account is linked to Google.")
         response = API.delete_user(self.token, self.password,
@@ -63,18 +211,74 @@ class User(TodoistObject):
         _fail_if_contains_errors(response)
 
     def update(self):
+        """Update the user's details on Todoist.
+
+        You must call this method to register any local attribute changes with
+        Todoist.
+
+        :raises TodoistError: If the request to update is invalid.
+        :raises BadValueError: If one of the new values is invalid e.g. the
+            new email address is associated with an existing account.
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user.full_name = 'John Smith'
+        ... # At this point Todoist still thinks the name is 'John Doe'.
+        >>> user.update()
+        ... # Now the name has been updated on Todoist.
+        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user.full_name
+        u'John Smith'
+        """
         response = API.update_user(**self.__dict__)
         _fail_if_contains_errors(response)
 
     def change_avatar(self, image):
+        """Change the user's avatar.
+
+        :param image: The path to the image.
+        :type image: string
+        :raises BadValueError: If the image is an invalid format, too big or
+            unable to be resized.
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user.change_avatar('~/pictures/avatar.png')
+        """
         response = API.update_avatar(self.token, image=image)
         _fail_if_contains_errors(response)
 
     def use_default_avatar(self):
+        """Change the user's avatar to the Todoist default avatar.
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user.use_default_avatar()
+        """
         response = API.update_avatar(self.token, delete=1)
         _fail_if_contains_errors(response)
 
     def add_project(self, name, color=None, indent=None, order=None):
+        """Add a project to the user's account.
+
+        :param name: The project name.
+        :type name: string
+        :param color: The project color.
+        :type color: int
+        :param indent: The project indentation.
+        :type indent: int
+        :param order: The project ordering.
+        :type order: int
+        :return: The project that was added.
+        :rtype: :mod:`pytodoist.todoist.Project`
+        :raises BadValueError: If the project name is empty.
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> project = user.add_project('Homework', color=1)
+        >>> project.name
+        u'Homework'
+        """
         response = API.add_project(self.token, name,
                                    color=color, indent=indent, order=order)
         _fail_if_contains_errors(response)
@@ -366,111 +570,74 @@ class TodoistError(Exception):
         self.response = response
         super(TodoistError, self).__init__(response.text)
 
-
-class LoginError(TodoistError):
-    """Raised when a user's login credentials are invalid."""
+class AuthError(TodoistError):
 
     def __init__(self, response):
-        super(LoginError, self).__init__(response)
-
-
-class InternalError(TodoistError):
-    """Raised when the Todoist server is unable to connect to Google.
-
-    This exception may also be raised if the response from Google is unable to
-    be parsed. It makes sense to repeat the attempt with the same parameters
-    later.
-    """
-
-    def __init__(self, response):
-        super(InternalError, self).__init__(response)
-
-
-class EmailMismatchError(TodoistError):
-    """Raised when an oauth2_token is valid but the given user email is
-    not associated with it.
-    """
-
-    def __init__(self, response):
-        super(EmailMismatchError, self).__init__(response)
-
-class NoGoogleLinkError(TodoistError):
-    """Raised when an oauth2_token is valid but the user's Todoist account is
-    not linked to Google.
-    """
-
-    def __init__(self, response):
-        super(NoGoogleLinkError, self).__init__(response)
-
+        super(AuthError, self).__init__(response)
 
 class RegistrationError(TodoistError):
-    """Raised when trying to register an account with details
-    that are already associated with a current Todoist user.
-    """
 
     def __init__(self, response):
         super(RegistrationError, self).__init__(response)
 
 
-class BadImageError(TodoistError):
-    """Raised when a user tries to use an invalid image as their
-    avatar.
-    """
+class InternalError(TodoistError):
 
     def __init__(self, response):
-        super(BadImageError, self).__init__(response)
+        super(InternalError, self).__init__(response)
 
-class TodoistValueError(TodoistError):
-    """Raised when an invalid value is passed in a requested to the
-    Todoist server.
-    """
+
+class BadValueError(TodoistError):
 
     def __init__(self, response):
-        super(TodoistValueError, self).__init__(response)
+        super(BadValueError, self).__init__(response)
 
 
 class NotFoundError(TodoistError):
-    """Raised when a user tries to access an item or project that
-    does not exist.
-    """
 
     def __init__(self, response):
         super(NotFoundError, self).__init__(response)
 
 
-_ERROR_RESPONSE_MAPPING = {
-    '"LOGIN_ERROR"':                       LoginError,
-    '"INTERNAL_ERROR"':                    InternalError,
-    '"EMAIL_MISMATCH"':                    EmailMismatchError,
-    '"ACCOUNT_NOT_CONNECTED_WITH_GOOGLE"': NoGoogleLinkError,
+_ERROR_TEXT_EXCEPTION_MAPPING = {
+    '"LOGIN_ERROR"':                       AuthError,
+    '"EMAIL_MISMATCH"':                    AuthError,
+    '"ACCOUNT_NOT_CONNECTED_WITH_GOOGLE"': AuthError,
     '"ALREADY_REGISTRED"':                 RegistrationError,
-    '"UNKNOWN_ERROR"':                     TodoistError,
-    '"TOO_SHORT_PASSWORD"':                TodoistValueError,
-    '"INVALID_EMAIL"':                     TodoistValueError,
-    '"INVALID_TIMEZONE"':                  TodoistValueError,
-    '"INVALID_FULL_NAME"':                 TodoistValueError,
-    '"ERROR_PASSWORD_TOO_SHORT"':          TodoistValueError,
-    '"ERROR_EMAIL_FOUND"':                 TodoistValueError,
-    '"ERROR_NAME_IS_EMPTY"':               TodoistValueError,
-    '"ERROR_WRONG_DATE_SYNTAX"':           TodoistValueError,
-    '"UNKNOWN_IMAGE_FORMAT"':              BadImageError,
-    '"UNABLE_TO_RESIZE_IMAGE"':            BadImageError,
-    '"IMAGE_TOO_BIG"':                     BadImageError,
+    '"INTERNAL_ERROR"':                    InternalError,
+    '"UNKNOWN_ERROR"':                     InternalError,
+    '"TOO_SHORT_PASSWORD"':                BadValueError,
+    '"INVALID_EMAIL"':                     BadValueError,
+    '"INVALID_TIMEZONE"':                  BadValueError,
+    '"INVALID_FULL_NAME"':                 BadValueError,
+    '"ERROR_PASSWORD_TOO_SHORT"':          BadValueError,
+    '"ERROR_EMAIL_FOUND"':                 BadValueError,
+    '"ERROR_NAME_IS_EMPTY"':               BadValueError,
+    '"ERROR_WRONG_DATE_SYNTAX"':           BadValueError,
+    '"UNKNOWN_IMAGE_FORMAT"':              BadValueError,
+    '"UNABLE_TO_RESIZE_IMAGE"':            BadValueError,
+    '"IMAGE_TOO_BIG"':                     BadValueError,
     '"ERROR_PROJECT_NOT_FOUND"':           NotFoundError,
     '"ERROR_ITEM_NOT_FOUND"':              NotFoundError
 }
 
-_ERROR_RESPONSES = _ERROR_RESPONSE_MAPPING.keys()
+_ERROR_CODE_EXCEPTION_MAPPING = {
+  '400': TodoistError,
+  '403': AuthError,
+}
 
-def _get_associated_exception(error_text):
-    return _ERROR_RESPONSE_MAPPING[error_text]
+_ERROR_TEXT_RESPONSES = _ERROR_TEXT_EXCEPTION_MAPPING.keys()
+
+def _get_associated_exception(response):
+    if response.text in _ERROR_TEXT_EXCEPTION_MAPPING:
+      return _ERROR_TEXT_EXCEPTION_MAPPING[response.text]
+    elif response.status_code in _ERROR_CODE_EXCEPTION_MAPPING:
+      return _ERROR_CODE_EXCEPTION_MAPPING[response.status_code]
+    return TodoistError(response)
 
 def _fail_if_contains_errors(response):
     if _contains_errors(response):
-        exception = _get_associated_exception(response.text)
-        if exception:
-            raise exception(response)
-        raise TodoistError(response)
+        raise _get_associated_exception(response)
 
 def _contains_errors(response):
-    return response.status_code != 200 or response.text in _ERROR_RESPONSES
+    return response.status_code != 200 or response.text in _ERROR_TEXT_RESPONSES

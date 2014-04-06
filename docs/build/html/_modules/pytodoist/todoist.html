@@ -52,21 +52,87 @@
 
 <span class="n">API</span> <span class="o">=</span> <span class="n">TodoistAPI</span><span class="p">()</span>
 
-<span class="k">def</span> <span class="nf">login</span><span class="p">(</span><span class="n">email</span><span class="p">,</span> <span class="n">password</span><span class="p">):</span>
+<div class="viewcode-block" id="login"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.login">[docs]</a><span class="k">def</span> <span class="nf">login</span><span class="p">(</span><span class="n">email</span><span class="p">,</span> <span class="n">password</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Login to Todoist.</span>
+
+<span class="sd">    :param email: A Todoist user&#39;s email address.</span>
+<span class="sd">    :type email: string</span>
+<span class="sd">    :param password: A Todoist user&#39;s password.</span>
+<span class="sd">    :type password: string</span>
+<span class="sd">    :return: The Todoist user.</span>
+<span class="sd">    :rtype: :mod:`pytodoist.todoist.User`</span>
+<span class="sd">    :raises AuthError: If the login credentials are incorrect.</span>
+
+<span class="sd">    &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">    &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; user.full_name</span>
+<span class="sd">    u&#39;John Doe&#39;</span>
+<span class="sd">    &gt;&gt;&gt; user.join_date</span>
+<span class="sd">    u&#39;Sun 09 Mar 2014 19:54:01 +0000&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">user</span> <span class="o">=</span> <span class="n">_login</span><span class="p">(</span><span class="n">API</span><span class="o">.</span><span class="n">login</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
     <span class="n">user</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="n">password</span>
     <span class="k">return</span> <span class="n">user</span>
+</div>
+<div class="viewcode-block" id="login_with_google"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.login_with_google">[docs]</a><span class="k">def</span> <span class="nf">login_with_google</span><span class="p">(</span><span class="n">email</span><span class="p">,</span> <span class="n">oauth2_token</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Login to Todoist using Google oauth2 authentication.</span>
 
-<span class="k">def</span> <span class="nf">login_with_google</span><span class="p">(</span><span class="n">email</span><span class="p">,</span> <span class="n">oauth2_token</span><span class="p">):</span>
+<span class="sd">    :param email: A Todoist user&#39;s email address.</span>
+<span class="sd">    :type email: string</span>
+<span class="sd">    :param oauth2_token: The oauth2 token associated with the email.</span>
+<span class="sd">    :type oauth2_token: string</span>
+<span class="sd">    :return: The Todoist user.</span>
+<span class="sd">    :rtype: :mod:`pytodoist.todoist.User`</span>
+<span class="sd">    :raises AuthError: If Google has refused to accept the token.</span>
+<span class="sd">    :raises InternalError: If a server error occurs. Try again later.</span>
+<span class="sd">    :raises BadValueError: If the token is valid but doesn&#39;t match the email.</span>
+
+<span class="sd">    .. note:: It is up to you to obtain the valid oauth2 token.</span>
+
+<span class="sd">    &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">    ... # Get the oauth2 token.</span>
+<span class="sd">    &gt;&gt;&gt; user = todoist.login_with_google(&#39;john.doe@gmail.com&#39;, oauth2_token)</span>
+<span class="sd">    &gt;&gt;&gt; user.full_name</span>
+<span class="sd">    u&#39;John Doe&#39;</span>
+<span class="sd">    &gt;&gt;&gt; user.join_date</span>
+<span class="sd">    u&#39;Sun 09 Mar 2014 19:54:01 +0000&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_login</span><span class="p">(</span><span class="n">API</span><span class="o">.</span><span class="n">login_with_google</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">oauth2_token</span><span class="p">)</span>
-
+</div>
 <span class="k">def</span> <span class="nf">_login</span><span class="p">(</span><span class="n">login_func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A helper function for logging in.</span>
+
+<span class="sd">    It&#39;s purpose is to avoid duplicate code in login and login_with_google.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">login_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
     <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
     <span class="n">user_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">User</span><span class="p">(</span><span class="n">user_as_json</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="n">full_name</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">lang</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">timezone</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="register"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.register">[docs]</a><span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="n">full_name</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">lang</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">timezone</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Register a new Todoist account.</span>
+
+<span class="sd">    :param full_name: The user&#39;s full name.</span>
+<span class="sd">    :type full_name: string</span>
+<span class="sd">    :param email: The user&#39;s email address.</span>
+<span class="sd">    :type email: string</span>
+<span class="sd">    :param password: The user&#39;s password.</span>
+<span class="sd">    :type password: string</span>
+<span class="sd">    :param lang: The user&#39;s language.</span>
+<span class="sd">    :type lang: string</span>
+<span class="sd">    :param timezone: The user&#39;s timezone.</span>
+<span class="sd">    :type timezone: string</span>
+<span class="sd">    :return: The Todoist user.</span>
+<span class="sd">    :rtype: :mod:`pytodoist.todoist.User`</span>
+<span class="sd">    :raises RegistrationError: If an account with the given details exists.</span>
+
+<span class="sd">    &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">    &gt;&gt;&gt; user = todoist.register(&#39;John Doe&#39;, &#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; user.full_name</span>
+<span class="sd">    u&#39;John Doe&#39;</span>
+<span class="sd">    &gt;&gt;&gt; user.join_date</span>
+<span class="sd">    u&#39;Sun 09 Mar 2014 19:54:01 +0000&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">email</span><span class="p">,</span> <span class="n">full_name</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span>
                             <span class="n">lang</span><span class="o">=</span><span class="n">lang</span><span class="p">,</span> <span class="n">timezone</span><span class="o">=</span><span class="n">timezone</span><span class="p">)</span>
     <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
@@ -74,14 +140,64 @@
     <span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="n">user_as_json</span><span class="p">)</span>
     <span class="n">user</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="n">password</span>
     <span class="k">return</span> <span class="n">user</span>
+</div>
+<div class="viewcode-block" id="register_with_google"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.register_with_google">[docs]</a><span class="k">def</span> <span class="nf">register_with_google</span><span class="p">(</span><span class="n">full_name</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">oauth2_token</span><span class="p">,</span>
+                         <span class="n">lang</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">timezone</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Register a new Todoist account by linking a Google account.</span>
 
-<span class="k">def</span> <span class="nf">get_timezones</span><span class="p">():</span>
+<span class="sd">    :param full_name: The user&#39;s full name.</span>
+<span class="sd">    :type full_name: string</span>
+<span class="sd">    :param email: The user&#39;s email address.</span>
+<span class="sd">    :type email: string</span>
+<span class="sd">    :param oauth2_token: The oauth2 token associated with the email.</span>
+<span class="sd">    :type oauth2_token: string</span>
+<span class="sd">    :param lang: The user&#39;s language.</span>
+<span class="sd">    :type lang: string</span>
+<span class="sd">    :param timezone: The user&#39;s timezone.</span>
+<span class="sd">    :type timezone: string</span>
+<span class="sd">    :return: The Todoist user.</span>
+<span class="sd">    :rtype: :mod:`pytodoist.todoist.User`</span>
+<span class="sd">    :raises AuthError: If Google has refused to accept the token.</span>
+<span class="sd">    :raises InternalError: If a server error occurs. Try again later.</span>
+<span class="sd">    :raises BadValueError: If the token is valid but doesn&#39;t match the email.</span>
+
+<span class="sd">    .. note:: It is up to you to obtain the valid oauth2 token.</span>
+
+<span class="sd">    &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">    ... # Get the oauth2 token.</span>
+<span class="sd">    &gt;&gt;&gt; user = todoist.register_with_google(&#39;John Doe&#39;, &#39;john.doe@gmail.com&#39;,</span>
+<span class="sd">    ...                                      oauth2_token)</span>
+<span class="sd">    &gt;&gt;&gt; user.full_name</span>
+<span class="sd">    u&#39;John Doe&#39;</span>
+<span class="sd">    &gt;&gt;&gt; user.join_date</span>
+<span class="sd">    u&#39;Sun 09 Mar 2014 19:54:01 +0000&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">login_with_google</span><span class="p">(</span><span class="n">email</span><span class="p">,</span> <span class="n">oauth2_token</span><span class="p">,</span> <span class="n">auto_signup</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                     <span class="n">lang</span><span class="o">=</span><span class="n">lang</span><span class="p">,</span> <span class="n">timezone</span><span class="o">=</span><span class="n">timezone</span><span class="p">)</span>
+    <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+    <span class="n">user_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="n">user_as_json</span><span class="p">)</span>
+    <span class="n">user</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="n">password</span>
+    <span class="k">return</span> <span class="n">user</span>
+</div>
+<div class="viewcode-block" id="get_timezones"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.get_timezones">[docs]</a><span class="k">def</span> <span class="nf">get_timezones</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Return a list of Todoist supported timezones.</span>
+
+<span class="sd">    :return: A list of timezones</span>
+<span class="sd">    :rtype: list</span>
+
+<span class="sd">    &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">    &gt;&gt;&gt; todoist.get_timezones()</span>
+<span class="sd">    [u&#39;US/Hawaii&#39;, u&#39;US/Alaska&#39;, u&#39;US/Pacific&#39;, u&#39;US/Arizona, ...]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">get_timezones</span><span class="p">()</span>
     <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
     <span class="n">timezones_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-    <span class="k">return</span> <span class="p">[</span><span class="n">timezone</span> <span class="k">for</span> <span class="n">timezone</span> <span class="ow">in</span> <span class="n">timezones_as_json</span><span class="p">]</span>
-
+    <span class="k">return</span> <span class="p">[</span><span class="n">timezone</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">timezone</span> <span class="ow">in</span> <span class="n">timezones_as_json</span><span class="p">]</span>
+</div>
 <span class="k">class</span> <span class="nc">TodoistObject</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="c"># A helper class which &#39;converts&#39; a JSON object</span>
+    <span class="c"># into a python object. It is designed to be inherited.</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">json</span><span class="p">:</span>
@@ -91,45 +207,133 @@
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
 
 
-<span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">TodoistObject</span><span class="p">):</span>
+<div class="viewcode-block" id="User"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.User">[docs]</a><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">TodoistObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A Todoist User.</span>
+
+<span class="sd">    :ivar full_name: The user&#39;s full name.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">token</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">is_logged_in</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="User.is_logged_in"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.User.is_logged_in">[docs]</a>    <span class="k">def</span> <span class="nf">is_logged_in</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return ``True`` if the user is logged in.</span>
+
+<span class="sd">        A user is logged in if it&#39;s token is valid.</span>
+
+<span class="sd">        :return: ``True`` if the user token is valid, ``False`` otherwise.</span>
+<span class="sd">        :rtype: bool</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; user.is_logged_in()</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; user.delete()</span>
+<span class="sd">        &gt;&gt;&gt; user.is_logged_in()</span>
+<span class="sd">        False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">False</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">ping</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">)</span>
         <span class="k">return</span> <span class="ow">not</span> <span class="n">_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="User.delete"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.User.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete the user&#39;s account from Todoist.</span>
 
-    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="sd">        .. warning:: You cannot recover the user after deletion!</span>
+
+<span class="sd">        :param reason: The reason for deletion.</span>
+<span class="sd">        :type reason: string</span>
+<span class="sd">        :raises AuthError: If ``user.password`` is wrong.</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; user.delete()</span>
+<span class="sd">        ... # The user token is now invalid and Todoist operations will fail.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;password&#39;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="n">TodoistError</span><span class="p">(</span><span class="s">&quot;Account is linked to Google.&quot;</span><span class="p">)</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">delete_user</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="p">,</span>
                                    <span class="n">reason</span><span class="o">=</span><span class="n">reason</span><span class="p">,</span> <span class="n">in_background</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="User.update"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.User.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update the user&#39;s details on Todoist.</span>
 
-    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="sd">        You must call this method to register any local attribute changes with</span>
+<span class="sd">        Todoist.</span>
+
+<span class="sd">        :raises TodoistError: If the request to update is invalid.</span>
+<span class="sd">        :raises BadValueError: If one of the new values is invalid e.g. the</span>
+<span class="sd">            new email address is associated with an existing account.</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; user.full_name = &#39;John Smith&#39;</span>
+<span class="sd">        ... # At this point Todoist still thinks the name is &#39;John Doe&#39;.</span>
+<span class="sd">        &gt;&gt;&gt; user.update()</span>
+<span class="sd">        ... # Now the name has been updated on Todoist.</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; user.full_name</span>
+<span class="sd">        u&#39;John Smith&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">update_user</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="User.change_avatar"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.User.change_avatar">[docs]</a>    <span class="k">def</span> <span class="nf">change_avatar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Change the user&#39;s avatar.</span>
 
-    <span class="k">def</span> <span class="nf">change_avatar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">):</span>
+<span class="sd">        :param image: The path to the image.</span>
+<span class="sd">        :type image: string</span>
+<span class="sd">        :raises BadValueError: If the image is an invalid format, too big or</span>
+<span class="sd">            unable to be resized.</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; user.change_avatar(&#39;~/pictures/avatar.png&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">update_avatar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="User.use_default_avatar"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.User.use_default_avatar">[docs]</a>    <span class="k">def</span> <span class="nf">use_default_avatar</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Change the user&#39;s avatar to the Todoist default avatar.</span>
 
-    <span class="k">def</span> <span class="nf">use_default_avatar</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; user.use_default_avatar()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">update_avatar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="User.add_project"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.User.add_project">[docs]</a>    <span class="k">def</span> <span class="nf">add_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a project to the user&#39;s account.</span>
 
-    <span class="k">def</span> <span class="nf">add_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="sd">        :param name: The project name.</span>
+<span class="sd">        :type name: string</span>
+<span class="sd">        :param color: The project color.</span>
+<span class="sd">        :type color: int</span>
+<span class="sd">        :param indent: The project indentation.</span>
+<span class="sd">        :type indent: int</span>
+<span class="sd">        :param order: The project ordering.</span>
+<span class="sd">        :type order: int</span>
+<span class="sd">        :return: The project that was added.</span>
+<span class="sd">        :rtype: :mod:`pytodoist.todoist.Project`</span>
+<span class="sd">        :raises BadValueError: If the project name is empty.</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project = user.add_project(&#39;Homework&#39;, color=1)</span>
+<span class="sd">        &gt;&gt;&gt; project.name</span>
+<span class="sd">        u&#39;Homework&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">add_project</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span>
                                    <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
         <span class="n">project_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">Project</span><span class="p">(</span><span class="n">project_as_json</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
-
+</div>
     <span class="k">def</span> <span class="nf">get_projects</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">get_projects</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
@@ -246,7 +450,7 @@
     <span class="k">def</span> <span class="nf">disable_email_notifications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">notification_type</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_update_notification_settings</span><span class="p">(</span><span class="n">notification_type</span><span class="p">,</span> <span class="s">&#39;email&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
-
+</div>
 <span class="k">class</span> <span class="nc">Project</span><span class="p">(</span><span class="n">TodoistObject</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
@@ -415,114 +619,77 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">response</span> <span class="o">=</span> <span class="n">response</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 
-
-<div class="viewcode-block" id="LoginError"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.LoginError">[docs]</a><span class="k">class</span> <span class="nc">LoginError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Raised when a user&#39;s login credentials are invalid.&quot;&quot;&quot;</span>
+<span class="k">class</span> <span class="nc">AuthError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">LoginError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AuthError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
-</div>
-<div class="viewcode-block" id="InternalError"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.InternalError">[docs]</a><span class="k">class</span> <span class="nc">InternalError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Raised when the Todoist server is unable to connect to Google.</span>
-
-<span class="sd">    This exception may also be raised if the response from Google is unable to</span>
-<span class="sd">    be parsed. It makes sense to repeat the attempt with the same parameters</span>
-<span class="sd">    later.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">InternalError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-
-</div>
-<div class="viewcode-block" id="EmailMismatchError"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.EmailMismatchError">[docs]</a><span class="k">class</span> <span class="nc">EmailMismatchError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Raised when an oauth2_token is valid but the given user email is</span>
-<span class="sd">    not associated with it.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">EmailMismatchError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-</div>
-<div class="viewcode-block" id="NoGoogleLinkError"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.NoGoogleLinkError">[docs]</a><span class="k">class</span> <span class="nc">NoGoogleLinkError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Raised when an oauth2_token is valid but the user&#39;s Todoist account is</span>
-<span class="sd">    not linked to Google.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">NoGoogleLinkError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-
-</div>
-<div class="viewcode-block" id="RegistrationError"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.RegistrationError">[docs]</a><span class="k">class</span> <span class="nc">RegistrationError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Raised when trying to register an account with details</span>
-<span class="sd">    that are already associated with a current Todoist user.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="k">class</span> <span class="nc">RegistrationError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">RegistrationError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
-</div>
-<div class="viewcode-block" id="BadImageError"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.BadImageError">[docs]</a><span class="k">class</span> <span class="nc">BadImageError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Raised when a user tries to use an invalid image as their</span>
-<span class="sd">    avatar.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+
+<span class="k">class</span> <span class="nc">InternalError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">BadImageError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-</div>
-<div class="viewcode-block" id="TodoistValueError"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.TodoistValueError">[docs]</a><span class="k">class</span> <span class="nc">TodoistValueError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Raised when an invalid value is passed in a requested to the</span>
-<span class="sd">    Todoist server.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">InternalError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">BadValueError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">TodoistValueError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BadValueError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
-</div>
-<div class="viewcode-block" id="NotFoundError"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.NotFoundError">[docs]</a><span class="k">class</span> <span class="nc">NotFoundError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Raised when a user tries to access an item or project that</span>
-<span class="sd">    does not exist.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+
+<span class="k">class</span> <span class="nc">NotFoundError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">NotFoundError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
-</div>
-<span class="n">_ERROR_RESPONSE_MAPPING</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s">&#39;&quot;LOGIN_ERROR&quot;&#39;</span><span class="p">:</span>                       <span class="n">LoginError</span><span class="p">,</span>
-    <span class="s">&#39;&quot;INTERNAL_ERROR&quot;&#39;</span><span class="p">:</span>                    <span class="n">InternalError</span><span class="p">,</span>
-    <span class="s">&#39;&quot;EMAIL_MISMATCH&quot;&#39;</span><span class="p">:</span>                    <span class="n">EmailMismatchError</span><span class="p">,</span>
-    <span class="s">&#39;&quot;ACCOUNT_NOT_CONNECTED_WITH_GOOGLE&quot;&#39;</span><span class="p">:</span> <span class="n">NoGoogleLinkError</span><span class="p">,</span>
+
+<span class="n">_ERROR_TEXT_EXCEPTION_MAPPING</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;&quot;LOGIN_ERROR&quot;&#39;</span><span class="p">:</span>                       <span class="n">AuthError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;EMAIL_MISMATCH&quot;&#39;</span><span class="p">:</span>                    <span class="n">AuthError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;ACCOUNT_NOT_CONNECTED_WITH_GOOGLE&quot;&#39;</span><span class="p">:</span> <span class="n">AuthError</span><span class="p">,</span>
     <span class="s">&#39;&quot;ALREADY_REGISTRED&quot;&#39;</span><span class="p">:</span>                 <span class="n">RegistrationError</span><span class="p">,</span>
-    <span class="s">&#39;&quot;UNKNOWN_ERROR&quot;&#39;</span><span class="p">:</span>                     <span class="n">TodoistError</span><span class="p">,</span>
-    <span class="s">&#39;&quot;TOO_SHORT_PASSWORD&quot;&#39;</span><span class="p">:</span>                <span class="n">TodoistValueError</span><span class="p">,</span>
-    <span class="s">&#39;&quot;INVALID_EMAIL&quot;&#39;</span><span class="p">:</span>                     <span class="n">TodoistValueError</span><span class="p">,</span>
-    <span class="s">&#39;&quot;INVALID_TIMEZONE&quot;&#39;</span><span class="p">:</span>                  <span class="n">TodoistValueError</span><span class="p">,</span>
-    <span class="s">&#39;&quot;INVALID_FULL_NAME&quot;&#39;</span><span class="p">:</span>                 <span class="n">TodoistValueError</span><span class="p">,</span>
-    <span class="s">&#39;&quot;ERROR_PASSWORD_TOO_SHORT&quot;&#39;</span><span class="p">:</span>          <span class="n">TodoistValueError</span><span class="p">,</span>
-    <span class="s">&#39;&quot;ERROR_EMAIL_FOUND&quot;&#39;</span><span class="p">:</span>                 <span class="n">TodoistValueError</span><span class="p">,</span>
-    <span class="s">&#39;&quot;ERROR_NAME_IS_EMPTY&quot;&#39;</span><span class="p">:</span>               <span class="n">TodoistValueError</span><span class="p">,</span>
-    <span class="s">&#39;&quot;ERROR_WRONG_DATE_SYNTAX&quot;&#39;</span><span class="p">:</span>           <span class="n">TodoistValueError</span><span class="p">,</span>
-    <span class="s">&#39;&quot;UNKNOWN_IMAGE_FORMAT&quot;&#39;</span><span class="p">:</span>              <span class="n">BadImageError</span><span class="p">,</span>
-    <span class="s">&#39;&quot;UNABLE_TO_RESIZE_IMAGE&quot;&#39;</span><span class="p">:</span>            <span class="n">BadImageError</span><span class="p">,</span>
-    <span class="s">&#39;&quot;IMAGE_TOO_BIG&quot;&#39;</span><span class="p">:</span>                     <span class="n">BadImageError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;INTERNAL_ERROR&quot;&#39;</span><span class="p">:</span>                    <span class="n">InternalError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;UNKNOWN_ERROR&quot;&#39;</span><span class="p">:</span>                     <span class="n">InternalError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;TOO_SHORT_PASSWORD&quot;&#39;</span><span class="p">:</span>                <span class="n">BadValueError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;INVALID_EMAIL&quot;&#39;</span><span class="p">:</span>                     <span class="n">BadValueError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;INVALID_TIMEZONE&quot;&#39;</span><span class="p">:</span>                  <span class="n">BadValueError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;INVALID_FULL_NAME&quot;&#39;</span><span class="p">:</span>                 <span class="n">BadValueError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;ERROR_PASSWORD_TOO_SHORT&quot;&#39;</span><span class="p">:</span>          <span class="n">BadValueError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;ERROR_EMAIL_FOUND&quot;&#39;</span><span class="p">:</span>                 <span class="n">BadValueError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;ERROR_NAME_IS_EMPTY&quot;&#39;</span><span class="p">:</span>               <span class="n">BadValueError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;ERROR_WRONG_DATE_SYNTAX&quot;&#39;</span><span class="p">:</span>           <span class="n">BadValueError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;UNKNOWN_IMAGE_FORMAT&quot;&#39;</span><span class="p">:</span>              <span class="n">BadValueError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;UNABLE_TO_RESIZE_IMAGE&quot;&#39;</span><span class="p">:</span>            <span class="n">BadValueError</span><span class="p">,</span>
+    <span class="s">&#39;&quot;IMAGE_TOO_BIG&quot;&#39;</span><span class="p">:</span>                     <span class="n">BadValueError</span><span class="p">,</span>
     <span class="s">&#39;&quot;ERROR_PROJECT_NOT_FOUND&quot;&#39;</span><span class="p">:</span>           <span class="n">NotFoundError</span><span class="p">,</span>
     <span class="s">&#39;&quot;ERROR_ITEM_NOT_FOUND&quot;&#39;</span><span class="p">:</span>              <span class="n">NotFoundError</span>
 <span class="p">}</span>
 
-<span class="n">_ERROR_RESPONSES</span> <span class="o">=</span> <span class="n">_ERROR_RESPONSE_MAPPING</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+<span class="n">_ERROR_CODE_EXCEPTION_MAPPING</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="s">&#39;400&#39;</span><span class="p">:</span> <span class="n">TodoistError</span><span class="p">,</span>
+  <span class="s">&#39;403&#39;</span><span class="p">:</span> <span class="n">AuthError</span><span class="p">,</span>
+<span class="p">}</span>
 
-<span class="k">def</span> <span class="nf">_get_associated_exception</span><span class="p">(</span><span class="n">error_text</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">_ERROR_RESPONSE_MAPPING</span><span class="p">[</span><span class="n">error_text</span><span class="p">]</span>
+<span class="n">_ERROR_TEXT_RESPONSES</span> <span class="o">=</span> <span class="n">_ERROR_TEXT_EXCEPTION_MAPPING</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">_get_associated_exception</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span> <span class="ow">in</span> <span class="n">_ERROR_TEXT_EXCEPTION_MAPPING</span><span class="p">:</span>
+      <span class="k">return</span> <span class="n">_ERROR_TEXT_EXCEPTION_MAPPING</span><span class="p">[</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="ow">in</span> <span class="n">_ERROR_CODE_EXCEPTION_MAPPING</span><span class="p">:</span>
+      <span class="k">return</span> <span class="n">_ERROR_CODE_EXCEPTION_MAPPING</span><span class="p">[</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">TodoistError</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
-        <span class="n">exception</span> <span class="o">=</span> <span class="n">_get_associated_exception</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">exception</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">exception</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-        <span class="k">raise</span> <span class="n">TodoistError</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">_get_associated_exception</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span> <span class="ow">or</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span> <span class="ow">in</span> <span class="n">_ERROR_RESPONSES</span>
+    <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span> <span class="ow">or</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span> <span class="ow">in</span> <span class="n">_ERROR_TEXT_RESPONSES</span>
 </pre></div>
 
           </div>

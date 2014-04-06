@@ -50,61 +50,362 @@
             
   <div class="section" id="module-pytodoist.todoist">
 <span id="todoist"></span><h1>todoist<a class="headerlink" href="#module-pytodoist.todoist" title="Permalink to this headline">¶</a></h1>
-<dl class="exception">
-<dt id="pytodoist.todoist.BadImageError">
-<em class="property">exception </em><tt class="descclassname">pytodoist.todoist.</tt><tt class="descname">BadImageError</tt><big>(</big><em>response</em><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#BadImageError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.BadImageError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Raised when a user tries to use an invalid image as their
-avatar.</p>
+<dl class="class">
+<dt id="pytodoist.todoist.User">
+<em class="property">class </em><tt class="descclassname">pytodoist.todoist.</tt><tt class="descname">User</tt><big>(</big><em>json</em><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#User"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.User" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Todoist User.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><strong>full_name</strong> &#8211; The user&#8217;s full name.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="pytodoist.todoist.User.add_project">
+<tt class="descname">add_project</tt><big>(</big><em>name</em>, <em>color=None</em>, <em>indent=None</em>, <em>order=None</em><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#User.add_project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.User.add_project" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a project to the user&#8217;s account.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> (<em>string</em>) &#8211; The project name.</li>
+<li><strong>color</strong> (<em>int</em>) &#8211; The project color.</li>
+<li><strong>indent</strong> (<em>int</em>) &#8211; The project indentation.</li>
+<li><strong>order</strong> (<em>int</em>) &#8211; The project ordering.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The project that was added.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><tt class="xref py py-mod docutils literal"><span class="pre">pytodoist.todoist.Project</span></tt></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Raises BadValueError:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first last">If the project name is empty.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytodoist</span> <span class="kn">import</span> <span class="n">todoist</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span> <span class="o">=</span> <span class="n">todoist</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="s">&#39;john.doe@gmail.com&#39;</span><span class="p">,</span> <span class="s">&#39;passwd&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">project</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">add_project</span><span class="p">(</span><span class="s">&#39;Homework&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">project</span><span class="o">.</span><span class="n">name</span>
+<span class="go">u&#39;Homework&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
-<dl class="exception">
-<dt id="pytodoist.todoist.EmailMismatchError">
-<em class="property">exception </em><tt class="descclassname">pytodoist.todoist.</tt><tt class="descname">EmailMismatchError</tt><big>(</big><em>response</em><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#EmailMismatchError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.EmailMismatchError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Raised when an oauth2_token is valid but the given user email is
-not associated with it.</p>
+<dl class="method">
+<dt id="pytodoist.todoist.User.change_avatar">
+<tt class="descname">change_avatar</tt><big>(</big><em>image</em><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#User.change_avatar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.User.change_avatar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the user&#8217;s avatar.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>image</strong> (<em>string</em>) &#8211; The path to the image.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Raises BadValueError:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">If the image is an invalid format, too big or
+unable to be resized.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytodoist</span> <span class="kn">import</span> <span class="n">todoist</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span> <span class="o">=</span> <span class="n">todoist</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="s">&#39;john.doe@gmail.com&#39;</span><span class="p">,</span> <span class="s">&#39;passwd&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">change_avatar</span><span class="p">(</span><span class="s">&#39;~/pictures/avatar.png&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
-<dl class="exception">
-<dt id="pytodoist.todoist.InternalError">
-<em class="property">exception </em><tt class="descclassname">pytodoist.todoist.</tt><tt class="descname">InternalError</tt><big>(</big><em>response</em><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#InternalError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.InternalError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Raised when the Todoist server is unable to connect to Google.</p>
-<p>This exception may also be raised if the response from Google is unable to
-be parsed. It makes sense to repeat the attempt with the same parameters
-later.</p>
+<dl class="method">
+<dt id="pytodoist.todoist.User.delete">
+<tt class="descname">delete</tt><big>(</big><em>reason=None</em><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#User.delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.User.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete the user&#8217;s account from Todoist.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">You cannot recover the user after deletion!</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>reason</strong> (<em>string</em>) &#8211; The reason for deletion.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Raises AuthError:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">If <tt class="docutils literal"><span class="pre">user.password</span></tt> is wrong.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytodoist</span> <span class="kn">import</span> <span class="n">todoist</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span> <span class="o">=</span> <span class="n">todoist</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="s">&#39;john.doe@gmail.com&#39;</span><span class="p">,</span> <span class="s">&#39;passwd&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+<span class="gp">... </span><span class="c"># The user token is now invalid and Todoist operations will fail.</span>
+</pre></div>
+</div>
 </dd></dl>
 
-<dl class="exception">
-<dt id="pytodoist.todoist.LoginError">
-<em class="property">exception </em><tt class="descclassname">pytodoist.todoist.</tt><tt class="descname">LoginError</tt><big>(</big><em>response</em><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#LoginError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.LoginError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Raised when a user&#8217;s login credentials are invalid.</p>
+<dl class="method">
+<dt id="pytodoist.todoist.User.is_logged_in">
+<tt class="descname">is_logged_in</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#User.is_logged_in"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.User.is_logged_in" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the user is logged in.</p>
+<p>A user is logged in if it&#8217;s token is valid.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><tt class="docutils literal"><span class="pre">True</span></tt> if the user token is valid, <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytodoist</span> <span class="kn">import</span> <span class="n">todoist</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span> <span class="o">=</span> <span class="n">todoist</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="s">&#39;john.doe@gmail.com&#39;</span><span class="p">,</span> <span class="s">&#39;passwd&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">is_logged_in</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">is_logged_in</span><span class="p">()</span>
+<span class="go">False</span>
+</pre></div>
+</div>
 </dd></dl>
 
-<dl class="exception">
-<dt id="pytodoist.todoist.NoGoogleLinkError">
-<em class="property">exception </em><tt class="descclassname">pytodoist.todoist.</tt><tt class="descname">NoGoogleLinkError</tt><big>(</big><em>response</em><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#NoGoogleLinkError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.NoGoogleLinkError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Raised when an oauth2_token is valid but the user&#8217;s Todoist account is
-not linked to Google.</p>
+<dl class="method">
+<dt id="pytodoist.todoist.User.update">
+<tt class="descname">update</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#User.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.User.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the user&#8217;s details on Todoist.</p>
+<p>You must call this method to register any local attribute changes with
+Todoist.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><strong>TodoistError</strong> &#8211; If the request to update is invalid.</li>
+<li><strong>BadValueError</strong> &#8211; If one of the new values is invalid e.g. the
+new email address is associated with an existing account.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytodoist</span> <span class="kn">import</span> <span class="n">todoist</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span> <span class="o">=</span> <span class="n">todoist</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="s">&#39;john.doe@gmail.com&#39;</span><span class="p">,</span> <span class="s">&#39;passwd&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">full_name</span> <span class="o">=</span> <span class="s">&#39;John Smith&#39;</span>
+<span class="gp">... </span><span class="c"># At this point Todoist still thinks the name is &#39;John Doe&#39;.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+<span class="gp">... </span><span class="c"># Now the name has been updated on Todoist.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span> <span class="o">=</span> <span class="n">todoist</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="s">&#39;john.doe@gmail.com&#39;</span><span class="p">,</span> <span class="s">&#39;passwd&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">full_name</span>
+<span class="go">u&#39;John Smith&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
-<dl class="exception">
-<dt id="pytodoist.todoist.NotFoundError">
-<em class="property">exception </em><tt class="descclassname">pytodoist.todoist.</tt><tt class="descname">NotFoundError</tt><big>(</big><em>response</em><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#NotFoundError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.NotFoundError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Raised when a user tries to access an item or project that
-does not exist.</p>
+<dl class="method">
+<dt id="pytodoist.todoist.User.use_default_avatar">
+<tt class="descname">use_default_avatar</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#User.use_default_avatar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.User.use_default_avatar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the user&#8217;s avatar to the Todoist default avatar.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytodoist</span> <span class="kn">import</span> <span class="n">todoist</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span> <span class="o">=</span> <span class="n">todoist</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="s">&#39;john.doe@gmail.com&#39;</span><span class="p">,</span> <span class="s">&#39;passwd&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">use_default_avatar</span><span class="p">()</span>
+</pre></div>
+</div>
 </dd></dl>
 
-<dl class="exception">
-<dt id="pytodoist.todoist.RegistrationError">
-<em class="property">exception </em><tt class="descclassname">pytodoist.todoist.</tt><tt class="descname">RegistrationError</tt><big>(</big><em>response</em><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#RegistrationError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.RegistrationError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Raised when trying to register an account with details
-that are already associated with a current Todoist user.</p>
 </dd></dl>
 
-<dl class="exception">
-<dt id="pytodoist.todoist.TodoistValueError">
-<em class="property">exception </em><tt class="descclassname">pytodoist.todoist.</tt><tt class="descname">TodoistValueError</tt><big>(</big><em>response</em><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#TodoistValueError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.TodoistValueError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Raised when an invalid value is passed in a requested to the
-Todoist server.</p>
+<dl class="function">
+<dt id="pytodoist.todoist.get_timezones">
+<tt class="descclassname">pytodoist.todoist.</tt><tt class="descname">get_timezones</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#get_timezones"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.get_timezones" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of Todoist supported timezones.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A list of timezones</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytodoist</span> <span class="kn">import</span> <span class="n">todoist</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">todoist</span><span class="o">.</span><span class="n">get_timezones</span><span class="p">()</span>
+<span class="go">[u&#39;US/Hawaii&#39;, u&#39;US/Alaska&#39;, u&#39;US/Pacific&#39;, u&#39;US/Arizona, ...]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytodoist.todoist.login">
+<tt class="descclassname">pytodoist.todoist.</tt><tt class="descname">login</tt><big>(</big><em>email</em>, <em>password</em><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#login"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.login" title="Permalink to this definition">¶</a></dt>
+<dd><p>Login to Todoist.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>email</strong> (<em>string</em>) &#8211; A Todoist user&#8217;s email address.</li>
+<li><strong>password</strong> (<em>string</em>) &#8211; A Todoist user&#8217;s password.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The Todoist user.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="#pytodoist.todoist.User" title="pytodoist.todoist.User"><tt class="xref py py-mod docutils literal"><span class="pre">pytodoist.todoist.User</span></tt></a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Raises AuthError:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first last">If the login credentials are incorrect.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytodoist</span> <span class="kn">import</span> <span class="n">todoist</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span> <span class="o">=</span> <span class="n">todoist</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="s">&#39;john.doe@gmail.com&#39;</span><span class="p">,</span> <span class="s">&#39;passwd&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">full_name</span>
+<span class="go">u&#39;John Doe&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">join_date</span>
+<span class="go">u&#39;Sun 09 Mar 2014 19:54:01 +0000&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytodoist.todoist.login_with_google">
+<tt class="descclassname">pytodoist.todoist.</tt><tt class="descname">login_with_google</tt><big>(</big><em>email</em>, <em>oauth2_token</em><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#login_with_google"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.login_with_google" title="Permalink to this definition">¶</a></dt>
+<dd><p>Login to Todoist using Google oauth2 authentication.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>email</strong> (<em>string</em>) &#8211; A Todoist user&#8217;s email address.</li>
+<li><strong>oauth2_token</strong> (<em>string</em>) &#8211; The oauth2 token associated with the email.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The Todoist user.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="#pytodoist.todoist.User" title="pytodoist.todoist.User"><tt class="xref py py-mod docutils literal"><span class="pre">pytodoist.todoist.User</span></tt></a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><strong>AuthError</strong> &#8211; If Google has refused to accept the token.</li>
+<li><strong>InternalError</strong> &#8211; If a server error occurs. Try again later.</li>
+<li><strong>BadValueError</strong> &#8211; If the token is valid but doesn&#8217;t match the email.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">It is up to you to obtain the valid oauth2 token.</p>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytodoist</span> <span class="kn">import</span> <span class="n">todoist</span>
+<span class="gp">... </span><span class="c"># Get the oauth2 token.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span> <span class="o">=</span> <span class="n">todoist</span><span class="o">.</span><span class="n">login_with_google</span><span class="p">(</span><span class="s">&#39;john.doe@gmail.com&#39;</span><span class="p">,</span> <span class="n">oauth2_token</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">full_name</span>
+<span class="go">u&#39;John Doe&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">join_date</span>
+<span class="go">u&#39;Sun 09 Mar 2014 19:54:01 +0000&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytodoist.todoist.register">
+<tt class="descclassname">pytodoist.todoist.</tt><tt class="descname">register</tt><big>(</big><em>full_name</em>, <em>email</em>, <em>password</em>, <em>lang=None</em>, <em>timezone=None</em><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a new Todoist account.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>full_name</strong> (<em>string</em>) &#8211; The user&#8217;s full name.</li>
+<li><strong>email</strong> (<em>string</em>) &#8211; The user&#8217;s email address.</li>
+<li><strong>password</strong> (<em>string</em>) &#8211; The user&#8217;s password.</li>
+<li><strong>lang</strong> (<em>string</em>) &#8211; The user&#8217;s language.</li>
+<li><strong>timezone</strong> (<em>string</em>) &#8211; The user&#8217;s timezone.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The Todoist user.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="#pytodoist.todoist.User" title="pytodoist.todoist.User"><tt class="xref py py-mod docutils literal"><span class="pre">pytodoist.todoist.User</span></tt></a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Raises RegistrationError:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first last">If an account with the given details exists.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytodoist</span> <span class="kn">import</span> <span class="n">todoist</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span> <span class="o">=</span> <span class="n">todoist</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s">&#39;John Doe&#39;</span><span class="p">,</span> <span class="s">&#39;john.doe@gmail.com&#39;</span><span class="p">,</span> <span class="s">&#39;passwd&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">full_name</span>
+<span class="go">u&#39;John Doe&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">join_date</span>
+<span class="go">u&#39;Sun 09 Mar 2014 19:54:01 +0000&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytodoist.todoist.register_with_google">
+<tt class="descclassname">pytodoist.todoist.</tt><tt class="descname">register_with_google</tt><big>(</big><em>full_name</em>, <em>email</em>, <em>oauth2_token</em>, <em>lang=None</em>, <em>timezone=None</em><big>)</big><a class="reference internal" href="_modules/pytodoist/todoist.html#register_with_google"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.todoist.register_with_google" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a new Todoist account by linking a Google account.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>full_name</strong> (<em>string</em>) &#8211; The user&#8217;s full name.</li>
+<li><strong>email</strong> (<em>string</em>) &#8211; The user&#8217;s email address.</li>
+<li><strong>oauth2_token</strong> (<em>string</em>) &#8211; The oauth2 token associated with the email.</li>
+<li><strong>lang</strong> (<em>string</em>) &#8211; The user&#8217;s language.</li>
+<li><strong>timezone</strong> (<em>string</em>) &#8211; The user&#8217;s timezone.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The Todoist user.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="#pytodoist.todoist.User" title="pytodoist.todoist.User"><tt class="xref py py-mod docutils literal"><span class="pre">pytodoist.todoist.User</span></tt></a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><strong>AuthError</strong> &#8211; If Google has refused to accept the token.</li>
+<li><strong>InternalError</strong> &#8211; If a server error occurs. Try again later.</li>
+<li><strong>BadValueError</strong> &#8211; If the token is valid but doesn&#8217;t match the email.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">It is up to you to obtain the valid oauth2 token.</p>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytodoist</span> <span class="kn">import</span> <span class="n">todoist</span>
+<span class="gp">... </span><span class="c"># Get the oauth2 token.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span> <span class="o">=</span> <span class="n">todoist</span><span class="o">.</span><span class="n">register_with_google</span><span class="p">(</span><span class="s">&#39;John Doe&#39;</span><span class="p">,</span> <span class="s">&#39;john.doe@gmail.com&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                                     <span class="n">oauth2_token</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">full_name</span>
+<span class="go">u&#39;John Doe&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user</span><span class="o">.</span><span class="n">join_date</span>
+<span class="go">u&#39;Sun 09 Mar 2014 19:54:01 +0000&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>

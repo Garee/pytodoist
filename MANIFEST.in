@@ -2,4 +2,3 @@ include README
 include LICENCE
 include setup.py
 include pytodoist/*.py
-graft docs/build/html
