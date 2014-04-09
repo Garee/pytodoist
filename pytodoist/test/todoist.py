@@ -65,14 +65,14 @@ class UserTest(unittest.TestCase):
         self.assertEqual(len(completed_tasks), 1)
 
     def test_add_label(self):
-        self.user.add_label('Label 1', color=1)
+        self.user.create_label('Label 1', color=1)
         labels = self.user.get_labels()
         self.assertEqual(len(labels), 1)
         self.assertEqual(labels[0].name, 'Label 1')
 
     def test_get_labels(self):
         for i in range(5):
-            self.user.add_label('Label_' + str(i))
+            self.user.create_label('Label_' + str(i))
         labels = self.user.get_labels()
         self.assertEqual(len(labels), 5)
 
@@ -80,13 +80,13 @@ class UserTest(unittest.TestCase):
         inbox = self.user.get_project('Inbox')
         inbox.add_task('Task Red')
         inbox.add_task('Task Blue')
-        queries = '["view all"]'
+        queries = ["view all"]
         tasks = self.user.search_tasks(queries)
         self.assertEqual(len(tasks), 2)
 
-    def test_is_receiving_email_notifications(self):
+    def test_is_email_notified_when(self):
         self.user.disable_email_notifications("note_added")
-        is_receiving = self.user.is_receiving_email_notifications("note_added")
+        is_receiving = self.user.is_email_notified_when("note_added")
         self.assertFalse(is_receiving)
 
 class ProjectTest(unittest.TestCase):
@@ -106,7 +106,7 @@ class ProjectTest(unittest.TestCase):
     def test_update(self):
         self.project.name = 'Project_2'
         self.project.update()
-        project = self.user.get_project_with_id(self.project.id)
+        project = self.user.get_project('Project_2')
         self.assertEqual(project.name, 'Project_2')
 
     def test_archive(self):
@@ -156,8 +156,10 @@ class TaskTest(unittest.TestCase):
     def test_update(self):
         self.task.content = 'Task_2'
         self.task.update()
-        task = self.project.get_task(self.task.id)
-        self.assertEqual(task.content, 'Task_2')
+        tasks = self.project.get_tasks()
+        for task in tasks:
+            if task.id == self.task.id:
+                self.assertEqual(task.content, 'Task_2')
 
     def test_delete(self):
         self.task.delete()
@@ -219,8 +221,9 @@ class NoteTest(unittest.TestCase):
     def test_update(self):
         self.note.content = 'Note_2'
         self.note.update()
-        note = self.task.get_note_with_id(self.note.id)
-        self.assertEqual(note.content, 'Note_2')
+        for note in self.task.get_notes():
+            if note.id == self.note.id:
+                self.assertEqual(note.content, 'Note_2')
 
     def test_delete(self):
         self.note.delete()
@@ -231,7 +234,7 @@ class LabelTest(unittest.TestCase):
 
     def setUp(self):
         self.user = _get_user()
-        self.label = self.user.add_label('Label_1')
+        self.label = self.user.create_label('Label_1')
 
     def tearDown(self):
         self.user.delete()

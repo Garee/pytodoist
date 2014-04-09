@@ -149,9 +149,9 @@ class TodoistAPITest(unittest.TestCase):
         labels = response.json()
         self.assertTrue(isinstance(labels, list))
 
-    def test_add_label(self):
+    def test_create_label(self):
         label_name = "Label 1"
-        response = self.t.add_label(self.user.token, label_name)
+        response = self.t.create_label(self.user.token, label_name)
         label = response.json()
         self.assertEqual(label['name'], label_name)
         response = self.t.get_labels(self.user.token)
@@ -161,7 +161,7 @@ class TodoistAPITest(unittest.TestCase):
     def test_update_label_name(self):
         label_name = "Label 1"
         new_name = "Updated"
-        self.t.add_label(self.user.token, label_name)
+        self.t.create_label(self.user.token, label_name)
         response = self.t.update_label_name(self.user.token, label_name,
                                             new_name)
         label = response.json()
@@ -170,7 +170,7 @@ class TodoistAPITest(unittest.TestCase):
     def test_update_label_color(self):
         label_name = "Label 1"
         label_color = 0
-        self.t.add_label(self.user.token, label_name, color=label_color)
+        self.t.create_label(self.user.token, label_name, color=label_color)
         response = self.t.update_label_color(self.user.token,
                                              label_name,
                                              1)
@@ -179,7 +179,7 @@ class TodoistAPITest(unittest.TestCase):
 
     def test_delete_label(self):
         label_name = "Label 1"
-        self.t.add_label(self.user.token, label_name)
+        self.t.create_label(self.user.token, label_name)
         response = self.t.get_labels(self.user.token)
         labels = response.json()
         self.assertEqual(len(labels), 1)
@@ -444,7 +444,7 @@ class TodoistAPITest(unittest.TestCase):
         return response.json()
 
     def _add_label(self):
-        response = self.t.add_label(self.user.token, 'Label')
+        response = self.t.create_label(self.user.token, 'Label')
         return response.json()
 
     def _get_inbox(self):

@@ -543,7 +543,7 @@ class TodoistAPI(object):
         >>> response = api.login('john.doe@gmail.com', 'passwd')
         >>> user_info = response.json()
         >>> user_token = user_info['token']
-        >>> api.add_label(user_token, 'football')
+        >>> api.create_label(user_token, 'football')
         >>> response = api.get_labels(user_token)
         >>> labels = response.json()
         >>> for label in labels.values():
@@ -556,7 +556,7 @@ class TodoistAPI(object):
         }
         return self._get('getLabels', params, **kwargs)
 
-    def add_label(self, token, label_name, **kwargs):
+    def create_label(self, token, label_name, **kwargs):
         """Add a label.
 
         If a label with the name already exists it will be returned.
@@ -575,7 +575,7 @@ class TodoistAPI(object):
         >>> response = api.login('john.doe@gmail.com', 'passwd')
         >>> user_info = response.json()
         >>> user_token = user_info['token']
-        >>> response = api.add_label(user_token, 'football')
+        >>> response = api.create_label(user_token, 'football')
         >>> label = response.json()
         >>> label['name']
         u'football'
@@ -603,7 +603,7 @@ class TodoistAPI(object):
         >>> response = api.login('john.doe@gmail.com', 'passwd')
         >>> user_info = response.json()
         >>> user_token = user_info['token']
-        >>> response = api.add_label(user_token, 'football')
+        >>> response = api.create_label(user_token, 'football')
         >>> label = response.json()
         >>> label['name']
         u'football'
@@ -636,7 +636,7 @@ class TodoistAPI(object):
         >>> response = api.login('john.doe@gmail.com', 'passwd')
         >>> user_info = response.json()
         >>> user_token = user_info['token']
-        >>> response = api.add_label(user_token, 'football', color=1)
+        >>> response = api.create_label(user_token, 'football', color=1)
         >>> label = response.json()
         >>> label['color']
         1
@@ -1329,14 +1329,14 @@ class TodoistAPI(object):
         }
         return self._get('getNotificationSettings', params)
 
-    def update_notification_settings(self, token, notification_type,
+    def update_notification_settings(self, token, event,
                                      service, should_notify):
         """Update a user's notification settings.
 
         :param token: The user's login token.
         :type token: string
-        :param notification_type: The notification to update.
-        :type notification_type: string
+        :param event: Update the notification settings of this event.
+        :type event: string
         :param service: ``email`` or ``push``
         :type service: string
         :param should_notify: If ``0`` notify, otherwise do not.
@@ -1357,7 +1357,7 @@ class TodoistAPI(object):
         """
         params = {
             'token': token,
-            'notification_type': notification_type,
+            'notification_type': event,
             'service': service,
             'dont_notify': should_notify
         }

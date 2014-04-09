@@ -47,6 +47,7 @@
           <div class="body">
             
   <h1>Source code for pytodoist.todoist</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">from</span> <span class="nn">pytodoist.api</span> <span class="kn">import</span> <span class="n">TodoistAPI</span>
 
@@ -184,7 +185,7 @@
     <span class="sd">&quot;&quot;&quot;Return a list of Todoist supported timezones.</span>
 
 <span class="sd">    :return: A list of timezones</span>
-<span class="sd">    :rtype: list</span>
+<span class="sd">    :rtype: list (string)</span>
 
 <span class="sd">    &gt;&gt;&gt; from pytodoist import todoist</span>
 <span class="sd">    &gt;&gt;&gt; todoist.get_timezones()</span>
@@ -208,9 +209,38 @@
 
 
 <div class="viewcode-block" id="User"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.User">[docs]</a><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">TodoistObject</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;A Todoist User.</span>
+    <span class="sd">&quot;&quot;&quot;A Todoist User that has the following attributes:</span>
 
 <span class="sd">    :ivar full_name: The user&#39;s full name.</span>
+<span class="sd">    :ivar start_page: The first page the user will see on Todoist.</span>
+<span class="sd">    :ivar join_date: The date the user joined Todoist.</span>
+<span class="sd">    :ivar last_used_ip: The IP address of the computer last used to login.</span>
+<span class="sd">    :ivar is_premium: Does the user have Todoist premium?</span>
+<span class="sd">    :ivar sort_order: The user&#39;s sort order.</span>
+<span class="sd">    :ivar api_token: The user&#39;s API token.</span>
+<span class="sd">    :ivar shard_id: The user&#39;s shard ID.</span>
+<span class="sd">    :ivar timezone: The user&#39;s chosen timezone.</span>
+<span class="sd">    :ivar id: The ID of the user.</span>
+<span class="sd">    :ivar next_week: The day on which a task is delayed until.</span>
+<span class="sd">    :ivar tz_offset: The user&#39;s timezone offset.</span>
+<span class="sd">    :ivar email: The user&#39;s email address.</span>
+<span class="sd">    :ivar start_day: The first day of the week.</span>
+<span class="sd">    :ivar is_dummy: Is this a real or a dummy user?</span>
+<span class="sd">    :ivar inbox_project: The ID of the user&#39;s Inbox project.</span>
+<span class="sd">    :ivar time_format: The user&#39;s selected time_format.</span>
+<span class="sd">    :ivar image_id: The ID of the user&#39;s avatar.</span>
+<span class="sd">    :ivar beta: The user&#39;s beta status.</span>
+<span class="sd">    :ivar premium_until: The date on which the user&#39;s premium status is revoked.</span>
+<span class="sd">    :ivar mobile_number: The user&#39;s mobile number.</span>
+<span class="sd">    :ivar mobile_host: The host of the user&#39;s mobile.</span>
+<span class="sd">    :ivar password: The user&#39;s password.</span>
+<span class="sd">    :ivar has_push_reminders: Does this user have push reminders?</span>
+<span class="sd">    :ivar date_format: The user&#39;s selected date format.</span>
+<span class="sd">    :ivar karma: The user&#39;s karma.</span>
+<span class="sd">    :ivar karma_trend: The user&#39;s karma trend.</span>
+<span class="sd">    :ivar token: The user&#39;s secret token.</span>
+<span class="sd">    :ivar seq_no: The user&#39;s sequence number.</span>
+<span class="sd">    :ivar default_reminder: The user&#39;s default reminder.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json</span><span class="p">):</span>
@@ -334,37 +364,135 @@
         <span class="n">project_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">Project</span><span class="p">(</span><span class="n">project_as_json</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
 </div>
-    <span class="k">def</span> <span class="nf">get_projects</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="User.get_projects"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.User.get_projects">[docs]</a>    <span class="k">def</span> <span class="nf">get_projects</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of a user&#39;s projects.</span>
+
+<span class="sd">        :return: The user&#39;s projects.</span>
+<span class="sd">        :rtype: list (:mod:`pytodoist.todoist.Project`)</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; user.add_project(&#39;Homework&#39;, color=1)</span>
+<span class="sd">        &gt;&gt;&gt; projects = user.get_projects()</span>
+<span class="sd">        &gt;&gt;&gt; for project in projects:</span>
+<span class="sd">        ...    print project.name</span>
+<span class="sd">        u&#39;Inbox&#39;</span>
+<span class="sd">        u&#39;Homework&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">get_projects</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
         <span class="n">projects_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">Project</span><span class="p">(</span><span class="n">json</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span> <span class="k">for</span> <span class="n">json</span> <span class="ow">in</span> <span class="n">projects_as_json</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="User.get_project"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.User.get_project">[docs]</a>    <span class="k">def</span> <span class="nf">get_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the project with a given name.</span>
 
-    <span class="k">def</span> <span class="nf">get_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_name</span><span class="p">):</span>
+<span class="sd">        :param project_name: The name to search for.</span>
+<span class="sd">        :type project_name: string</span>
+<span class="sd">        :return: The project that has the name ``project_name`` or ``None``</span>
+<span class="sd">            if no project is found.</span>
+<span class="sd">        :rtype: :mod:`pytodoist.todoist.Project`</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; inbox = user.get_project(&#39;Inbox&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; inbox.name</span>
+<span class="sd">        u&#39;Inbox&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">project</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_projects</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">project</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">project_name</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">project</span>
+</div>
+<div class="viewcode-block" id="User.get_project_with_id"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.User.get_project_with_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_project_with_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the project with a given ID.</span>
 
-    <span class="k">def</span> <span class="nf">get_project_with_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">):</span>
+<span class="sd">        :param project_id: The ID to search for.</span>
+<span class="sd">        :type project_id: string</span>
+<span class="sd">        :return: The project that has the ID ``project_id`` or ``None``</span>
+<span class="sd">            if no project is found.</span>
+<span class="sd">        :rtype: :mod:`pytodoist.todoist.Project`</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; inbox = user.get_project(&#39;Inbox&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project_id = inbox.id</span>
+<span class="sd">        &gt;&gt;&gt; inbox = user.get_project_with_id(project_id)</span>
+<span class="sd">        &gt;&gt;&gt; inbox.name</span>
+<span class="sd">        u&#39;Inbox&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">get_project</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">project_id</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
         <span class="n">project_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">Project</span><span class="p">(</span><span class="n">project_as_json</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="User.update_project_orders"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.User.update_project_orders">[docs]</a>    <span class="k">def</span> <span class="nf">update_project_orders</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">projects</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update the order in which projects are displayed on Todoist.</span>
 
-    <span class="k">def</span> <span class="nf">update_project_orders</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">projects</span><span class="p">):</span>
+<span class="sd">        :param projects: A list of projects in the order to be displayed.</span>
+<span class="sd">        :type projects: list (:mod:`pytodoist.todoist.Project`)</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; projects = user.get_projects()</span>
+<span class="sd">        &gt;&gt;&gt; for project in projects:</span>
+<span class="sd">        ...    print project.name</span>
+<span class="sd">        u&#39;Homework&#39;</span>
+<span class="sd">        u&#39;Shopping&#39;</span>
+<span class="sd">        &gt;&gt;&gt; rev_projects = projects[::-1]</span>
+<span class="sd">        &gt;&gt;&gt; user.update_project_orders(rev_projects)</span>
+<span class="sd">        &gt;&gt;&gt; projects = user.get_projects()</span>
+<span class="sd">        &gt;&gt;&gt; for project in projects:</span>
+<span class="sd">        ...    print project.name</span>
+<span class="sd">        u&#39;Shopping&#39;</span>
+<span class="sd">        u&#39;Homework&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">project_ids</span> <span class="o">=</span> <span class="nb">str</span><span class="p">([</span><span class="n">project</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">project</span> <span class="ow">in</span> <span class="n">projects</span><span class="p">])</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">update_project_orders</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">project_ids</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="User.get_uncompleted_tasks"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.User.get_uncompleted_tasks">[docs]</a>    <span class="k">def</span> <span class="nf">get_uncompleted_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return all of a user&#39;s uncompleted tasks.</span>
 
-    <span class="k">def</span> <span class="nf">get_uncompleted_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="sd">        :return: A list of uncompleted tasks.</span>
+<span class="sd">        :rtype: list (:mod:`pytodoist.todoist.Task`)</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; tasks = user.get_uncompleted_tasks()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">tasks</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">get_uncompleted_tasks</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_projects</span><span class="p">())</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">tasks</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="User.get_completed_tasks"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.User.get_completed_tasks">[docs]</a>    <span class="k">def</span> <span class="nf">get_completed_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return all of a user&#39;s completed tasks.</span>
 
-    <span class="k">def</span> <span class="nf">get_completed_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="sd">        :return: A list of completed tasks.</span>
+<span class="sd">        :rtype: list (:mod:`pytodoist.todoist.Task`)</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; tasks = user.get_completed_tasks()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">tasks</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">get_completed_tasks</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_projects</span><span class="p">())</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">tasks</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="User.search_completed_tasks"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.User.search_completed_tasks">[docs]</a>    <span class="k">def</span> <span class="nf">search_completed_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a filtered list of a user&#39;s completed tasks.</span>
 
-    <span class="k">def</span> <span class="nf">search_completed_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="sd">        .. warning:: Requires the user to have Todoist premium.</span>
+
+<span class="sd">        :param label: Only return tasks with this label.</span>
+<span class="sd">        :type label: :mod:`pytodoist.todoist.Label`</span>
+<span class="sd">        :param interval: Only return tasks completed this time period.</span>
+<span class="sd">        :type interval: string</span>
+<span class="sd">        :return: A list of tasks that meet the search criteria. If the user</span>
+<span class="sd">            does not have Todoist premium an empty list is returned.</span>
+<span class="sd">        :rtype: list (:mod:`pytodoist.todoist.Task`)</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; tasks = user.search_completed_tasks(label=&#39;School&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">get_all_completed_tasks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span>
                                                <span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
@@ -375,11 +503,33 @@
             <span class="n">project</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_project_with_id</span><span class="p">(</span><span class="n">project_id</span><span class="p">)</span>
             <span class="n">tasks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Task</span><span class="p">(</span><span class="n">json</span><span class="p">,</span> <span class="n">project</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">tasks</span>
+</div>
+<div class="viewcode-block" id="User.get_tasks"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.User.get_tasks">[docs]</a>    <span class="k">def</span> <span class="nf">get_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return all of a user&#39;s tasks, regardless of completion state.</span>
 
-    <span class="k">def</span> <span class="nf">get_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="sd">        :return: A list of all of a user&#39;s tasks.</span>
+<span class="sd">        :rtype: list (:mod:`pytodoist.todoist.Task`)</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; tasks = user.get_tasks()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_uncompleted_tasks</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_completed_tasks</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="User.search_tasks"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.User.search_tasks">[docs]</a>    <span class="k">def</span> <span class="nf">search_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queries</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of tasks that match some search criteria.</span>
 
-    <span class="k">def</span> <span class="nf">search_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queries</span><span class="p">):</span>
+<span class="sd">        :param queries: Return tasks that match at least one of these queries.</span>
+<span class="sd">        :type queries: list (string)</span>
+<span class="sd">        :return: A list tasks that match at least one query.</span>
+<span class="sd">        :rtype: list (:mod:`pytodoist.todoist.Task`)</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; queries = [&#39;today&#39;, &#39;tomorrow&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; tasks = user.search_tasks(queries)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">queries</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">queries</span><span class="p">)</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">search_tasks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">queries</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
         <span class="n">query_results</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
@@ -396,175 +546,519 @@
                     <span class="n">task</span> <span class="o">=</span> <span class="n">Task</span><span class="p">(</span><span class="n">task_as_json</span><span class="p">,</span> <span class="n">project</span><span class="p">)</span>
                     <span class="n">tasks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">tasks</span>
+</div>
+<div class="viewcode-block" id="User.get_label"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.User.get_label">[docs]</a>    <span class="k">def</span> <span class="nf">get_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the user&#39;s label that has a given name.</span>
 
-    <span class="k">def</span> <span class="nf">get_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label_name</span><span class="p">):</span>
+<span class="sd">        :param label_name: The name to search for.</span>
+<span class="sd">        :type label_name: string</span>
+<span class="sd">        :return: A label that has a matching name or ``None`` if not found.</span>
+<span class="sd">        :rtype: :mod:`pytodoist.todoist.Label`</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; label = user.get_label(&#39;School&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_labels</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">label</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">label_name</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">label</span>
+</div>
+<div class="viewcode-block" id="User.get_labels"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.User.get_labels">[docs]</a>    <span class="k">def</span> <span class="nf">get_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of all of a user&#39;s labels.</span>
 
-    <span class="k">def</span> <span class="nf">get_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="sd">        :return: A list of labels.</span>
+<span class="sd">        :rtype: list (:mod:`pytodoist.todoist.Label`)</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; labels = user.get_labels()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">get_labels</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
         <span class="n">labels_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">Label</span><span class="p">(</span><span class="n">json</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span> <span class="k">for</span> <span class="n">json</span> <span class="ow">in</span> <span class="n">labels_as_json</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="User.create_label"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.User.create_label">[docs]</a>    <span class="k">def</span> <span class="nf">create_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a new label.</span>
 
-    <span class="k">def</span> <span class="nf">add_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">add_label</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">)</span>
+<span class="sd">        :param name: The name of the label.</span>
+<span class="sd">        :type name: string</span>
+<span class="sd">        :rtype: :mod:`pytodoist.todoist.Label`</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; label = user.create_label(&#39;School&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">create_label</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
         <span class="n">label_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">Label</span><span class="p">(</span><span class="n">label_as_json</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
-
+</div>
     <span class="k">def</span> <span class="nf">_get_notification_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of all notification settings.</span>
+
+<span class="sd">        :return: A JSON representation of the settings.</span>
+<span class="sd">        :rtype: string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">get_notification_settings</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_update_notification_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">notification_type</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span>
-                                         <span class="n">should_notify</span><span class="p">):</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">update_notification_settings</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">,</span>
-                                                    <span class="n">notification_type</span><span class="p">,</span>
-                                                    <span class="n">service</span><span class="p">,</span>
-                                                    <span class="n">should_notify</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_update_notification_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span>
+                                      <span class="n">should_notify</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update the settings of a an events notifications.</span>
+
+<span class="sd">        :param event: Update the notification settings of this event.</span>
+<span class="sd">        :type event: string</span>
+<span class="sd">        :param service: The notification service to update.</span>
+<span class="sd">        :type service: string</span>
+<span class="sd">        :param should_notify: Notify if this is ``1``.</span>
+<span class="sd">        :type should_notify: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">update_notification_settings</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span>
+                                                    <span class="n">service</span><span class="p">,</span> <span class="n">should_notify</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">get_notification_types</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_notification_settings</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+<div class="viewcode-block" id="User.get_notifiable_events"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.User.get_notifiable_events">[docs]</a>    <span class="k">def</span> <span class="nf">get_notifiable_events</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of notifiable events.</span>
 
-    <span class="k">def</span> <span class="nf">is_receiving_email_notifications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">notification_type</span><span class="p">):</span>
-        <span class="n">notification_settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_notification_settings</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">notification_settings</span><span class="p">[</span><span class="n">notification_type</span><span class="p">][</span><span class="s">&#39;notify_email&#39;</span><span class="p">]</span>
+<span class="sd">        :return: A list of notifiable events.</span>
+<span class="sd">        :rtype: list (string)</span>
 
-    <span class="k">def</span> <span class="nf">is_receiving_push_notifications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">notification_type</span><span class="p">):</span>
-        <span class="n">notification_settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_notification_settings</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">notification_settings</span><span class="p">[</span><span class="n">notification_type</span><span class="p">][</span><span class="s">&#39;notify_push&#39;</span><span class="p">]</span>
-
-    <span class="k">def</span> <span class="nf">enable_push_notifications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">notification_type</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_update_notification_settings</span><span class="p">(</span><span class="n">notification_type</span><span class="p">,</span> <span class="s">&#39;push&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">disable_push_notifications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">notification_type</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_update_notification_settings</span><span class="p">(</span><span class="n">notification_type</span><span class="p">,</span> <span class="s">&#39;push&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">enable_email_notifications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">notification_type</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_update_notification_settings</span><span class="p">(</span><span class="n">notification_type</span><span class="p">,</span> <span class="s">&#39;email&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">disable_email_notifications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">notification_type</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_update_notification_settings</span><span class="p">(</span><span class="n">notification_type</span><span class="p">,</span> <span class="s">&#39;email&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; user.get_notifiable_events()</span>
+<span class="sd">        [u&#39;user_left_project&#39;, u&#39;item_completed&#39;, ...]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_notification_settings</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
 </div>
-<span class="k">class</span> <span class="nc">Project</span><span class="p">(</span><span class="n">TodoistObject</span><span class="p">):</span>
+<div class="viewcode-block" id="User.is_email_notified_when"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.User.is_email_notified_when">[docs]</a>    <span class="k">def</span> <span class="nf">is_email_notified_when</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find out if a user is receiving emails for a given</span>
+<span class="sd">        event.</span>
+
+<span class="sd">        :param event: The type of the notification.</span>
+<span class="sd">        :type event: string</span>
+<span class="sd">        :return: ``True`` if the user&#39;s settings allow for emails,</span>
+<span class="sd">            ``False`` otherwise.</span>
+<span class="sd">        :rtype: bool</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; user.is_email_notified_when(&#39;note_added&#39;)</span>
+<span class="sd">        True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">notification_settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_notification_settings</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">notification_settings</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s">&#39;notify_email&#39;</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="User.is_push_notified_when"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.User.is_push_notified_when">[docs]</a>    <span class="k">def</span> <span class="nf">is_push_notified_when</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find out if a user is receiving push notifications for</span>
+<span class="sd">        a given event.</span>
+
+<span class="sd">        :param event: The type of the notification.</span>
+<span class="sd">        :type event: string</span>
+<span class="sd">        :return: ``True`` if the user&#39;s settings allow for push</span>
+<span class="sd">            notifications, ``False`` otherwise.</span>
+<span class="sd">        :rtype: bool</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; user.is_push_notified_when(&#39;note_added&#39;)</span>
+<span class="sd">        True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">notification_settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_notification_settings</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">notification_settings</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s">&#39;notify_push&#39;</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="User.enable_push_notifications"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.User.enable_push_notifications">[docs]</a>    <span class="k">def</span> <span class="nf">enable_push_notifications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Enable push notifications for a given event.</span>
+
+<span class="sd">        :param event: The event to enable push notifications for.</span>
+<span class="sd">        :type event: string</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; user.enable_push_notifications(&#39;note_added&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_notification_settings</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="s">&#39;push&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="User.disable_push_notifications"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.User.disable_push_notifications">[docs]</a>    <span class="k">def</span> <span class="nf">disable_push_notifications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Disable push notifications for a given event.</span>
+
+<span class="sd">        :param event: The event to disable push notifications for.</span>
+<span class="sd">        :type event: string</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; user.disable_push_notifications(&#39;note_added&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_notification_settings</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="s">&#39;push&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="User.enable_email_notifications"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.User.enable_email_notifications">[docs]</a>    <span class="k">def</span> <span class="nf">enable_email_notifications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Enable email notifications for a given event.</span>
+
+<span class="sd">        :param event: The event to enable email notifications for.</span>
+<span class="sd">        :type event: string</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; user.enable_email_notifications(&#39;note_added&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_notification_settings</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="s">&#39;email&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="User.disable_email_notifications"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.User.disable_email_notifications">[docs]</a>    <span class="k">def</span> <span class="nf">disable_email_notifications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Disable email notifications for a given event.</span>
+
+<span class="sd">        :param event: The event to disable email notifications for.</span>
+<span class="sd">        :type event: string</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; user.disable_email_notifications(&#39;note_added&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_notification_settings</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="s">&#39;email&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="Project"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.Project">[docs]</a><span class="k">class</span> <span class="nc">Project</span><span class="p">(</span><span class="n">TodoistObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A Todoist Project with the following attributes:</span>
+
+<span class="sd">    :ivar user_id: The user ID of the owner.</span>
+<span class="sd">    :ivar name: The name of the project.</span>
+<span class="sd">    :ivar color: The color of the project.</span>
+<span class="sd">    :ivar is_deleted: Has this project been deleted?</span>
+<span class="sd">    :ivar collapsed: Is this project collapsed?</span>
+<span class="sd">    :ivar cache_count: The cache count of the project.</span>
+<span class="sd">    :ivar inbox_project: Is this project the Inbox?</span>
+<span class="sd">    :ivar archived_date: The date on which the project was archived.</span>
+<span class="sd">    :ivar item_order: The task ordering.</span>
+<span class="sd">    :ivar indent: The indentation level of the project.</span>
+<span class="sd">    :ivar is_archived: Is this project archived?</span>
+<span class="sd">    :ivar archived_timestamp: The timestamp of the project archiving.</span>
+<span class="sd">    :ivar owner: The owner of the project.</span>
+<span class="sd">    :ivar last_updated: When the project was last updated.</span>
+<span class="sd">    :ivar id: The ID of the project.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">owner</span> <span class="o">=</span> <span class="n">owner</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Project</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Project.delete"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.Project.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete the project.</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project = user.get_project(&#39;Homework&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project.delete()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">delete_project</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Project.update"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.Project.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update the project&#39;s details on Todoist.</span>
 
-    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="sd">        You must call this method to register any local attribute changes with</span>
+<span class="sd">        Todoist.</span>
+
+<span class="sd">        :raises TodoistError: If the request to update is invalid.</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project = user.get_project(&#39;Homework&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project.name = &#39;Find Employment&#39;</span>
+<span class="sd">        ... # At this point Todoist still thinks the name is &#39;Homework&#39;</span>
+<span class="sd">        &gt;&gt;&gt; project.update()</span>
+<span class="sd">        ... # Now the name has been updated on Todoist.</span>
+<span class="sd">        &gt;&gt;&gt; project = user.get_project(&#39;Homework&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project == None</span>
+<span class="sd">        True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">update_project</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
                                       <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Project.archive"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.Project.archive">[docs]</a>    <span class="k">def</span> <span class="nf">archive</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Archive the project.</span>
 
-    <span class="k">def</span> <span class="nf">archive</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project = user.get_project(&#39;Homework&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project.archive()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">archive_project</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Project.unarchive"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.Project.unarchive">[docs]</a>    <span class="k">def</span> <span class="nf">unarchive</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Unarchive the project.</span>
 
-    <span class="k">def</span> <span class="nf">unarchive</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project = user.get_project(&#39;Homework&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project.unarchive()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">unarchive_project</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Project.collapse"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.Project.collapse">[docs]</a>    <span class="k">def</span> <span class="nf">collapse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Collapse the project on Todoist.</span>
 
-    <span class="k">def</span> <span class="nf">collapse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project = user.get_project(&#39;Homework&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project.collapse()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">update_project</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">collapsed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Project.add_task"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.Project.add_task">[docs]</a>    <span class="k">def</span> <span class="nf">add_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">date</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a task to the project</span>
 
-    <span class="k">def</span> <span class="nf">add_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">date</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="sd">        :param content: The task description.</span>
+<span class="sd">        :type content: string</span>
+<span class="sd">        :param date: The task deadline.</span>
+<span class="sd">        :type date: string</span>
+<span class="sd">        :param priority: The priority of the task.</span>
+<span class="sd">        :type priority: int</span>
+<span class="sd">        :return: The added task.</span>
+<span class="sd">        :rtype: :mod:`pytodoist.todoist.Task`</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project = user.get_project(&#39;Homework&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; task = project.add_task(&#39;Read chapter 4.&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; task.content</span>
+<span class="sd">        u&#39;Read Chapter 4&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">add_task</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">project_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
                                 <span class="n">date_string</span><span class="o">=</span><span class="n">date</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="n">priority</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
         <span class="n">task_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">Task</span><span class="p">(</span><span class="n">task_as_json</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Project.get_tasks"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.Project.get_tasks">[docs]</a>    <span class="k">def</span> <span class="nf">get_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return all tasks in this project.</span>
 
-    <span class="k">def</span> <span class="nf">get_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="sd">        :return: A list of all tasks in this project.</span>
+<span class="sd">        :rtype: list (:mod:`pytodoist.todoist.Task`)</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project = user.get_project(&#39;Homework&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project.add_task(&#39;Read chapter 4.&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; tasks = project.get_tasks()</span>
+<span class="sd">        &gt;&gt;&gt; for task in tasks:</span>
+<span class="sd">        ...    print task.content</span>
+<span class="sd">        u&#39;Read Chapter 4.&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_uncompleted_tasks</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_completed_tasks</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Project.get_uncompleted_tasks"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.Project.get_uncompleted_tasks">[docs]</a>    <span class="k">def</span> <span class="nf">get_uncompleted_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of all uncompleted tasks in this project.</span>
 
-    <span class="k">def</span> <span class="nf">get_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task_id</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_tasks</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">task_id</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">task</span>
+<span class="sd">        :return: A list of all uncompleted tasks in this project.</span>
+<span class="sd">        :rtype: list (:mod:`pytodoist.todoist.Task`)</span>
 
-    <span class="k">def</span> <span class="nf">get_uncompleted_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project = user.get_project(&#39;Homework&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project.add_task(&#39;Read chapter 4.&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; uncompleted_tasks = project.get_uncompleted_tasks()</span>
+<span class="sd">        &gt;&gt;&gt; for task in uncompleted_tasks:</span>
+<span class="sd">        ...    print task.content</span>
+<span class="sd">        u&#39;Read Chapter 4.&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">get_uncompleted_tasks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
         <span class="n">tasks_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">Task</span><span class="p">(</span><span class="n">json</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span> <span class="k">for</span> <span class="n">json</span> <span class="ow">in</span> <span class="n">tasks_as_json</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="Project.get_completed_tasks"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.Project.get_completed_tasks">[docs]</a>    <span class="k">def</span> <span class="nf">get_completed_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of all completed tasks in this project.</span>
 
-    <span class="k">def</span> <span class="nf">get_completed_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="sd">        :return: A list of all completed tasks in this project.</span>
+<span class="sd">        :rtype: list (:mod:`pytodoist.todoist.Task`)</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project = user.get_project(&#39;Homework&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; task = project.add_task(&#39;Read chapter 4.&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; task.complete()</span>
+<span class="sd">        &gt;&gt;&gt; completed_tasks = project.get_completed_tasks()</span>
+<span class="sd">        &gt;&gt;&gt; for task in completed_tasks:</span>
+<span class="sd">        ...    print task.content</span>
+<span class="sd">        u&#39;Read Chapter 4.&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">get_completed_tasks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
         <span class="n">tasks_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">Task</span><span class="p">(</span><span class="n">json</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span> <span class="k">for</span> <span class="n">json</span> <span class="ow">in</span> <span class="n">tasks_as_json</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="Project.update_task_orders"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.Project.update_task_orders">[docs]</a>    <span class="k">def</span> <span class="nf">update_task_orders</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tasks</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update the order in which tasks are displayed on Todoist.</span>
 
-    <span class="k">def</span> <span class="nf">update_task_orders</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tasks</span><span class="p">):</span>
+<span class="sd">        :param tasks: A list of tasks in the order to be displayed.</span>
+<span class="sd">        :type tasks: list (:mod:`pytodoist.todoist.Task`)</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project = user.get_project(&#39;Homework&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; tasks = project.get_tasks()</span>
+<span class="sd">        &gt;&gt;&gt; rev_tasks = tasks[::-1]</span>
+<span class="sd">        &gt;&gt;&gt; project.update_task_orders(rev_tasks)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">task_ids</span> <span class="o">=</span> <span class="nb">str</span><span class="p">([</span><span class="n">task</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">])</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">update_task_ordering</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">task_ids</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
+</div></div>
+<div class="viewcode-block" id="Task"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.Task">[docs]</a><span class="k">class</span> <span class="nc">Task</span><span class="p">(</span><span class="n">TodoistObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A Todoist Task with the following attributes:</span>
 
-<span class="k">class</span> <span class="nc">Task</span><span class="p">(</span><span class="n">TodoistObject</span><span class="p">):</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">project</span> <span class="o">=</span> <span class="n">project</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Task</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Task.update"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.Task.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update the task&#39;s details on Todoist.</span>
+
+<span class="sd">        You must call this method to register any local attribute changes with</span>
+<span class="sd">        Todoist.</span>
+
+<span class="sd">        :raises TodoistError: If the request to update is invalid.</span>
+<span class="sd">        :raises NotFoundError: If the task cannot be found on Todoist.</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project = user.get_project(&#39;Homework&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; task = user.add_task(&#39;Read Chapter 4.&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; task.content = &#39;Read Chapter 5&#39;</span>
+<span class="sd">        ... # At this point Todoist still thinks the content is &#39;Read Chapter 4&#39;</span>
+<span class="sd">        &gt;&gt;&gt; task.update()</span>
+<span class="sd">        ... # Now the content has been updated on Todoist.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">update_task</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
                                    <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Task.delete"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.Task.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete the task.</span>
 
-    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project = user.get_project(&#39;Homework&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; task = user.add_task(&#39;Read Chapter 4.&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; task.delete()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">task_ids</span> <span class="o">=</span> <span class="s">&#39;[{id}]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">delete_tasks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">task_ids</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Task.complete"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.Task.complete">[docs]</a>    <span class="k">def</span> <span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Mark the task complete.</span>
 
-    <span class="k">def</span> <span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project = user.get_project(&#39;Homework&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; task = user.add_task(&#39;Read Chapter 4.&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; task.complete()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">task_ids</span> <span class="o">=</span> <span class="s">&#39;[{id}]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">complete_tasks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">task_ids</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Task.uncomplete"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.Task.uncomplete">[docs]</a>    <span class="k">def</span> <span class="nf">uncomplete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Mark the task uncomplete.</span>
 
-    <span class="k">def</span> <span class="nf">uncomplete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project = user.get_project(&#39;Homework&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; task = user.add_task(&#39;Read Chapter 4.&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; task.uncomplete()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">task_ids</span> <span class="o">=</span> <span class="s">&#39;[{id}]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">uncomplete_tasks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">task_ids</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Task.add_note"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.Task.add_note">[docs]</a>    <span class="k">def</span> <span class="nf">add_note</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a note to the Task.</span>
 
-    <span class="k">def</span> <span class="nf">add_note</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+<span class="sd">        :param content: The content of the note.</span>
+<span class="sd">        :type content: string</span>
+<span class="sd">        :return: The added note.</span>
+<span class="sd">        :rtype: :mod:`pytodoist.todoist.Note`</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project = user.get_project(&#39;Homework&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; task = user.add_task(&#39;Read Chapter 4.&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; note = task.add_note(&#39;Page 56&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; note.content</span>
+<span class="sd">        u&#39;Page 56&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">add_note</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">content</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
         <span class="n">note_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">Note</span><span class="p">(</span><span class="n">note_as_json</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Task.get_notes"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.Task.get_notes">[docs]</a>    <span class="k">def</span> <span class="nf">get_notes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return all notes attached to this Task.</span>
 
-    <span class="k">def</span> <span class="nf">get_note_with_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">note_id</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">note</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_notes</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">note</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">note_id</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">note</span>
+<span class="sd">        :return: A list of all notes attached to this Task.</span>
+<span class="sd">        :rtype: list (:mod:`pytodoist.todoist.Note`)</span>
 
-    <span class="k">def</span> <span class="nf">get_notes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project = user.get_project(&#39;Homework&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; task = user.add_task(&#39;Read Chapter 4.&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; task.add_note(&#39;Page 56&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; notes = task.get_notes()</span>
+<span class="sd">        &gt;&gt;&gt; len(notes)</span>
+<span class="sd">        1</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">get_notes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
         <span class="n">notes_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">Note</span><span class="p">(</span><span class="n">json</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span> <span class="k">for</span> <span class="n">json</span> <span class="ow">in</span> <span class="n">notes_as_json</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="Task.advance_recurring_date"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.Task.advance_recurring_date">[docs]</a>    <span class="k">def</span> <span class="nf">advance_recurring_date</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Advance the recurring date of this task.</span>
 
-    <span class="k">def</span> <span class="nf">advance_recurring_date</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project = user.get_project(&#39;Homework&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; task = user.add_task(&#39;Read Chapter 4.&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; task.due_date</span>
+<span class="sd">        Sun 09 Mar 2014 19:54:01 +0000</span>
+<span class="sd">        &gt;&gt;&gt; task.advance_recurring_date()</span>
+<span class="sd">        &gt;&gt;&gt; task.due_date</span>
+<span class="sd">        Sun 10 Mar 2014 19:54:01 +0000</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">task_ids</span> <span class="o">=</span> <span class="s">&#39;[{id}]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">advance_recurring_dates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span>
                                                <span class="n">task_ids</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
         <span class="n">task_as_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">task_as_json</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Task.move"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.Task.move">[docs]</a>    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Move this task to another project.</span>
 
-    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+<span class="sd">        :param project: The project to move the task to.</span>
+<span class="sd">        :type project: :mod:`pytodoist.todoist.Project`</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project = user.get_project(&#39;Homework&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; task = user.add_task(&#39;Read Chapter 4.&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; task.project.name</span>
+<span class="sd">        u&#39;Homework&#39;</span>
+<span class="sd">        &gt;&gt;&gt; inbox = user.get_project(&#39;Inbox&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; task.move(inbox)</span>
+<span class="sd">        &gt;&gt;&gt; task.project.name</span>
+<span class="sd">        u&#39;Inbox&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">current_pos</span> <span class="o">=</span> <span class="s">&#39;{{&quot;{p_id}&quot;:[&quot;{t_id}&quot;]}}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">p_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
                                                        <span class="n">t_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">move_tasks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">current_pos</span><span class="p">,</span>
@@ -572,8 +1066,11 @@
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">project</span> <span class="o">=</span> <span class="n">project</span>
 
+</div></div>
+<div class="viewcode-block" id="Note"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.Note">[docs]</a><span class="k">class</span> <span class="nc">Note</span><span class="p">(</span><span class="n">TodoistObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A Todoist note with the following attributes:</span>
 
-<span class="k">class</span> <span class="nc">Note</span><span class="p">(</span><span class="n">TodoistObject</span><span class="p">):</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json</span><span class="p">,</span> <span class="n">task</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="bp">None</span>
@@ -581,18 +1078,48 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="o">=</span> <span class="n">task</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Note</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Note.update"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.Note.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update the note&#39;s details on Todoist.</span>
+
+<span class="sd">        You must call this method to register any local attribute changes with</span>
+<span class="sd">        Todoist.</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project = user.get_project(&#39;Homework&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; task = user.add_task(&#39;Read Chapter 4.&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; note = task.add_note(&#39;Page 56&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; note.content = &#39;Page 65&#39;</span>
+<span class="sd">        ... # At this point Todoist still thinks the content is &#39;Page 56&#39;</span>
+<span class="sd">        &gt;&gt;&gt; note.update()</span>
+<span class="sd">        ... # Now the content has been updated on Todoist.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">update_note</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
                                    <span class="bp">self</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Note.delete"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.Note.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete the note, removing it from it&#39;s task.</span>
 
-    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; project = user.get_project(&#39;Homework&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; task = user.add_task(&#39;Read Chapter 4.&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; note = task.add_note(&#39;Page 56&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; note.delete()</span>
+<span class="sd">        &gt;&gt;&gt; notes = task.get_notes()</span>
+<span class="sd">        &gt;&gt;&gt; len(notes)</span>
+<span class="sd">        0</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">delete_note</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span>
                                    <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
+</div></div>
+<div class="viewcode-block" id="Label"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.Label">[docs]</a><span class="k">class</span> <span class="nc">Label</span><span class="p">(</span><span class="n">TodoistObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A Todoist label with the following attributes:</span>
 
-<span class="k">class</span> <span class="nc">Label</span><span class="p">(</span><span class="n">TodoistObject</span><span class="p">):</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">None</span>
@@ -601,53 +1128,83 @@
         <span class="nb">super</span><span class="p">(</span><span class="n">Label</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
 
-    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Label.update"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.Label.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update the label&#39;s details on Todoist.</span>
+
+<span class="sd">        You must call this method to register any local attribute changes with</span>
+<span class="sd">        Todoist.</span>
+
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; label = user.create_label(&#39;work&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; label.name = &#39;football&#39;</span>
+<span class="sd">        ... # At this point Todoist still thinks the name is &#39;work&#39;</span>
+<span class="sd">        &gt;&gt;&gt; label.update()</span>
+<span class="sd">        ... # Now the name has been updated on Todoist.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">update_label_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">update_label_color</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Label.delete"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.Label.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete the label.</span>
 
-    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="sd">        &gt;&gt;&gt; from pytodoist import todoist</span>
+<span class="sd">        &gt;&gt;&gt; user = todoist.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; label = user.create_label(&#39;work&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; label.delete()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">API</span><span class="o">.</span><span class="n">delete_label</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
         <span class="n">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
+</div></div>
+<div class="viewcode-block" id="TodoistError"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.TodoistError">[docs]</a><span class="k">class</span> <span class="nc">TodoistError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Will be raised whenever a Todoist API call fails.</span>
 
-<span class="k">class</span> <span class="nc">TodoistError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="sd">    This is the generic TodoistError that will be raised when there</span>
+<span class="sd">    are no others suitable.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">response</span> <span class="o">=</span> <span class="n">response</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-
-<span class="k">class</span> <span class="nc">AuthError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="AuthError"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.AuthError">[docs]</a><span class="k">class</span> <span class="nc">AuthError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised when Todoist authentication fails.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">AuthError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-
-<span class="k">class</span> <span class="nc">RegistrationError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="RegistrationError"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.RegistrationError">[docs]</a><span class="k">class</span> <span class="nc">RegistrationError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised when Todoist registration fails.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">RegistrationError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
-
-<span class="k">class</span> <span class="nc">InternalError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="InternalError"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.InternalError">[docs]</a><span class="k">class</span> <span class="nc">InternalError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised when an error occurs due to Todoist server problems.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">InternalError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
-
-<span class="k">class</span> <span class="nc">BadValueError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="BadValueError"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.BadValueError">[docs]</a><span class="k">class</span> <span class="nc">BadValueError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised when an invalid parameter is passed in an API call.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">BadValueError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
-
-<span class="k">class</span> <span class="nc">NotFoundError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="NotFoundError"><a class="viewcode-back" href="../../todoist.html#pytodoist.todoist.NotFoundError">[docs]</a><span class="k">class</span> <span class="nc">NotFoundError</span><span class="p">(</span><span class="n">TodoistError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised when a Todoist object cannot be found.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">NotFoundError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
-
+</div>
 <span class="n">_ERROR_TEXT_EXCEPTION_MAPPING</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s">&#39;&quot;LOGIN_ERROR&quot;&#39;</span><span class="p">:</span>                       <span class="n">AuthError</span><span class="p">,</span>
     <span class="s">&#39;&quot;EMAIL_MISMATCH&quot;&#39;</span><span class="p">:</span>                    <span class="n">AuthError</span><span class="p">,</span>
@@ -682,11 +1239,12 @@
       <span class="k">return</span> <span class="n">_ERROR_TEXT_EXCEPTION_MAPPING</span><span class="p">[</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">]</span>
     <span class="k">elif</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="ow">in</span> <span class="n">_ERROR_CODE_EXCEPTION_MAPPING</span><span class="p">:</span>
       <span class="k">return</span> <span class="n">_ERROR_CODE_EXCEPTION_MAPPING</span><span class="p">[</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">TodoistError</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">TodoistError</span>
 
 <span class="k">def</span> <span class="nf">_fail_if_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="n">_get_associated_exception</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="n">exception</span> <span class="o">=</span>  <span class="n">_get_associated_exception</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">exception</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">_contains_errors</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span> <span class="ow">or</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span> <span class="ow">in</span> <span class="n">_ERROR_TEXT_RESPONSES</span>

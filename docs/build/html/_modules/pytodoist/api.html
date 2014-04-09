@@ -592,7 +592,7 @@
 <span class="sd">        &gt;&gt;&gt; response = api.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
 <span class="sd">        &gt;&gt;&gt; user_info = response.json()</span>
 <span class="sd">        &gt;&gt;&gt; user_token = user_info[&#39;token&#39;]</span>
-<span class="sd">        &gt;&gt;&gt; api.add_label(user_token, &#39;football&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; api.create_label(user_token, &#39;football&#39;)</span>
 <span class="sd">        &gt;&gt;&gt; response = api.get_labels(user_token)</span>
 <span class="sd">        &gt;&gt;&gt; labels = response.json()</span>
 <span class="sd">        &gt;&gt;&gt; for label in labels.values():</span>
@@ -605,7 +605,7 @@
         <span class="p">}</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s">&#39;getLabels&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="TodoistAPI.add_label"><a class="viewcode-back" href="../../api.html#pytodoist.api.TodoistAPI.add_label">[docs]</a>    <span class="k">def</span> <span class="nf">add_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">label_name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="TodoistAPI.create_label"><a class="viewcode-back" href="../../api.html#pytodoist.api.TodoistAPI.create_label">[docs]</a>    <span class="k">def</span> <span class="nf">create_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">label_name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Add a label.</span>
 
 <span class="sd">        If a label with the name already exists it will be returned.</span>
@@ -624,7 +624,7 @@
 <span class="sd">        &gt;&gt;&gt; response = api.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
 <span class="sd">        &gt;&gt;&gt; user_info = response.json()</span>
 <span class="sd">        &gt;&gt;&gt; user_token = user_info[&#39;token&#39;]</span>
-<span class="sd">        &gt;&gt;&gt; response = api.add_label(user_token, &#39;football&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; response = api.create_label(user_token, &#39;football&#39;)</span>
 <span class="sd">        &gt;&gt;&gt; label = response.json()</span>
 <span class="sd">        &gt;&gt;&gt; label[&#39;name&#39;]</span>
 <span class="sd">        u&#39;football&#39;</span>
@@ -652,7 +652,7 @@
 <span class="sd">        &gt;&gt;&gt; response = api.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
 <span class="sd">        &gt;&gt;&gt; user_info = response.json()</span>
 <span class="sd">        &gt;&gt;&gt; user_token = user_info[&#39;token&#39;]</span>
-<span class="sd">        &gt;&gt;&gt; response = api.add_label(user_token, &#39;football&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; response = api.create_label(user_token, &#39;football&#39;)</span>
 <span class="sd">        &gt;&gt;&gt; label = response.json()</span>
 <span class="sd">        &gt;&gt;&gt; label[&#39;name&#39;]</span>
 <span class="sd">        u&#39;football&#39;</span>
@@ -685,7 +685,7 @@
 <span class="sd">        &gt;&gt;&gt; response = api.login(&#39;john.doe@gmail.com&#39;, &#39;passwd&#39;)</span>
 <span class="sd">        &gt;&gt;&gt; user_info = response.json()</span>
 <span class="sd">        &gt;&gt;&gt; user_token = user_info[&#39;token&#39;]</span>
-<span class="sd">        &gt;&gt;&gt; response = api.add_label(user_token, &#39;football&#39;, color=1)</span>
+<span class="sd">        &gt;&gt;&gt; response = api.create_label(user_token, &#39;football&#39;, color=1)</span>
 <span class="sd">        &gt;&gt;&gt; label = response.json()</span>
 <span class="sd">        &gt;&gt;&gt; label[&#39;color&#39;]</span>
 <span class="sd">        1</span>
@@ -1378,14 +1378,14 @@
         <span class="p">}</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s">&#39;getNotificationSettings&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="TodoistAPI.update_notification_settings"><a class="viewcode-back" href="../../api.html#pytodoist.api.TodoistAPI.update_notification_settings">[docs]</a>    <span class="k">def</span> <span class="nf">update_notification_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">notification_type</span><span class="p">,</span>
+<div class="viewcode-block" id="TodoistAPI.update_notification_settings"><a class="viewcode-back" href="../../api.html#pytodoist.api.TodoistAPI.update_notification_settings">[docs]</a>    <span class="k">def</span> <span class="nf">update_notification_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span>
                                      <span class="n">service</span><span class="p">,</span> <span class="n">should_notify</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Update a user&#39;s notification settings.</span>
 
 <span class="sd">        :param token: The user&#39;s login token.</span>
 <span class="sd">        :type token: string</span>
-<span class="sd">        :param notification_type: The notification to update.</span>
-<span class="sd">        :type notification_type: string</span>
+<span class="sd">        :param event: Update the notification settings of this event.</span>
+<span class="sd">        :type event: string</span>
 <span class="sd">        :param service: ``email`` or ``push``</span>
 <span class="sd">        :type service: string</span>
 <span class="sd">        :param should_notify: If ``0`` notify, otherwise do not.</span>
@@ -1406,7 +1406,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s">&#39;token&#39;</span><span class="p">:</span> <span class="n">token</span><span class="p">,</span>
-            <span class="s">&#39;notification_type&#39;</span><span class="p">:</span> <span class="n">notification_type</span><span class="p">,</span>
+            <span class="s">&#39;notification_type&#39;</span><span class="p">:</span> <span class="n">event</span><span class="p">,</span>
             <span class="s">&#39;service&#39;</span><span class="p">:</span> <span class="n">service</span><span class="p">,</span>
             <span class="s">&#39;dont_notify&#39;</span><span class="p">:</span> <span class="n">should_notify</span>
         <span class="p">}</span>

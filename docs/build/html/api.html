@@ -89,45 +89,6 @@ using the higher level abstractions implemented in the <tt class="xref py py-mod
 </pre></div>
 </div>
 <dl class="method">
-<dt id="pytodoist.api.TodoistAPI.add_label">
-<tt class="descname">add_label</tt><big>(</big><em>token</em>, <em>label_name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/pytodoist/api.html#TodoistAPI.add_label"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.api.TodoistAPI.add_label" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add a label.</p>
-<p>If a label with the name already exists it will be returned.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>token</strong> (<em>string</em>) &#8211; The user&#8217;s login token.</li>
-<li><strong>label_name</strong> (<em>string</em>) &#8211; The name of the label.</li>
-<li><strong>color</strong> (<em>int</em>) &#8211; The color of the label.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The HTTP response to the request.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><tt class="xref py py-mod docutils literal"><span class="pre">requests.Response</span></tt></p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">On success:</th><td class="field-body"><p class="first last"><tt class="docutils literal"><span class="pre">response.json()</span></tt> will contain the label details.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">api</span> <span class="o">=</span> <span class="n">TodoistAPI</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">response</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="s">&#39;john.doe@gmail.com&#39;</span><span class="p">,</span> <span class="s">&#39;passwd&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">user_info</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">user_token</span> <span class="o">=</span> <span class="n">user_info</span><span class="p">[</span><span class="s">&#39;token&#39;</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">response</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">add_label</span><span class="p">(</span><span class="n">user_token</span><span class="p">,</span> <span class="s">&#39;football&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">label</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">label</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span>
-<span class="go">u&#39;football&#39;</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="method">
 <dt id="pytodoist.api.TodoistAPI.add_note">
 <tt class="descname">add_note</tt><big>(</big><em>token</em>, <em>task_id</em>, <em>note_content</em><big>)</big><a class="reference internal" href="_modules/pytodoist/api.html#TodoistAPI.add_note"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.api.TodoistAPI.add_note" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a note to a task.</p>
@@ -389,6 +350,45 @@ if the user does not have Todoist premium.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">response</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">complete_tasks</span><span class="p">(</span><span class="n">user_token</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">task_ids</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">response</span><span class="o">.</span><span class="n">text</span>
 <span class="go">u&#39;&quot;ok&quot;&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytodoist.api.TodoistAPI.create_label">
+<tt class="descname">create_label</tt><big>(</big><em>token</em>, <em>label_name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/pytodoist/api.html#TodoistAPI.create_label"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.api.TodoistAPI.create_label" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a label.</p>
+<p>If a label with the name already exists it will be returned.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>token</strong> (<em>string</em>) &#8211; The user&#8217;s login token.</li>
+<li><strong>label_name</strong> (<em>string</em>) &#8211; The name of the label.</li>
+<li><strong>color</strong> (<em>int</em>) &#8211; The color of the label.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The HTTP response to the request.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><tt class="xref py py-mod docutils literal"><span class="pre">requests.Response</span></tt></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">On success:</th><td class="field-body"><p class="first last"><tt class="docutils literal"><span class="pre">response.json()</span></tt> will contain the label details.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">api</span> <span class="o">=</span> <span class="n">TodoistAPI</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">response</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="s">&#39;john.doe@gmail.com&#39;</span><span class="p">,</span> <span class="s">&#39;passwd&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user_info</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">user_token</span> <span class="o">=</span> <span class="n">user_info</span><span class="p">[</span><span class="s">&#39;token&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">response</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">create_label</span><span class="p">(</span><span class="n">user_token</span><span class="p">,</span> <span class="s">&#39;football&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">label</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">label</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span>
+<span class="go">u&#39;football&#39;</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -715,7 +715,7 @@ label name -&gt; label details.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">response</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="s">&#39;john.doe@gmail.com&#39;</span><span class="p">,</span> <span class="s">&#39;passwd&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">user_info</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">user_token</span> <span class="o">=</span> <span class="n">user_info</span><span class="p">[</span><span class="s">&#39;token&#39;</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">api</span><span class="o">.</span><span class="n">add_label</span><span class="p">(</span><span class="n">user_token</span><span class="p">,</span> <span class="s">&#39;football&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">api</span><span class="o">.</span><span class="n">create_label</span><span class="p">(</span><span class="n">user_token</span><span class="p">,</span> <span class="s">&#39;football&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">response</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">get_labels</span><span class="p">(</span><span class="n">user_token</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">labels</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">labels</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
@@ -1416,7 +1416,7 @@ The maximum size is 2mb.</li>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">response</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="s">&#39;john.doe@gmail.com&#39;</span><span class="p">,</span> <span class="s">&#39;passwd&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">user_info</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">user_token</span> <span class="o">=</span> <span class="n">user_info</span><span class="p">[</span><span class="s">&#39;token&#39;</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">response</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">add_label</span><span class="p">(</span><span class="n">user_token</span><span class="p">,</span> <span class="s">&#39;football&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">response</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">create_label</span><span class="p">(</span><span class="n">user_token</span><span class="p">,</span> <span class="s">&#39;football&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">label</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">label</span><span class="p">[</span><span class="s">&#39;color&#39;</span><span class="p">]</span>
 <span class="go">1</span>
@@ -1458,7 +1458,7 @@ The maximum size is 2mb.</li>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">response</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="s">&#39;john.doe@gmail.com&#39;</span><span class="p">,</span> <span class="s">&#39;passwd&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">user_info</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">user_token</span> <span class="o">=</span> <span class="n">user_info</span><span class="p">[</span><span class="s">&#39;token&#39;</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">response</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">add_label</span><span class="p">(</span><span class="n">user_token</span><span class="p">,</span> <span class="s">&#39;football&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">response</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">create_label</span><span class="p">(</span><span class="n">user_token</span><span class="p">,</span> <span class="s">&#39;football&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">label</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">label</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span>
 <span class="go">u&#39;football&#39;</span>
@@ -1516,7 +1516,7 @@ u&#39;Don&#39;t Call!&#39;
 
 <dl class="method">
 <dt id="pytodoist.api.TodoistAPI.update_notification_settings">
-<tt class="descname">update_notification_settings</tt><big>(</big><em>token</em>, <em>notification_type</em>, <em>service</em>, <em>should_notify</em><big>)</big><a class="reference internal" href="_modules/pytodoist/api.html#TodoistAPI.update_notification_settings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.api.TodoistAPI.update_notification_settings" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">update_notification_settings</tt><big>(</big><em>token</em>, <em>event</em>, <em>service</em>, <em>should_notify</em><big>)</big><a class="reference internal" href="_modules/pytodoist/api.html#TodoistAPI.update_notification_settings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytodoist.api.TodoistAPI.update_notification_settings" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update a user&#8217;s notification settings.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1524,7 +1524,7 @@ u&#39;Don&#39;t Call!&#39;
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>token</strong> (<em>string</em>) &#8211; The user&#8217;s login token.</li>
-<li><strong>notification_type</strong> (<em>string</em>) &#8211; The notification to update.</li>
+<li><strong>event</strong> (<em>string</em>) &#8211; Update the notification settings of this event.</li>
 <li><strong>service</strong> (<em>string</em>) &#8211; <tt class="docutils literal"><span class="pre">email</span></tt> or <tt class="docutils literal"><span class="pre">push</span></tt></li>
 <li><strong>should_notify</strong> (<em>int</em>) &#8211; If <tt class="docutils literal"><span class="pre">0</span></tt> notify, otherwise do not.</li>
 </ul>
