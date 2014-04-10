@@ -1,5 +1,5 @@
-import json
 import itertools
+from json import dumps
 from pytodoist.api import TodoistAPI
 
 API = TodoistAPI()
@@ -125,11 +125,11 @@ def register_with_google(full_name, email, oauth2_token,
     u'Sun 09 Mar 2014 19:54:01 +0000'
     """
     response = API.login_with_google(email, oauth2_token, auto_signup=1,
-                                     lang=lang, timezone=timezone)
+                                     full_name=full_name, lang=lang,
+                                     timezone=timezone)
     _fail_if_contains_errors(response)
     user_as_json = response.json()
     user = User(user_as_json)
-    user.password = password
     return user
 
 def get_timezones():
@@ -263,7 +263,7 @@ class User(TodoistObject):
         response = API.update_user(**self.__dict__)
         _fail_if_contains_errors(response)
 
-    def change_avatar(self, image):
+    def change_avatar(self, image_file):
         """Change the user's avatar.
 
         :param image: The path to the image.
@@ -275,8 +275,9 @@ class User(TodoistObject):
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
         >>> user.change_avatar('~/pictures/avatar.png')
         """
-        response = API.update_avatar(self.token, image=image)
-        _fail_if_contains_errors(response)
+        with open(image_file) as image:
+            response = API.update_avatar(self.token, image=image)
+            _fail_if_contains_errors(response)
 
     def use_default_avatar(self):
         """Change the user's avatar to the Todoist default avatar.
@@ -480,7 +481,7 @@ class User(TodoistObject):
         >>> queries = ['today', 'tomorrow']
         >>> tasks = user.search_tasks(queries)
         """
-        queries = json.dumps(queries)
+        queries = dumps(queries)
         response = API.search_tasks(self.token, queries)
         _fail_if_contains_errors(response)
         query_results = response.json()
@@ -1187,14 +1188,14 @@ _ERROR_TEXT_RESPONSES = _ERROR_TEXT_EXCEPTION_MAPPING.keys()
 
 def _get_associated_exception(response):
     if response.text in _ERROR_TEXT_EXCEPTION_MAPPING:
-      return _ERROR_TEXT_EXCEPTION_MAPPING[response.text]
+        return _ERROR_TEXT_EXCEPTION_MAPPING[response.text]
     elif response.status_code in _ERROR_CODE_EXCEPTION_MAPPING:
-      return _ERROR_CODE_EXCEPTION_MAPPING[response.status_code]
+        return _ERROR_CODE_EXCEPTION_MAPPING[response.status_code]
     return TodoistError
 
 def _fail_if_contains_errors(response):
     if _contains_errors(response):
-        exception =  _get_associated_exception(response)
+        exception = _get_associated_exception(response)
         raise exception(response)
 
 def _contains_errors(response):
