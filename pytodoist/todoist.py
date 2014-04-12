@@ -1,5 +1,5 @@
 import itertools
-from json import dumps
+import json
 from pytodoist.api import TodoistAPI
 
 API = TodoistAPI()
@@ -58,8 +58,8 @@ def _login(login_func, *args):
     """
     response = login_func(*args)
     _fail_if_contains_errors(response)
-    user_as_json = response.json()
-    return User(user_as_json)
+    user_json = response.json()
+    return User(user_json)
 
 def register(full_name, email, password, lang=None, timezone=None):
     """Register a new Todoist account.
@@ -88,8 +88,8 @@ def register(full_name, email, password, lang=None, timezone=None):
     response = API.register(email, full_name, password,
                             lang=lang, timezone=timezone)
     _fail_if_contains_errors(response)
-    user_as_json = response.json()
-    user = User(user_as_json)
+    user_json = response.json()
+    user = User(user_json)
     user.password = password
     return user
 
@@ -128,8 +128,8 @@ def register_with_google(full_name, email, oauth2_token,
                                      full_name=full_name, lang=lang,
                                      timezone=timezone)
     _fail_if_contains_errors(response)
-    user_as_json = response.json()
-    user = User(user_as_json)
+    user_json = response.json()
+    user = User(user_json)
     return user
 
 def get_timezones():
@@ -144,16 +144,16 @@ def get_timezones():
     """
     response = API.get_timezones()
     _fail_if_contains_errors(response)
-    timezones_as_json = response.json()
-    return [timezone[0] for timezone in timezones_as_json]
+    timezones_json = response.json()
+    return [timezone_json[0] for timezone_json in timezones_json]
 
 class TodoistObject(object):
     # A helper class which 'converts' a JSON object
     # into a python object. It is designed to be inherited.
 
-    def __init__(self, json):
-        for attr in json:
-            setattr(self, attr, json[attr])
+    def __init__(self, object_json):
+        for attr in object_json:
+            setattr(self, attr, object_json[attr])
 
     def __repr__(self):
         return str(self.__dict__)
@@ -194,10 +194,10 @@ class User(TodoistObject):
     :ivar default_reminder: The user's default reminder.
     """
 
-    def __init__(self, json):
+    def __init__(self, user_json):
         self.token = None
         self.password = None
-        super(User, self).__init__(json)
+        super(User, self).__init__(user_json)
 
     def is_logged_in(self):
         """Return ``True`` if the user is logged in.
@@ -313,8 +313,8 @@ class User(TodoistObject):
         response = API.add_project(self.token, name,
                                    color=color, indent=indent, order=order)
         _fail_if_contains_errors(response)
-        project_as_json = response.json()
-        return Project(project_as_json, self)
+        project_json = response.json()
+        return Project(project_json, self)
 
     def get_projects(self):
         """Return a list of a user's projects.
@@ -333,8 +333,8 @@ class User(TodoistObject):
         """
         response = API.get_projects(self.token)
         _fail_if_contains_errors(response)
-        projects_as_json = response.json()
-        return [Project(json, self) for json in projects_as_json]
+        projects_json = response.json()
+        return [Project(project_json, self) for project_json in projects_json]
 
     def get_project(self, project_name):
         """Return the project with a given name.
@@ -374,8 +374,8 @@ class User(TodoistObject):
         """
         response = API.get_project(self.token, project_id)
         _fail_if_contains_errors(response)
-        project_as_json = response.json()
-        return Project(project_as_json, self)
+        project_json = response.json()
+        return Project(project_json, self)
 
     def update_project_orders(self, projects):
         """Update the order in which projects are displayed on Todoist.
@@ -448,12 +448,12 @@ class User(TodoistObject):
         response = API.get_all_completed_tasks(self.token, label=label,
                                                interval=interval)
         _fail_if_contains_errors(response)
-        tasks_as_json = response.json()['items']
+        tasks_json = response.json()['items']
         tasks = []
-        for json in tasks_as_json:
+        for task_json in tasks_json:
             project_id = json['project_id']
             project = self.get_project_with_id(project_id)
-            tasks.append(Task(json, project))
+            tasks.append(Task(task_json, project))
         return tasks
 
     def get_tasks(self):
@@ -481,7 +481,7 @@ class User(TodoistObject):
         >>> queries = ['today', 'tomorrow']
         >>> tasks = user.search_tasks(queries)
         """
-        queries = dumps(queries)
+        queries = json.dumps(queries)
         response = API.search_tasks(self.token, queries)
         _fail_if_contains_errors(response)
         query_results = response.json()
@@ -492,10 +492,10 @@ class User(TodoistObject):
                 uncompleted_tasks = project.get('uncompleted', [])
                 completed_tasks = project.get('completed', [])
                 found_tasks = uncompleted_tasks + completed_tasks
-                for task_as_json in found_tasks:
-                    project_id = task_as_json['project_id']
+                for task_json in found_tasks:
+                    project_id = task_json['project_id']
                     project = self.get_project_with_id(project_id)
-                    task = Task(task_as_json, project)
+                    task = Task(task_json, project)
                     tasks.append(task)
         return tasks
 
@@ -527,8 +527,8 @@ class User(TodoistObject):
         """
         response = API.get_labels(self.token)
         _fail_if_contains_errors(response)
-        labels_as_json = response.json().values()
-        return [Label(json, self) for json in labels_as_json]
+        labels_json = response.json().values()
+        return [Label(label_json, self) for label_json in labels_json]
 
     def create_label(self, name, color=None):
         """Create a new label.
@@ -543,8 +543,8 @@ class User(TodoistObject):
         """
         response = API.create_label(self.token, name, color=color)
         _fail_if_contains_errors(response)
-        label_as_json = response.json()
-        return Label(label_as_json, self)
+        label_json = response.json()
+        return Label(label_json, self)
 
     def _get_notification_settings(self):
         """Return a list of all notification settings.
@@ -689,10 +689,10 @@ class Project(TodoistObject):
     :ivar id: The ID of the project.
     """
 
-    def __init__(self, json, owner):
+    def __init__(self, project_json, owner):
         self.id = None
         self.owner = owner
-        super(Project, self).__init__(json)
+        super(Project, self).__init__(project_json)
 
     def delete(self):
         """Delete the project.
@@ -783,8 +783,8 @@ class Project(TodoistObject):
         response = API.add_task(self.owner.token, content, project_id=self.id,
                                 date_string=date, priority=priority)
         _fail_if_contains_errors(response)
-        task_as_json = response.json()
-        return Task(task_as_json, self)
+        task_json = response.json()
+        return Task(task_json, self)
 
     def get_tasks(self):
         """Return all tasks in this project.
@@ -820,8 +820,8 @@ class Project(TodoistObject):
         """
         response = API.get_uncompleted_tasks(self.owner.token, self.id)
         _fail_if_contains_errors(response)
-        tasks_as_json = response.json()
-        return [Task(json, self) for json in tasks_as_json]
+        tasks_json = response.json()
+        return [Task(task_json, self) for task_json in tasks_json]
 
     def get_completed_tasks(self):
         """Return a list of all completed tasks in this project.
@@ -841,8 +841,8 @@ class Project(TodoistObject):
         """
         response = API.get_completed_tasks(self.owner.token, self.id)
         _fail_if_contains_errors(response)
-        tasks_as_json = response.json()
-        return [Task(json, self) for json in tasks_as_json]
+        tasks_json = response.json()
+        return [Task(task_json, self) for task_json in tasks_json]
 
     def update_task_orders(self, tasks):
         """Update the order in which tasks are displayed on Todoist.
@@ -867,10 +867,10 @@ class Task(TodoistObject):
 
     """
 
-    def __init__(self, json, project):
+    def __init__(self, task_json, project):
         self.id = None
         self.project = project
-        super(Task, self).__init__(json)
+        super(Task, self).__init__(task_json)
 
     def update(self):
         """Update the task's details on Todoist.
@@ -951,8 +951,8 @@ class Task(TodoistObject):
         """
         response = API.add_note(self.project.owner.token, self.id, content)
         _fail_if_contains_errors(response)
-        note_as_json = response.json()
-        return Note(note_as_json, self)
+        note_json = response.json()
+        return Note(note_json, self)
 
     def get_notes(self):
         """Return all notes attached to this Task.
@@ -971,8 +971,8 @@ class Task(TodoistObject):
         """
         response = API.get_notes(self.project.owner.token, self.id)
         _fail_if_contains_errors(response)
-        notes_as_json = response.json()
-        return [Note(json, self) for json in notes_as_json]
+        notes_json = response.json()
+        return [Note(note_json, self) for note_json in notes_json]
 
     def advance_recurring_date(self):
         """Advance the recurring date of this task.
@@ -991,8 +991,8 @@ class Task(TodoistObject):
         response = API.advance_recurring_dates(self.project.owner.token,
                                                task_ids)
         _fail_if_contains_errors(response)
-        task_as_json = response.json()[0]
-        self.__init__(task_as_json, self.project)
+        task_json = response.json()[0]
+        self.__init__(task_json, self.project)
 
     def move(self, project):
         """Move this task to another project.
@@ -1024,11 +1024,11 @@ class Note(TodoistObject):
 
     """
 
-    def __init__(self, json, task):
+    def __init__(self, note_json, task):
         self.id = None
         self.content = None
         self.task = task
-        super(Note, self).__init__(json)
+        super(Note, self).__init__(note_json)
 
     def update(self):
         """Update the note's details on Todoist.
@@ -1073,11 +1073,11 @@ class Label(TodoistObject):
 
     """
 
-    def __init__(self, json, owner):
+    def __init__(self, label_json, owner):
         self.name = None
         self.color = None
         self.owner = owner
-        super(Label, self).__init__(json)
+        super(Label, self).__init__(label_json)
         self.id = self.name
 
     def update(self):
@@ -1113,90 +1113,34 @@ class Label(TodoistObject):
 
 
 class TodoistError(Exception):
-    """Will be raised whenever a Todoist API call fails.
-
-    This is the generic TodoistError that will be raised when there
-    are no others suitable.
-    """
+    """Will be raised whenever a Todoist API call fails."""
 
     def __init__(self, response):
         self.response = response
         super(TodoistError, self).__init__(response.text)
 
-class AuthError(TodoistError):
-    """Raised when Todoist authentication fails."""
-
-    def __init__(self, response):
-        super(AuthError, self).__init__(response)
-
-class RegistrationError(TodoistError):
-    """Raised when Todoist registration fails."""
-
-    def __init__(self, response):
-        super(RegistrationError, self).__init__(response)
-
-
-class InternalError(TodoistError):
-    """Raised when an error occurs due to Todoist server problems."""
-
-    def __init__(self, response):
-        super(InternalError, self).__init__(response)
-
-
-class BadValueError(TodoistError):
-    """Raised when an invalid parameter is passed in an API call."""
-
-    def __init__(self, response):
-        super(BadValueError, self).__init__(response)
-
-
-class NotFoundError(TodoistError):
-    """Raised when a Todoist object cannot be found."""
-
-    def __init__(self, response):
-        super(NotFoundError, self).__init__(response)
-
-
-_ERROR_TEXT_EXCEPTION_MAPPING = {
-    '"LOGIN_ERROR"':                       AuthError,
-    '"EMAIL_MISMATCH"':                    AuthError,
-    '"ACCOUNT_NOT_CONNECTED_WITH_GOOGLE"': AuthError,
-    '"ALREADY_REGISTRED"':                 RegistrationError,
-    '"INTERNAL_ERROR"':                    InternalError,
-    '"UNKNOWN_ERROR"':                     InternalError,
-    '"TOO_SHORT_PASSWORD"':                BadValueError,
-    '"INVALID_EMAIL"':                     BadValueError,
-    '"INVALID_TIMEZONE"':                  BadValueError,
-    '"INVALID_FULL_NAME"':                 BadValueError,
-    '"ERROR_PASSWORD_TOO_SHORT"':          BadValueError,
-    '"ERROR_EMAIL_FOUND"':                 BadValueError,
-    '"ERROR_NAME_IS_EMPTY"':               BadValueError,
-    '"ERROR_WRONG_DATE_SYNTAX"':           BadValueError,
-    '"UNKNOWN_IMAGE_FORMAT"':              BadValueError,
-    '"UNABLE_TO_RESIZE_IMAGE"':            BadValueError,
-    '"IMAGE_TOO_BIG"':                     BadValueError,
-    '"ERROR_PROJECT_NOT_FOUND"':           NotFoundError,
-    '"ERROR_ITEM_NOT_FOUND"':              NotFoundError
-}
-
-_ERROR_CODE_EXCEPTION_MAPPING = {
-  '400': TodoistError,
-  '403': AuthError,
-}
-
-_ERROR_TEXT_RESPONSES = _ERROR_TEXT_EXCEPTION_MAPPING.keys()
-
-def _get_associated_exception(response):
-    if response.text in _ERROR_TEXT_EXCEPTION_MAPPING:
-        return _ERROR_TEXT_EXCEPTION_MAPPING[response.text]
-    elif response.status_code in _ERROR_CODE_EXCEPTION_MAPPING:
-        return _ERROR_CODE_EXCEPTION_MAPPING[response.status_code]
-    return TodoistError
+# Avoid magic numbers.
+HTTP_OK = 200
 
 def _fail_if_contains_errors(response):
+    """Raise a TodoistError Exception if a given response
+    does not denote a successful request.
+    """
     if _contains_errors(response):
-        exception = _get_associated_exception(response)
-        raise exception(response)
+        raise TodoistError(response)
 
 def _contains_errors(response):
-    return response.status_code != 200 or response.text in _ERROR_TEXT_RESPONSES
+    """Return True if a given response contains errors."""
+    return response.status_code != HTTP_OK or not _is_valid_response(response)
+
+def _is_valid_response(response):
+    """Return True if the response contents are valid.
+
+    The contents are valid if they are json parsable or equal to
+    one of a set of valid responses.
+    """
+    try:
+        response.json()
+    except ValueError:
+        return response.text in ['ok', '"ok"']
+    return True
