@@ -1364,10 +1364,6 @@ class TodoistAPI(object):
         }
         return self._get('updateNotificationSetting', params)
 
-    def _getf(self, end_point, params=None, files=None):
-        url = self.URL + end_point
-        return requests.get(url, params=params, files=files)
-
     def _get(self, end_point, params=None, files=None, **kwargs):
         """Send a HTTP GET request to a Todoist API end-point.
 
@@ -1375,6 +1371,8 @@ class TodoistAPI(object):
         :type end_point: string
         :param params: The required request parameters.
         :type params: dict
+        :param files: Any files that are being sent as multipart/form-data.
+        :type files: file
         :param kwargs: Any optional parameters.
         :type kwargs: dict
         :return: The HTTP response to the request.
