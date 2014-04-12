@@ -33,10 +33,10 @@ class TodoistAPI(object):
     >>> from pytodoist.api import TodoistAPI
     >>> api = TodoistAPI()
     >>> api.URL
-    'https://www.todoist.com/API/'
+    'https://todoist.com/API/'
     """
 
-    URL = 'https://www.todoist.com/API/'
+    URL = 'https://todoist.com/API/'
 
     def login(self, email, password):
         """Login to Todoist.
@@ -256,7 +256,7 @@ class TodoistAPI(object):
         }
         return self._get('updateUser', params, **kwargs)
 
-    def update_avatar(self, token, **kwargs):
+    def update_avatar(self, token, image=None, **kwargs):
         """Update a registered Todoist user's avatar.
 
         :param token: The user's login token.
@@ -281,7 +281,8 @@ class TodoistAPI(object):
         params = {
             'token': token
         }
-        return self._get('updateAvatar', params, **kwargs)
+        files = {'image': image} if image else None
+        return self._get('updateAvatar', params, files, **kwargs)
 
     def get_projects(self, token):
         """Return a list of all of a user's projects.
@@ -1363,7 +1364,11 @@ class TodoistAPI(object):
         }
         return self._get('updateNotificationSetting', params)
 
-    def _get(self, end_point, params=None, **kwargs):
+    def _getf(self, end_point, params=None, files=None):
+        url = self.URL + end_point
+        return requests.get(url, params=params, files=files)
+
+    def _get(self, end_point, params=None, files=None, **kwargs):
         """Send a HTTP GET request to a Todoist API end-point.
 
         :param end_point: The Todoist API end-point.
@@ -1378,4 +1383,4 @@ class TodoistAPI(object):
         url = self.URL + end_point
         if params and kwargs:
             params.update(kwargs)
-        return requests.get(url, params=params)
+        return requests.get(url, params=params, files=files)

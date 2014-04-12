@@ -273,10 +273,10 @@ class User(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
-        >>> user.change_avatar('~/pictures/avatar.png')
+        >>> user.change_avatar('/home/gary/pictures/avatar.png')
         """
-        with open(image_file) as image:
-            response = API.update_avatar(self.token, image=image)
+        with open(image_file, 'r') as image:
+            response = API.update_avatar(self.token, image)
             _fail_if_contains_errors(response)
 
     def use_default_avatar(self):
