@@ -758,7 +758,7 @@ class Project(TodoistObject):
         >>> project = user.get_project('Homework')
         >>> project.collapse()
         """
-        response = api.update_project(self.owner.token, self.id, collapsed=1)
+        response = API.update_project(self.owner.token, self.id, collapsed=1)
         _fail_if_contains_errors(response)
 
     def add_task(self, content, date=None, priority=None):
