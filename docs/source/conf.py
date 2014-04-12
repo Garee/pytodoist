@@ -32,9 +32,12 @@ sys.path.append('/home/gary/.virtualenvs/pytodoist/lib/python2.7/site-packages/'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
     'sphinx.ext.coverage',
     'sphinx.ext.viewcode',
 ]
+
+autodoc_member_order = 'bysource'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
