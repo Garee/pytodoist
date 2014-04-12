@@ -3,8 +3,12 @@ may be performed in a simpler way. It is fundamentally a wrapper module that
 neither adds nor takes away any functionality that is provided by Todoist.
 
 If you do not need access to the raw HTTP response to the request, consider
-using the higher level abstractions implemented in the :mod:`todoist` module.
+using the higher level abstractions implemented in the :mod:`pytodoist.todoist`
+module.
 
+For :mod:`requests.Response` documentation see here:
+
+    http://docs.python-requests.org/en/latest/api/#requests.Response
 
 *Example:*
 
