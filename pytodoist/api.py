@@ -178,7 +178,7 @@ class TodoistAPI(object):
             'full_name': full_name,
             'password': password
         }
-        return self._get('register', params, **kwargs)
+        return self._post('register', params, **kwargs)
 
     def delete_user(self, token, password, **kwargs):
         """Delete a registered Todoist user's account.
@@ -208,7 +208,7 @@ class TodoistAPI(object):
             'token': token,
             'current_password': password
         }
-        return self._get('deleteUser', params, **kwargs)
+        return self._post('deleteUser', params, **kwargs)
 
     def update_user(self, token, **kwargs):
         """Update a registered Todoist user's account.
@@ -258,7 +258,7 @@ class TodoistAPI(object):
         params = {
             'token': token
         }
-        return self._get('updateUser', params, **kwargs)
+        return self._post('updateUser', params, **kwargs)
 
     def update_avatar(self, token, image=None, **kwargs):
         """Update a registered Todoist user's avatar.
@@ -286,7 +286,7 @@ class TodoistAPI(object):
             'token': token
         }
         files = {'image': image} if image else None
-        return self._get('updateAvatar', params, files, **kwargs)
+        return self._post('updateAvatar', params, files, **kwargs)
 
     def get_projects(self, token):
         """Return a list of all of a user's projects.
@@ -371,7 +371,7 @@ class TodoistAPI(object):
             'token': token,
             'name': project_name
         }
-        return self._get('addProject', params, **kwargs)
+        return self._post('addProject', params, **kwargs)
 
     def update_project(self, token, project_id, **kwargs):
         """Update a user's project.
@@ -413,7 +413,7 @@ class TodoistAPI(object):
             'token': token,
             'project_id': project_id
         }
-        return self._get('updateProject', params, **kwargs)
+        return self._post('updateProject', params, **kwargs)
 
     def update_project_orders(self, token, ordered_project_ids):
         """Update a user's project orderings.
@@ -439,7 +439,7 @@ class TodoistAPI(object):
             'token': token,
             'item_id_list': ordered_project_ids
         }
-        return self._get('updateProjectOrders', params)
+        return self._post('updateProjectOrders', params)
 
     def delete_project(self, token, project_id):
         """Delete a user's project.
@@ -470,7 +470,7 @@ class TodoistAPI(object):
             'token': token,
             'project_id': project_id
         }
-        return self._get('deleteProject', params)
+        return self._post('deleteProject', params)
 
     def archive_project(self, token, project_id):
         """Archive a user's project.
@@ -500,7 +500,7 @@ class TodoistAPI(object):
             'token': token,
             'project_id': project_id
         }
-        return self._get('archiveProject', params)
+        return self._post('archiveProject', params)
 
     def unarchive_project(self, token, project_id):
         """Unarchive a user's project.
@@ -530,7 +530,7 @@ class TodoistAPI(object):
             'token': token,
             'project_id': project_id
         }
-        return self._get('unarchiveProject', params)
+        return self._post('unarchiveProject', params)
 
     def get_labels(self, token, **kwargs):
         """Return all of a user's labels.
@@ -589,7 +589,7 @@ class TodoistAPI(object):
           'token': token,
           'name': label_name
         }
-        return self._get('addLabel', params, **kwargs)
+        return self._post('addLabel', params, **kwargs)
 
     def update_label_name(self, token, label_name, new_name):
         """Update the name of a user's label.
@@ -622,7 +622,7 @@ class TodoistAPI(object):
           'old_name': label_name,
           'new_name': new_name
         }
-        return self._get('updateLabel', params)
+        return self._post('updateLabel', params)
 
     def update_label_color(self, token, label_name, color):
         """Update the color of a user's label.
@@ -655,7 +655,7 @@ class TodoistAPI(object):
           'name': label_name,
           'color': color
         }
-        return self._get('updateLabelColor', params)
+        return self._post('updateLabelColor', params)
 
     def delete_label(self, token, label_name):
         """Delete a user's label.
@@ -680,7 +680,7 @@ class TodoistAPI(object):
           'token': token,
           'name': label_name
         }
-        return self._get('deleteLabel', params)
+        return self._post('deleteLabel', params)
 
     def get_uncompleted_tasks(self, token, project_id, **kwargs):
         """Return a list of a project's uncompleted tasks.
@@ -870,7 +870,7 @@ class TodoistAPI(object):
             'token': token,
             'content': content
         }
-        return self._get('addItem', params, **kwargs)
+        return self._post('addItem', params, **kwargs)
 
     def update_task(self, token, task_id, **kwargs):
         """Update the details of a task.
@@ -933,7 +933,7 @@ class TodoistAPI(object):
             'token': token,
             'id': task_id
         }
-        return self._get('updateItem', params, **kwargs)
+        return self._post('updateItem', params, **kwargs)
 
     def update_task_ordering(self, token, project_id, task_ids):
         """Update the order of a project's tasks.
@@ -967,7 +967,7 @@ class TodoistAPI(object):
             'project_id': project_id,
             'item_id_list': task_ids
         }
-        return self._get('updateOrders', params)
+        return self._post('updateOrders', params)
 
     def move_tasks(self, token, task_locations, project_id):
         """Move tasks to another project.
@@ -999,7 +999,7 @@ class TodoistAPI(object):
             'project_items': task_locations,
             'to_project': project_id
         }
-        return self._get('moveItems', params)
+        return self._post('moveItems', params)
 
     def advance_recurring_dates(self, token, task_ids, **kwargs):
         """Update the recurring dates of a list of tasks. The date
@@ -1030,7 +1030,7 @@ class TodoistAPI(object):
             'token': token,
             'ids': task_ids
         }
-        return self._get('updateRecurringDate', params, **kwargs)
+        return self._post('updateRecurringDate', params, **kwargs)
 
     def delete_tasks(self, token, task_ids):
         """Delete a given list of tasks.
@@ -1059,7 +1059,7 @@ class TodoistAPI(object):
             'token': token,
             'ids': task_ids
         }
-        return self._get('deleteItems', params)
+        return self._post('deleteItems', params)
 
     def complete_tasks(self, token, task_ids, **kwargs):
         """Complete a given list of tasks.
@@ -1090,7 +1090,7 @@ class TodoistAPI(object):
             'token': token,
             'ids': task_ids
         }
-        return self._get('completeItems', params, **kwargs)
+        return self._post('completeItems', params, **kwargs)
 
     def uncomplete_tasks(self, token, task_ids):
         """Uncomplete a given list of tasks.
@@ -1122,7 +1122,7 @@ class TodoistAPI(object):
             'token': token,
             'ids': task_ids
         }
-        return self._get('uncompleteItems', params)
+        return self._post('uncompleteItems', params)
 
     def add_note(self, token, task_id, note_content):
         """Add a note to a task.
@@ -1152,7 +1152,7 @@ class TodoistAPI(object):
             'item_id': task_id,
             'content': note_content
         }
-        return self._get('addNote', params)
+        return self._post('addNote', params)
 
     def update_note(self, token, note_id, new_content):
         """Update the content of a note.
@@ -1187,7 +1187,7 @@ class TodoistAPI(object):
             'note_id': note_id,
             'content': new_content
         }
-        return self._get('updateNote', params)
+        return self._post('updateNote', params)
 
     def delete_note(self, token, task_id, note_id):
         """Delete a note from a task.
@@ -1216,7 +1216,7 @@ class TodoistAPI(object):
             'item_id': task_id,
             'note_id': note_id
         }
-        return self._get('deleteNote', params)
+        return self._post('deleteNote', params)
 
     def get_notes(self, token, task_id):
         """Return the list of notes for a task.
@@ -1366,11 +1366,45 @@ class TodoistAPI(object):
             'service': service,
             'dont_notify': should_notify
         }
-        return self._get('updateNotificationSetting', params)
+        return self._post('updateNotificationSetting', params)
 
-    def _get(self, end_point, params=None, files=None, **kwargs):
+    def _get(self, end_point, params=None, **kwargs):
         """Send a HTTP GET request to a Todoist API end-point.
 
+        :param end_point: The Todoist API end-point.
+        :type end_point: string
+        :param params: The required request parameters.
+        :type params: dict
+        :param kwargs: Any optional parameters.
+        :type kwargs: dict
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        """
+        return self._request(requests.get, end_point, params, **kwargs)
+
+    def _post(self, end_point, params=None, files=None, **kwargs):
+        """Send a HTTP POST request to a Todoist API end-point.
+
+        :param end_point: The Todoist API end-point.
+        :type end_point: string
+        :param params: The required request parameters.
+        :type params: dict
+        :param files: Any files that are being sent as multipart/form-data.
+        :type files: file
+        :param kwargs: Any optional parameters.
+        :type kwargs: dict
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        """
+        return self._request(requests.post, end_point, params, files, **kwargs)
+
+
+
+    def _request(self, req_func, end_point, params=None, files=None, **kwargs):
+        """Send a HTTP request to a Todoist API end-point.
+
+        :param req_func: The request function to use e.g. get or post.
+        :type req_func: A request function from the :mod:`requests` module.
         :param end_point: The Todoist API end-point.
         :type end_point: string
         :param params: The required request parameters.
@@ -1385,4 +1419,4 @@ class TodoistAPI(object):
         url = self.URL + end_point
         if params and kwargs:
             params.update(kwargs)
-        return requests.get(url, params=params, files=files)
+        return req_func(url, params=params, files=files)
