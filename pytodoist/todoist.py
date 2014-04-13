@@ -1,5 +1,23 @@
-import itertools
+"""This module introduces abstractions over Todoist entities such as Users,
+Tasks and Projects. It's purpose is to hide the underlying API calls so that
+programmers can interact with Todoist in a straightforward manner.
+
+*Example:*
+
+>>> from pytodoist import todoist
+>>> user = todoist.register('John Doe', 'john.doe@gmail.com', 'passwd')
+>>> user.is_logged_in()
+True
+>>> install_task = user.add_task('Install PyTodoist.')
+>>> uncompleted_tasks = user.get_uncompleted_tasks()
+>>> for task in uncompleted_tasks:
+...     print task.content
+...
+Install PyTodoist
+>>> install_task.complete()
+"""
 import json
+import itertools
 from pytodoist.api import TodoistAPI
 
 API = TodoistAPI()
@@ -13,6 +31,7 @@ def login(email, password):
     :type password: string
     :return: The Todoist user.
     :rtype: :mod:`pytodoist.todoist.User`
+    :raises RequestError: If the authentication failed.
 
     >>> from pytodoist import todoist
     >>> user = todoist.login('john.doe@gmail.com', 'passwd')
@@ -34,6 +53,7 @@ def login_with_google(email, oauth2_token):
     :type oauth2_token: string
     :return: The Todoist user.
     :rtype: :mod:`pytodoist.todoist.User`
+    :raises RequestError: If the authentication failed.
 
     .. note:: It is up to you to obtain the valid oauth2 token.
 
@@ -72,7 +92,7 @@ def register(full_name, email, password, lang=None, timezone=None):
     :type timezone: string
     :return: The Todoist user.
     :rtype: :mod:`pytodoist.todoist.User`
-    :raises RegistrationError: If an account with the given details exists.
+    :raises RequestError: If an account with the given details exists.
 
     >>> from pytodoist import todoist
     >>> user = todoist.register('John Doe', 'john.doe@gmail.com', 'passwd')
@@ -105,9 +125,7 @@ def register_with_google(full_name, email, oauth2_token,
     :type timezone: string
     :return: The Todoist user.
     :rtype: :mod:`pytodoist.todoist.User`
-    :raises AuthError: If Google has refused to accept the token.
-    :raises InternalError: If a server error occurs. Try again later.
-    :raises BadValueError: If the token is valid but doesn't match the email.
+    :raises RequestError: If registration fails.
 
     .. note:: It is up to you to obtain the valid oauth2 token.
 
@@ -223,7 +241,7 @@ class User(TodoistObject):
 
         :param reason: The reason for deletion.
         :type reason: string
-        :raises AuthError: If ``user.password`` is wrong.
+        :raises RequestError: If ``user.password`` is wrong.
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
@@ -242,9 +260,7 @@ class User(TodoistObject):
         You must call this method to register any local attribute changes with
         Todoist.
 
-        :raises TodoistError: If the request to update is invalid.
-        :raises BadValueError: If one of the new values is invalid e.g. the
-            new email address is associated with an existing account.
+        :raises RequestError: If the request to update is invalid.
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
@@ -264,7 +280,7 @@ class User(TodoistObject):
 
         :param image: The path to the image.
         :type image: string
-        :raises BadValueError: If the image is an invalid format, too big or
+        :raises RequestError: If the image is an invalid format, too big or
             unable to be resized.
 
         >>> from pytodoist import todoist
@@ -298,7 +314,7 @@ class User(TodoistObject):
         :type order: int
         :return: The project that was added.
         :rtype: :mod:`pytodoist.todoist.Project`
-        :raises BadValueError: If the project name is empty.
+        :raises RequestError: If the project name is empty.
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
@@ -707,7 +723,7 @@ class Project(TodoistObject):
         You must call this method to register any local attribute changes with
         Todoist.
 
-        :raises TodoistError: If the request to update is invalid.
+        :raises RequestError: If the request to update is invalid.
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
@@ -874,8 +890,7 @@ class Task(TodoistObject):
         You must call this method to register any local attribute changes with
         Todoist.
 
-        :raises TodoistError: If the request to update is invalid.
-        :raises NotFoundError: If the task cannot be found on Todoist.
+        :raises RequestError: If the request to update is invalid.
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
