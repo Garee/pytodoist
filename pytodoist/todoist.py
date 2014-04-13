@@ -452,7 +452,7 @@ class User(TodoistObject):
         >>> for task in completed_tasks:
         ...     task.uncomplete()
         """
-        response = API.get_all_completed_tasks(self.token, label=label,
+        response = API.get_all_completed_tasks(self.token, label=label_name,
                                                interval=interval)
         _fail_if_contains_errors(response)
         tasks_json = response.json()['items']
@@ -1151,6 +1151,21 @@ class Label(TodoistObject):
         """
         response = API.delete_label(self.owner.token, self.id)
         _fail_if_contains_errors(response)
+
+
+class Color(object):
+    GREEN = 0
+    PINK = 1
+    LIGHT_ORANGE = 2
+    YELLOW = 3
+    DARK_BLUE = 4
+    BROWN = 5
+    PURPLE = 6
+    GRAY = 7
+    RED = 8
+    DARK_ORANGE = 9
+    CYAN = 10
+    LIGHT_BLUE = 11
 
 
 class RequestError(Exception):
