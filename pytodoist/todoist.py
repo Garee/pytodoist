@@ -35,10 +35,8 @@ def login(email, password):
 
     >>> from pytodoist import todoist
     >>> user = todoist.login('john.doe@gmail.com', 'passwd')
-    >>> user.full_name
-    u'John Doe'
-    >>> user.join_date
-    u'Sun 09 Mar 2014 19:54:01 +0000'
+    >>> print user.join_date
+    Sun 09 Mar 2014 19:54:01 +0000
     """
     user = _login(API.login, email, password)
     user.password = password
@@ -60,10 +58,8 @@ def login_with_google(email, oauth2_token):
     >>> from pytodoist import todoist
     ... # Get the oauth2 token.
     >>> user = todoist.login_with_google('john.doe@gmail.com', oauth2_token)
-    >>> user.full_name
-    u'John Doe'
-    >>> user.join_date
-    u'Sun 09 Mar 2014 19:54:01 +0000'
+    >>> print user.join_date
+    Sun 09 Mar 2014 19:54:01 +0000
     """
     return _login(API.login_with_google, email, oauth2_token)
 
@@ -96,10 +92,8 @@ def register(full_name, email, password, lang=None, timezone=None):
 
     >>> from pytodoist import todoist
     >>> user = todoist.register('John Doe', 'john.doe@gmail.com', 'passwd')
-    >>> user.full_name
-    u'John Doe'
-    >>> user.join_date
-    u'Sun 09 Mar 2014 19:54:01 +0000'
+    >>> user.is_logged_in()
+    True
     """
     response = API.register(email, full_name, password,
                             lang=lang, timezone=timezone)
@@ -133,10 +127,8 @@ def register_with_google(full_name, email, oauth2_token,
     ... # Get the oauth2 token.
     >>> user = todoist.register_with_google('John Doe', 'john.doe@gmail.com',
     ...                                      oauth2_token)
-    >>> user.full_name
-    u'John Doe'
-    >>> user.join_date
-    u'Sun 09 Mar 2014 19:54:01 +0000'
+    >>> user.is_logged_in()
+    True
     """
     response = API.login_with_google(email, oauth2_token, auto_signup=1,
                                      full_name=full_name, lang=lang,
@@ -150,7 +142,7 @@ def get_timezones():
     """Return a list of Todoist supported timezones.
 
     :return: A list of timezones
-    :rtype: list (string)
+    :rtype: list string
 
     >>> from pytodoist import todoist
     >>> todoist.get_timezones()
@@ -162,37 +154,37 @@ def get_timezones():
     return [timezone_json[0] for timezone_json in timezones_json]
 
 class TodoistObject(object):
-    # A helper class which 'converts' a JSON object
-    # into a python object. It is designed to be inherited.
+    # A helper class which 'converts' a JSON object into a python object.
 
     def __init__(self, object_json):
         for attr in object_json:
             setattr(self, attr, object_json[attr])
-
-    def __repr__(self):
-        return str(self.__dict__)
 
 
 class User(TodoistObject):
     """A Todoist User that has the following attributes:
 
     :ivar full_name: The user's full name.
-    :ivar start_page: The first page the user will see on Todoist.
+    :ivar start_page: The new start page. ``_blank``: for a blank page,
+        ``_info_page`` for the info page, ``_project_$PROJECT_ID`` for a
+        project page or ``$ANY_QUERY`` to show query results.
     :ivar join_date: The date the user joined Todoist.
     :ivar last_used_ip: The IP address of the computer last used to login.
     :ivar is_premium: Does the user have Todoist premium?
-    :ivar sort_order: The user's sort order.
+    :ivar sort_order: The user's sort order. If it's ``0`` then show the oldest
+        dates first when viewing projects, otherwise oldest dates last.
     :ivar api_token: The user's API token.
     :ivar shard_id: The user's shard ID.
     :ivar timezone: The user's chosen timezone.
     :ivar id: The ID of the user.
-    :ivar next_week: The day on which a task is delayed until.
+    :ivar next_week: The new day to use when postponing ``(1-7, Mon-Sun)``.
     :ivar tz_offset: The user's timezone offset.
     :ivar email: The user's email address.
-    :ivar start_day: The first day of the week.
+    :ivar start_day: The new first day of the week ``(1-7, Mon-Sun)``.
     :ivar is_dummy: Is this a real or a dummy user?
     :ivar inbox_project: The ID of the user's Inbox project.
-    :ivar time_format: The user's selected time_format.
+    :ivar time_format: The user's selected time_format. If ``0`` then show time
+        as ``13:00`` otherwise ``1pm``.
     :ivar image_id: The ID of the user's avatar.
     :ivar beta: The user's beta status.
     :ivar premium_until: The date on which the user's premium status is revoked.
@@ -200,12 +192,15 @@ class User(TodoistObject):
     :ivar mobile_host: The host of the user's mobile.
     :ivar password: The user's password.
     :ivar has_push_reminders: Does this user have push reminders?
-    :ivar date_format: The user's selected date format.
+    :ivar date_format: The user's selected date format. If ``0`` show
+        dates as ``DD-MM-YYY`` otherwise ``MM-DD-YYYY``.
     :ivar karma: The user's karma.
     :ivar karma_trend: The user's karma trend.
     :ivar token: The user's secret token.
     :ivar seq_no: The user's sequence number.
-    :ivar default_reminder: The user's default reminder.
+    :ivar default_reminder: ``email`` for email, ``mobile`` for SMS,
+        ``push`` for smart device notifications or ``no_default`` to
+        turn off notifications. Only for premium users.
     """
 
     def __init__(self, user_json):
@@ -248,8 +243,6 @@ class User(TodoistObject):
         >>> user.delete()
         ... # The user token is now invalid and Todoist operations will fail.
         """
-        if not hasattr(self, 'password'):
-            raise TodoistError("Account is linked to Google.")
         response = API.delete_user(self.token, self.password,
                                    reason=reason, in_background=0)
         _fail_if_contains_errors(response)
@@ -268,9 +261,6 @@ class User(TodoistObject):
         ... # At this point Todoist still thinks the name is 'John Doe'.
         >>> user.update()
         ... # Now the name has been updated on Todoist.
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
-        >>> user.full_name
-        u'John Smith'
         """
         response = API.update_user(**self.__dict__)
         _fail_if_contains_errors(response)
@@ -282,10 +272,11 @@ class User(TodoistObject):
         :type image: string
         :raises RequestError: If the image is an invalid format, too big or
             unable to be resized.
+        :raises IOError: If the image cannot be opened.
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
-        >>> user.change_avatar('/home/gary/pictures/avatar.png')
+        >>> user.change_avatar('/home/john/pictures/avatar.png')
         """
         with open(image_file, 'r') as image:
             response = API.update_avatar(self.token, image)
@@ -318,9 +309,9 @@ class User(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
-        >>> project = user.add_project('Homework', color=1)
-        >>> project.name
-        u'Homework'
+        >>> project = user.add_project('Homework')
+        >>> print project.name
+        Homework
         """
         response = API.add_project(self.token, name,
                                    color=color, indent=indent, order=order)
@@ -332,16 +323,16 @@ class User(TodoistObject):
         """Return a list of a user's projects.
 
         :return: The user's projects.
-        :rtype: list (:mod:`pytodoist.todoist.Project`)
+        :rtype: list :mod:`pytodoist.todoist.Project`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
-        >>> user.add_project('Homework', color=1)
+        >>> user.add_project('Homework')
         >>> projects = user.get_projects()
         >>> for project in projects:
         ...    print project.name
-        u'Inbox'
-        u'Homework'
+        Inbox
+        Homework
         """
         response = API.get_projects(self.token)
         _fail_if_contains_errors(response)
@@ -360,8 +351,8 @@ class User(TodoistObject):
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
         >>> inbox = user.get_project('Inbox')
-        >>> inbox.name
-        u'Inbox'
+        >>> print inbox.name
+        Inbox
         """
         for project in self.get_projects():
             if project.name == project_name:
@@ -372,17 +363,15 @@ class User(TodoistObject):
 
         :param project_id: The ID to search for.
         :type project_id: string
-        :return: The project that has the ID ``project_id`` or ``None``
-            if no project is found.
+        :return: The project that has the ID ``project_id``.
         :rtype: :mod:`pytodoist.todoist.Project`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
         >>> inbox = user.get_project('Inbox')
-        >>> project_id = inbox.id
-        >>> inbox = user.get_project_with_id(project_id)
-        >>> inbox.name
-        u'Inbox'
+        >>> projct = user.get_project_with_id(inbox.id)
+        >>> print project.name
+        Inbox
         """
         response = API.get_project(self.token, project_id)
         _fail_if_contains_errors(response)
@@ -393,22 +382,22 @@ class User(TodoistObject):
         """Update the order in which projects are displayed on Todoist.
 
         :param projects: A list of projects in the order to be displayed.
-        :type projects: list (:mod:`pytodoist.todoist.Project`)
+        :type projects: list :mod:`pytodoist.todoist.Project`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
         >>> projects = user.get_projects()
         >>> for project in projects:
         ...    print project.name
-        u'Homework'
-        u'Shopping'
+        Homework
+        Shopping
         >>> rev_projects = projects[::-1]
         >>> user.update_project_orders(rev_projects)
         >>> projects = user.get_projects()
         >>> for project in projects:
         ...    print project.name
-        u'Shopping'
-        u'Homework'
+        Shopping
+        Homework
         """
         project_ids = str([project.id for project in projects])
         response = API.update_project_orders(self.token, project_ids)
@@ -422,7 +411,9 @@ class User(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
-        >>> tasks = user.get_uncompleted_tasks()
+        >>> uncompleted_tasks = user.get_uncompleted_tasks()
+        >>> for task in uncompleted_tasks:
+        ...    task.complete()
         """
         tasks = (p.get_uncompleted_tasks() for p in self.get_projects())
         return list(itertools.chain.from_iterable(tasks))
@@ -431,31 +422,35 @@ class User(TodoistObject):
         """Return all of a user's completed tasks.
 
         :return: A list of completed tasks.
-        :rtype: list (:mod:`pytodoist.todoist.Task`)
+        :rtype: list :mod:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
-        >>> tasks = user.get_completed_tasks()
+        >>> completed_tasks = user.get_completed_tasks()
+        >>> for task in completed_tasks:
+        ...     task.uncomplete()
         """
         tasks = (p.get_completed_tasks() for p in self.get_projects())
         return list(itertools.chain.from_iterable(tasks))
 
-    def search_completed_tasks(self, label=None, interval=None):
+    def search_completed_tasks(self, label_name=None, interval=None):
         """Return a filtered list of a user's completed tasks.
 
         .. warning:: Requires the user to have Todoist premium.
 
-        :param label: Only return tasks with this label.
-        :type label: :mod:`pytodoist.todoist.Label`
+        :param label_name: Only return tasks with this label.
+        :type label_name: string
         :param interval: Only return tasks completed this time period.
         :type interval: string
         :return: A list of tasks that meet the search criteria. If the user
             does not have Todoist premium an empty list is returned.
-        :rtype: list (:mod:`pytodoist.todoist.Task`)
+        :rtype: list :mod:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
-        >>> tasks = user.search_completed_tasks(label='School')
+        >>> completed_tasks = user.search_completed_tasks(label_name='School')
+        >>> for task in completed_tasks:
+        ...     task.uncomplete()
         """
         response = API.get_all_completed_tasks(self.token, label=label,
                                                interval=interval)
@@ -472,7 +467,7 @@ class User(TodoistObject):
         """Return all of a user's tasks, regardless of completion state.
 
         :return: A list of all of a user's tasks.
-        :rtype: list (:mod:`pytodoist.todoist.Task`)
+        :rtype: list :mod:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
@@ -486,7 +481,7 @@ class User(TodoistObject):
         :param queries: Return tasks that match at least one of these queries.
         :type queries: list (string)
         :return: A list tasks that match at least one query.
-        :rtype: list (:mod:`pytodoist.todoist.Task`)
+        :rtype: list :mod:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
@@ -531,7 +526,7 @@ class User(TodoistObject):
         """Return a list of all of a user's labels.
 
         :return: A list of labels.
-        :rtype: list (:mod:`pytodoist.todoist.Label`)
+        :rtype: list :mod:`pytodoist.todoist.Label`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
@@ -587,7 +582,7 @@ class User(TodoistObject):
         """Return a list of notifiable events.
 
         :return: A list of notifiable events.
-        :rtype: list (string)
+        :rtype: list string
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
@@ -732,9 +727,6 @@ class Project(TodoistObject):
         ... # At this point Todoist still thinks the name is 'Homework'
         >>> project.update()
         ... # Now the name has been updated on Todoist.
-        >>> project = user.get_project('Homework')
-        >>> project == None
-        True
         """
         response = API.update_project(self.owner.token, self.id,
                                       **self.__dict__)
@@ -789,8 +781,8 @@ class Project(TodoistObject):
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
         >>> project = user.get_project('Homework')
         >>> task = project.add_task('Read chapter 4.')
-        >>> task.content
-        u'Read Chapter 4'
+        >>> print task.content
+        Read Chapter 4
         """
         response = API.add_task(self.owner.token, content, project_id=self.id,
                                 date_string=date, priority=priority)
@@ -802,7 +794,7 @@ class Project(TodoistObject):
         """Return all tasks in this project.
 
         :return: A list of all tasks in this project.
-        :rtype: list (:mod:`pytodoist.todoist.Task`)
+        :rtype: list :mod:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
@@ -811,7 +803,7 @@ class Project(TodoistObject):
         >>> tasks = project.get_tasks()
         >>> for task in tasks:
         ...    print task.content
-        u'Read Chapter 4.'
+        Read Chapter 4.
         """
         return self.get_uncompleted_tasks() + self.get_completed_tasks()
 
@@ -827,8 +819,7 @@ class Project(TodoistObject):
         >>> project.add_task('Read chapter 4.')
         >>> uncompleted_tasks = project.get_uncompleted_tasks()
         >>> for task in uncompleted_tasks:
-        ...    print task.content
-        u'Read Chapter 4.'
+        ...    print task.complete()
         """
         response = API.get_uncompleted_tasks(self.owner.token, self.id)
         _fail_if_contains_errors(response)
@@ -839,7 +830,7 @@ class Project(TodoistObject):
         """Return a list of all completed tasks in this project.
 
         :return: A list of all completed tasks in this project.
-        :rtype: list (:mod:`pytodoist.todoist.Task`)
+        :rtype: list :mod:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
@@ -848,8 +839,7 @@ class Project(TodoistObject):
         >>> task.complete()
         >>> completed_tasks = project.get_completed_tasks()
         >>> for task in completed_tasks:
-        ...    print task.content
-        u'Read Chapter 4.'
+        ...    print task.uncomplete()
         """
         response = API.get_completed_tasks(self.owner.token, self.id)
         _fail_if_contains_errors(response)
@@ -877,6 +867,31 @@ class Project(TodoistObject):
 class Task(TodoistObject):
     """A Todoist Task with the following attributes:
 
+    :ivar is_archived: Is the task archived?
+    :ivar labels: A list of attached label names.
+    :ivar sync_id: The task sync ID.
+    :ivar in_history: Is the task in the task history?
+    :ivar date_added: The date the task was added.
+    :ivar children: A list of child tasks.
+    :ivar content: The task content.
+    :ivar checked: Is the task checked?
+    :ivar id: The task ID.
+    :ivar priority: The task priority.
+    :ivar item_order: The task order.
+    :ivar project_id: The ID of the parent project.
+    :ivar date_string: How did the user enter the task? Could be every day or
+        every day @ 10. The time should be shown when formating the date if @ OR
+        at is found anywhere in the string.
+    :ivar due_date: When is the task due?
+    :ivar due_date_utc: When is the task due (in UTC).
+    :ivar assigned_by_uid: ID of the user who assigned the task.
+    :ivar responsible_uid: ID of the user who responsible for the task.
+    :ivar collapsed: Is the task collapsed?
+    :ivar has_notifications: Does the task have notifications?
+    :ivar indent: The task indentation level.
+    :ivar is_deleted: Has the task been deleted?
+    :ivar user_id: The ID of the user who owns the task.
+    :ivar project: The parent project.
     """
 
     def __init__(self, task_json, project):
@@ -957,8 +972,8 @@ class Task(TodoistObject):
         >>> project = user.get_project('Homework')
         >>> task = user.add_task('Read Chapter 4.')
         >>> note = task.add_note('Page 56')
-        >>> note.content
-        u'Page 56'
+        >>> print note.content
+        Page 56
         """
         response = API.add_note(self.project.owner.token, self.id, content)
         _fail_if_contains_errors(response)
@@ -969,7 +984,7 @@ class Task(TodoistObject):
         """Return all notes attached to this Task.
 
         :return: A list of all notes attached to this Task.
-        :rtype: list (:mod:`pytodoist.todoist.Note`)
+        :rtype: list :mod:`pytodoist.todoist.Note`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
@@ -1015,12 +1030,12 @@ class Task(TodoistObject):
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
         >>> project = user.get_project('Homework')
         >>> task = user.add_task('Read Chapter 4.')
-        >>> task.project.name
-        u'Homework'
+        >>> print task.project.name
+        Homework
         >>> inbox = user.get_project('Inbox')
         >>> task.move(inbox)
-        >>> task.project.name
-        u'Inbox'
+        >>> print task.project.name
+        Inbox
         """
         current_pos = '{{"{p_id}":["{t_id}"]}}'.format(p_id=self.project.id,
                                                        t_id=self.id)
@@ -1033,6 +1048,15 @@ class Task(TodoistObject):
 class Note(TodoistObject):
     """A Todoist note with the following attributes:
 
+    :ivar task: The task it is attached to.
+    :ivar is_deleted: Has the note been deleted?
+    :ivar is_archived: Has the note been archived?
+    :ivar content: The note content.
+    :ivar posted_uid: The ID of the user who attached the note.
+    :ivar item_id: The ID of the task it is attached to.
+    :ivar uids_to_notify: List of user IDs to notify.
+    :ivar id: The note ID.
+    :ivar posted: The date/time the note was posted.
     """
 
     def __init__(self, note_json, task):
@@ -1082,6 +1106,12 @@ class Note(TodoistObject):
 class Label(TodoistObject):
     """A Todoist label with the following attributes:
 
+    :ivar is_deleted: Has the label been deleted?
+    :ivar name: The label name.
+    :ivar color: The color of the label.
+    :ivar owner: The user who owns the label.
+    :ivar id: The ID of the label.
+    :ivar uid: The ID of user who owns the label.
     """
 
     def __init__(self, label_json, owner):
@@ -1128,7 +1158,7 @@ class RequestError(Exception):
 
     def __init__(self, response):
         self.response = response
-        super(TodoistError, self).__init__(response.text)
+        super(RequestError, self).__init__(response.text)
 
 # Avoid magic numbers.
 HTTP_OK = 200
