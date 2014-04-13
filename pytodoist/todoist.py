@@ -236,7 +236,6 @@ class User(TodoistObject):
 
         :param reason: The reason for deletion.
         :type reason: string
-        :raises RequestError: If ``user.password`` is wrong.
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
@@ -577,19 +576,6 @@ class User(TodoistObject):
         response = API.update_notification_settings(self.token, event,
                                                     service, should_notify)
         _fail_if_contains_errors(response)
-
-    def get_notifiable_events(self):
-        """Return a list of notifiable events.
-
-        :return: A list of notifiable events.
-        :rtype: list string
-
-        >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
-        >>> user.get_notifiable_events()
-        [u'user_left_project', u'item_completed', ...]
-        """
-        return self._get_notification_settings().keys()
 
     def is_email_notified_when(self, event):
         """Find out if a user is receiving emails for a given
@@ -1210,6 +1196,16 @@ class Priority(object):
     NORMAL = 2
     HIGH = 3
     VERY_HIGH = 4
+
+class Event(object):
+    USER_LEFT_PROJECT = 'user_left_project'
+    USER_REMOVED_FROM_PROJECT = 'user_removed_from_project'
+    ITEM_COMPLETED = 'item_completed'
+    ITEM_UNCOMPLETED = 'item_uncompleted'
+    ITEM_ASSIGNED = 'item_assigned'
+    SHARE_INVITATION_REJECTED = 'share_invitation_rejected'
+    SHARE_NOTIFICATION_ACCEPTED = 'share_notification_accepted'
+    NOTE_ADDED = 'note_added'
 
 
 class RequestError(Exception):

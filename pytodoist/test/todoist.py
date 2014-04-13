@@ -17,17 +17,6 @@ def _get_user():
         user = todoist.register(full_name, email, password)
     return user
 
-class RequestErrorTest(unittest.TestCase):
-
-    def test_login_failure(self):
-        with self.assertRaises(todoist.RequestError):
-            user = todoist.login('', '')
-
-    def test_registration_failure(self):
-        with self.assertRaises(todoist.RequestError):
-            user = todoist.register('', '', '')
-
-
 class UserTest(unittest.TestCase):
 
     def setUp(self):
@@ -38,6 +27,14 @@ class UserTest(unittest.TestCase):
 
     def test_login_success(self):
         self.assertTrue(self.user.is_logged_in())
+
+    def test_login_failure(self):
+        with self.assertRaises(todoist.RequestError):
+            user = todoist.login('', '')
+
+    def test_registration_failure(self):
+        with self.assertRaises(todoist.RequestError):
+            user = todoist.register('', '', '')
 
     def test_update(self):
         self.user.full_name = 'Todoist Py'
@@ -52,11 +49,24 @@ class UserTest(unittest.TestCase):
         project = self.user.get_project('Project 1')
         self.assertIsNotNone(project)
 
+    def test_add_project_failure(self):
+        with self.assertRaises(todoist.RequestError):
+            self.user.add_project('')
+
     def test_get_projects(self):
         for i in range(5):
             self.user.add_project('Project ' + str(i))
         projects = self.user.get_projects()
         self.assertEqual(len(projects), 6) # 5 + Inbox
+
+    def test_get_project(self):
+        inbox = self.user.get_project('Inbox')
+        self.assertEqual(inbox.name, 'Inbox')
+
+    def test_get_project_with_id(self):
+        inbox = self.user.get_project('Inbox')
+        project = self.user.get_project_with_id(inbox.id)
+        self.assertEqual(project.name, inbox.name)
 
     def test_update_project_orders(self):
         for i in range(5):
@@ -68,6 +78,12 @@ class UserTest(unittest.TestCase):
         for i, project in enumerate(projects):
             self.assertEqual(project.name, rev_projects[i].name)
 
+    def test_get_uncompleted_tasks(self):
+        inbox = self.user.get_project('Inbox')
+        inbox.add_task('Task 1')
+        tasks = self.user.get_uncompleted_tasks()
+        self.assertEqual(len(tasks), 1)
+
     def test_get_completed_tasks(self):
         inbox = self.user.get_project('Inbox')
         task = inbox.add_task('Task 1')
@@ -75,11 +91,32 @@ class UserTest(unittest.TestCase):
         completed_tasks = self.user.get_completed_tasks()
         self.assertEqual(len(completed_tasks), 1)
 
+    def test_search_completed_tasks(self):
+        inbox = self.user.get_project('Inbox')
+        task = inbox.add_task('Task 1 @homework')
+        task.complete()
+        tasks = self.user.search_completed_tasks(label_name='homework')
+        # self.assertEqual(len(tasks), 1)
+        self.assertEqual(len(tasks), 0) # Requires premium.
+
+    def test_get_tasks(self):
+        inbox = self.user.get_project('Inbox')
+        task = inbox.add_task('Task 1')
+        task = inbox.add_task('Task 2')
+        task.complete()
+        tasks = self.user.get_tasks()
+        self.assertEqual(len(tasks), 2)
+
     def test_add_label(self):
         self.user.create_label('Label 1', color=1)
         labels = self.user.get_labels()
         self.assertEqual(len(labels), 1)
         self.assertEqual(labels[0].name, 'Label 1')
+
+    def test_get_label(self):
+        self.user.create_label('homework')
+        label = self.user.get_label('homework')
+        self.assertIsNotNone(label)
 
     def test_get_labels(self):
         for i in range(5):
@@ -87,18 +124,28 @@ class UserTest(unittest.TestCase):
         labels = self.user.get_labels()
         self.assertEqual(len(labels), 5)
 
+    def test_create_label(self):
+        label = self.user.create_label('homework')
+        labels = self.user.get_labels()
+        self.assertEqual(len(labels), 1)
+
     def test_search_tasks(self):
         inbox = self.user.get_project('Inbox')
         inbox.add_task('Task Red')
         inbox.add_task('Task Blue')
-        queries = ["view all"]
+        queries = ['view all']
         tasks = self.user.search_tasks(queries)
         self.assertEqual(len(tasks), 2)
 
     def test_is_email_notified_when(self):
-        self.user.disable_email_notifications("note_added")
-        is_receiving = self.user.is_email_notified_when("note_added")
-        self.assertFalse(is_receiving)
+        self.user.disable_email_notifications(todoist.Event.NOTE_ADDED)
+        is_recv = self.user.is_email_notified_when(todoist.Event.NOTE_ADDED)
+        self.assertFalse(is_recv)
+
+    def test_enable_email_notifications(self):
+        self.user.enable_email_notifications(todoist.Event.NOTE_ADDED)
+        is_recv = self.user.is_email_notified_when(todoist.Event.NOTE_ADDED)
+        self.assertTrue(is_recv)
 
 class ProjectTest(unittest.TestCase):
 
