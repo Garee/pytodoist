@@ -1222,6 +1222,30 @@ class RequestError(Exception):
 # Avoid magic numbers.
 HTTP_OK = 200
 
+_ERROR_TEXT_RESPONSES = [
+    '"LOGIN_ERROR"',
+    '"INTERNAL_ERROR"',
+    '"EMAIL_MISMATCH"',
+    '"ACCOUNT_NOT_CONNECTED_WITH_GOOGLE"',
+    '"ALREADY_REGISTRED"',
+    '"TOO_SHORT_PASSWORD"',
+    '"INVALID_EMAIL"',
+    '"INVALID_TIMEZONE"',
+    '"INVALID_FULL_NAME"',
+    '"UNKNOWN_ERROR"',
+    '"ERROR_PASSWORD_TOO_SHORT"',
+    '"ERROR_EMAIL_FOUND"',
+    '"UNKNOWN_IMAGE_FORMAT"',
+    '"AVATAR_NOT_FOUND"',
+    '"UNABLE_TO_RESIZE_IMAGE"',
+    '"IMAGE_TOO_BIG"',
+    '"UNABLE_TO_RESIZE_IMAGE"',
+    '"ERROR_PROJECT_NOT_FOUND"',
+    '"ERROR_NAME_IS_EMPTY"',
+    '"ERROR_WRONG_DATE_SYNTAX"',
+    '"ERROR_ITEM_NOT_FOUND"',
+]
+
 def _fail_if_contains_errors(response):
     """Raise a RequestError Exception if a given response
     does not denote a successful request.
@@ -1231,16 +1255,5 @@ def _fail_if_contains_errors(response):
 
 def _contains_errors(response):
     """Return True if a given response contains errors."""
-    return response.status_code != HTTP_OK or not _is_valid_response(response)
-
-def _is_valid_response(response):
-    """Return True if the response contents are valid.
-
-    The contents are valid if they are json parsable or equal to
-    one of a set of valid responses.
-    """
-    try:
-        response.json()
-    except ValueError:
-        return response.text in ['ok', '"ok"']
-    return True
+    return (response.status_code != HTTP_OK
+            or response.text in _ERROR_TEXT_RESPONSES)
