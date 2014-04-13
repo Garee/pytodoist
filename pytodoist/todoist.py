@@ -13,7 +13,6 @@ def login(email, password):
     :type password: string
     :return: The Todoist user.
     :rtype: :mod:`pytodoist.todoist.User`
-    :raises AuthError: If the login credentials are incorrect.
 
     >>> from pytodoist import todoist
     >>> user = todoist.login('john.doe@gmail.com', 'passwd')
@@ -35,9 +34,6 @@ def login_with_google(email, oauth2_token):
     :type oauth2_token: string
     :return: The Todoist user.
     :rtype: :mod:`pytodoist.todoist.User`
-    :raises AuthError: If Google has refused to accept the token.
-    :raises InternalError: If a server error occurs. Try again later.
-    :raises BadValueError: If the token is valid but doesn't match the email.
 
     .. note:: It is up to you to obtain the valid oauth2 token.
 
@@ -1112,7 +1108,7 @@ class Label(TodoistObject):
         _fail_if_contains_errors(response)
 
 
-class TodoistError(Exception):
+class RequestError(Exception):
     """Will be raised whenever a Todoist API call fails."""
 
     def __init__(self, response):
@@ -1127,7 +1123,7 @@ def _fail_if_contains_errors(response):
     does not denote a successful request.
     """
     if _contains_errors(response):
-        raise TodoistError(response)
+        raise RequestError(response)
 
 def _contains_errors(response):
     """Return True if a given response contains errors."""
