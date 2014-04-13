@@ -1168,6 +1168,14 @@ class Color(object):
     LIGHT_BLUE = 11
 
 
+class Priority(object):
+    NO = 0
+    LOW = 1
+    NORMAL = 2
+    HIGH = 3
+    VERY_HIGH = 4
+
+
 class RequestError(Exception):
     """Will be raised whenever a Todoist API call fails."""
 
