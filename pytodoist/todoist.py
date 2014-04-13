@@ -1154,6 +1154,27 @@ class Label(TodoistObject):
 
 
 class Color(object):
+    """This class acts as an easy way to specify Todoist project
+    colors.
+
+    >>> from pytodoist import todoist
+    >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+    >>> user.add_project('Homework', color=todoist.Color.RED)
+
+    The supported colors:
+        * GREEN
+        * PINK
+        * LIGHT_ORANGE
+        * YELLOW
+        * DARK_BLUE
+        * BROWN
+        * PURPLE
+        * GRAY
+        * RED
+        * DARK_ORANGE
+        * CYAN
+        * LIGHT_BLUE
+    """
     GREEN = 0
     PINK = 1
     LIGHT_ORANGE = 2
@@ -1169,6 +1190,21 @@ class Color(object):
 
 
 class Priority(object):
+    """This class acts as an easy way to specify Todoist task
+    priority.
+
+    >>> from pytodoist import todoist
+    >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+    >>> inbox = user.get_project('Inbox')
+    >>> inbox.add_task('Read Chapter 4', priority=todoist.Priority.LOW)
+
+    The supported priorities:
+        * NO
+        * LOW
+        * NORMAL
+        * HIGH
+        * VERY_HIGH
+    """
     NO = 0
     LOW = 1
     NORMAL = 2
