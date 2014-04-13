@@ -407,7 +407,7 @@ class User(TodoistObject):
         """Return all of a user's uncompleted tasks.
 
         :return: A list of uncompleted tasks.
-        :rtype: list (:mod:`pytodoist.todoist.Task`)
+        :rtype: list :mod:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
@@ -479,7 +479,7 @@ class User(TodoistObject):
         """Return a list of tasks that match some search criteria.
 
         :param queries: Return tasks that match at least one of these queries.
-        :type queries: list (string)
+        :type queries: list string
         :return: A list tasks that match at least one query.
         :rtype: list :mod:`pytodoist.todoist.Task`
 
@@ -811,7 +811,7 @@ class Project(TodoistObject):
         """Return a list of all uncompleted tasks in this project.
 
         :return: A list of all uncompleted tasks in this project.
-        :rtype: list (:mod:`pytodoist.todoist.Task`)
+        :rtype: list :mod:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
@@ -850,7 +850,7 @@ class Project(TodoistObject):
         """Update the order in which tasks are displayed on Todoist.
 
         :param tasks: A list of tasks in the order to be displayed.
-        :type tasks: list (:mod:`pytodoist.todoist.Task`)
+        :type tasks: list :mod:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'passwd')
