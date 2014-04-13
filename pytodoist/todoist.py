@@ -1119,7 +1119,7 @@ class RequestError(Exception):
 HTTP_OK = 200
 
 def _fail_if_contains_errors(response):
-    """Raise a TodoistError Exception if a given response
+    """Raise a RequestError Exception if a given response
     does not denote a successful request.
     """
     if _contains_errors(response):
