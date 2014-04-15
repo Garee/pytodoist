@@ -1,12 +1,15 @@
-# pytodoist
+pytodoist
+---------
 
-PyTodoist is a Python package that provides simple methods for interacting with the Todoist API. It hides the underlying web API calls with higher-level abstractions that make it easy to use Todoist with Python.
+PyTodoist is a Python package that provides simple methods for interacting with Todoist. It hides the underlying web API calls with higher-level abstractions that make it easy to use Todoist with Python.
 
-# Documentation
+Documentation
+-------------
 
 Comprehensive online documentation can be found at http://pytodoist.readthedocs.org
 
-# Install
+Install
+-------
 
 Install the latest version:
 
@@ -18,17 +21,22 @@ Install from source:
     $ cd PyTodoist
     $ python setup.py install
 
-# Example
+Example
+-------
 
 >>> from pytodoist import todoist
 >>> user = todoist.login('gary@garyblackwood.co.uk', 'mysecretpassword')
 >>> user.is_logged_in()
 True
->>> user.full_name
-'Gary Blackwood'
+>>> print user.full_name
+Gary Blackwood
 >>> projects = user.get_projects()
 >>> for project in projects:
 ...     print project.name
 ...
 Inbox
 PyTodoist
+>>> inbox = user.get_project('Inbox')
+>>> task = inbox.add_task('Install PyTodoist',
+...                        priority=todoist.Priority.VERY_HIGH)
+>>> task.complete()
