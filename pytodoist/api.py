@@ -1,5 +1,5 @@
 """This module is a pure wrapper around the Todoist API that neither adds or
-takes away any functionality that is not provided by Todoist. It uses the
+takes away any functionality that is provided by Todoist. It uses the
 popular requests package to provide a simple way in which to use the API in
 Python.
 
