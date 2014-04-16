@@ -3,7 +3,7 @@ PyTodoist |release| Documentation
 
 Overview
 --------
-**PyTodoist** is a Python package for interacting with the `Todoist <http://www.todoist.com>`_ web application. It hides the underlying API calls with higher-level abstractions that make it easy to use Todoist with Python.
+**PyTodoist** is a Python package for interacting with `Todoist <http://www.todoist.com>`_. It hides the underlying API calls with higher-level abstractions that make it easy to use Todoist with Python.
 
 Examples
 --------
@@ -48,7 +48,7 @@ To install from source:
 Modules
 -------
 :doc:`todoist`
-    Abstracts the underlying API and provides an easy way to interact with Todoist.
+     Abstracts the underlying API and provides an easy way to interact with Todoist.
 
 :doc:`api`
     A direct wrapper over the Todoist API.
