@@ -1,11 +1,11 @@
 """This module introduces abstractions over Todoist entities such as Users,
 Tasks and Projects. It's purpose is to hide the underlying API calls so that
-programmers can interact with Todoist in a straightforward manner.
+you can interact with Todoist in a straightforward manner.
 
 *Example:*
 
 >>> from pytodoist import todoist
->>> user = todoist.register('John Doe', 'john.doe@gmail.com', 'passwd')
+>>> user = todoist.register('John Doe', 'john.doe@gmail.com', 'password')
 >>> user.is_logged_in()
 True
 >>> install_task = user.add_task('Install PyTodoist.')
@@ -31,10 +31,9 @@ def login(email, password):
     :type password: string
     :return: The Todoist user.
     :rtype: :mod:`pytodoist.todoist.User`
-    :raises RequestError: If the authentication failed.
 
     >>> from pytodoist import todoist
-    >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+    >>> user = todoist.login('john.doe@gmail.com', 'password')
     >>> print user.join_date
     Sun 09 Mar 2014 19:54:01 +0000
     """
@@ -51,7 +50,6 @@ def login_with_google(email, oauth2_token):
     :type oauth2_token: string
     :return: The Todoist user.
     :rtype: :mod:`pytodoist.todoist.User`
-    :raises RequestError: If the authentication failed.
 
     .. note:: It is up to you to obtain the valid oauth2 token.
 
@@ -88,10 +86,9 @@ def register(full_name, email, password, lang=None, timezone=None):
     :type timezone: string
     :return: The Todoist user.
     :rtype: :mod:`pytodoist.todoist.User`
-    :raises RequestError: If an account with the given details exists.
 
     >>> from pytodoist import todoist
-    >>> user = todoist.register('John Doe', 'john.doe@gmail.com', 'passwd')
+    >>> user = todoist.register('John Doe', 'john.doe@gmail.com', 'password')
     >>> user.is_logged_in()
     True
     """
@@ -119,7 +116,6 @@ def register_with_google(full_name, email, oauth2_token,
     :type timezone: string
     :return: The Todoist user.
     :rtype: :mod:`pytodoist.todoist.User`
-    :raises RequestError: If registration fails.
 
     .. note:: It is up to you to obtain the valid oauth2 token.
 
@@ -217,7 +213,7 @@ class User(TodoistObject):
         :rtype: bool
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> user.is_logged_in()
         True
         >>> user.delete()
@@ -238,7 +234,7 @@ class User(TodoistObject):
         :type reason: string
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> user.delete()
         ... # The user token is now invalid and Todoist operations will fail.
         """
@@ -252,10 +248,8 @@ class User(TodoistObject):
         You must call this method to register any local attribute changes with
         Todoist.
 
-        :raises RequestError: If the request to update is invalid.
-
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> user.full_name = 'John Smith'
         ... # At this point Todoist still thinks the name is 'John Doe'.
         >>> user.update()
@@ -269,12 +263,9 @@ class User(TodoistObject):
 
         :param image: The path to the image.
         :type image: string
-        :raises RequestError: If the image is an invalid format, too big or
-            unable to be resized.
-        :raises IOError: If the image cannot be opened.
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> user.change_avatar('/home/john/pictures/avatar.png')
         """
         with open(image_file, 'r') as image:
@@ -285,7 +276,7 @@ class User(TodoistObject):
         """Change the user's avatar to the Todoist default avatar.
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> user.use_default_avatar()
         """
         response = API.update_avatar(self.token, delete=1)
@@ -304,10 +295,9 @@ class User(TodoistObject):
         :type order: int
         :return: The project that was added.
         :rtype: :mod:`pytodoist.todoist.Project`
-        :raises RequestError: If the project name is empty.
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.add_project('Homework')
         >>> print project.name
         Homework
@@ -325,7 +315,7 @@ class User(TodoistObject):
         :rtype: list :mod:`pytodoist.todoist.Project`
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> user.add_project('Homework')
         >>> projects = user.get_projects()
         >>> for project in projects:
@@ -348,7 +338,7 @@ class User(TodoistObject):
         :rtype: :mod:`pytodoist.todoist.Project`
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> inbox = user.get_project('Inbox')
         >>> print inbox.name
         Inbox
@@ -366,7 +356,7 @@ class User(TodoistObject):
         :rtype: :mod:`pytodoist.todoist.Project`
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> inbox = user.get_project('Inbox')
         >>> projct = user.get_project_with_id(inbox.id)
         >>> print project.name
@@ -384,7 +374,7 @@ class User(TodoistObject):
         :type projects: list :mod:`pytodoist.todoist.Project`
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> projects = user.get_projects()
         >>> for project in projects:
         ...    print project.name
@@ -409,7 +399,7 @@ class User(TodoistObject):
         :rtype: list :mod:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> uncompleted_tasks = user.get_uncompleted_tasks()
         >>> for task in uncompleted_tasks:
         ...    task.complete()
@@ -424,7 +414,7 @@ class User(TodoistObject):
         :rtype: list :mod:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> completed_tasks = user.get_completed_tasks()
         >>> for task in completed_tasks:
         ...     task.uncomplete()
@@ -446,7 +436,7 @@ class User(TodoistObject):
         :rtype: list :mod:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> completed_tasks = user.search_completed_tasks(label_name='School')
         >>> for task in completed_tasks:
         ...     task.uncomplete()
@@ -469,7 +459,7 @@ class User(TodoistObject):
         :rtype: list :mod:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> tasks = user.get_tasks()
         """
         return self.get_uncompleted_tasks() + self.get_completed_tasks()
@@ -483,7 +473,7 @@ class User(TodoistObject):
         :rtype: list :mod:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> queries = ['today', 'tomorrow']
         >>> tasks = user.search_tasks(queries)
         """
@@ -514,7 +504,7 @@ class User(TodoistObject):
         :rtype: :mod:`pytodoist.todoist.Label`
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> label = user.get_label('School')
         """
         for label in self.get_labels():
@@ -528,7 +518,7 @@ class User(TodoistObject):
         :rtype: list :mod:`pytodoist.todoist.Label`
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> labels = user.get_labels()
         """
         response = API.get_labels(self.token)
@@ -544,7 +534,7 @@ class User(TodoistObject):
         :rtype: :mod:`pytodoist.todoist.Label`
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> label = user.create_label('School')
         """
         response = API.create_label(self.token, name, color=color)
@@ -588,8 +578,8 @@ class User(TodoistObject):
         :rtype: bool
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
-        >>> user.is_email_notified_when('note_added')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> user.is_email_notified_when(todoist.Event.NOTE_ADDED)
         True
         """
         notification_settings = self._get_notification_settings()
@@ -606,8 +596,8 @@ class User(TodoistObject):
         :rtype: bool
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
-        >>> user.is_push_notified_when('note_added')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> user.is_push_notified_when(todoist.Event.NOTE_ADDED)
         True
         """
         notification_settings = self._get_notification_settings()
@@ -620,8 +610,8 @@ class User(TodoistObject):
         :type event: string
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
-        >>> user.enable_push_notifications('note_added')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> user.enable_push_notifications(todoist.Event.NOTE_ADDED)
         """
         self._update_notification_settings(event, 'push', 0)
 
@@ -632,8 +622,8 @@ class User(TodoistObject):
         :type event: string
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
-        >>> user.disable_push_notifications('note_added')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> user.disable_push_notifications(todoist.Event.NOTE_ADDED)
         """
         self._update_notification_settings(event, 'push', 1)
 
@@ -644,8 +634,8 @@ class User(TodoistObject):
         :type event: string
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
-        >>> user.enable_email_notifications('note_added')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> user.enable_email_notifications(todoist.Event.NOTE_ADDED)
         """
         self._update_notification_settings(event, 'email', 0)
 
@@ -656,8 +646,8 @@ class User(TodoistObject):
         :type event: string
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
-        >>> user.disable_email_notifications('note_added')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> user.disable_email_notifications(todoist.Event.NOTE_ADDED)
         """
         self._update_notification_settings(event, 'email', 1)
 
@@ -691,7 +681,7 @@ class Project(TodoistObject):
         """Delete the project.
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('Homework')
         >>> project.delete()
         """
@@ -704,10 +694,8 @@ class Project(TodoistObject):
         You must call this method to register any local attribute changes with
         Todoist.
 
-        :raises RequestError: If the request to update is invalid.
-
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('Homework')
         >>> project.name = 'Find Employment'
         ... # At this point Todoist still thinks the name is 'Homework'
@@ -722,7 +710,7 @@ class Project(TodoistObject):
         """Archive the project.
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('Homework')
         >>> project.archive()
         """
@@ -733,7 +721,7 @@ class Project(TodoistObject):
         """Unarchive the project.
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('Homework')
         >>> project.unarchive()
         """
@@ -744,7 +732,7 @@ class Project(TodoistObject):
         """Collapse the project on Todoist.
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('Homework')
         >>> project.collapse()
         """
@@ -764,7 +752,7 @@ class Project(TodoistObject):
         :rtype: :mod:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('Homework')
         >>> task = project.add_task('Read chapter 4.')
         >>> print task.content
@@ -783,7 +771,7 @@ class Project(TodoistObject):
         :rtype: list :mod:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('Homework')
         >>> project.add_task('Read chapter 4.')
         >>> tasks = project.get_tasks()
@@ -800,7 +788,7 @@ class Project(TodoistObject):
         :rtype: list :mod:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('Homework')
         >>> project.add_task('Read chapter 4.')
         >>> uncompleted_tasks = project.get_uncompleted_tasks()
@@ -819,7 +807,7 @@ class Project(TodoistObject):
         :rtype: list :mod:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('Homework')
         >>> task = project.add_task('Read chapter 4.')
         >>> task.complete()
@@ -839,7 +827,7 @@ class Project(TodoistObject):
         :type tasks: list :mod:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('Homework')
         >>> tasks = project.get_tasks()
         >>> rev_tasks = tasks[::-1]
@@ -891,10 +879,8 @@ class Task(TodoistObject):
         You must call this method to register any local attribute changes with
         Todoist.
 
-        :raises RequestError: If the request to update is invalid.
-
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('Homework')
         >>> task = user.add_task('Read Chapter 4.')
         >>> task.content = 'Read Chapter 5'
@@ -910,7 +896,7 @@ class Task(TodoistObject):
         """Delete the task.
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('Homework')
         >>> task = user.add_task('Read Chapter 4.')
         >>> task.delete()
@@ -923,7 +909,7 @@ class Task(TodoistObject):
         """Mark the task complete.
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('Homework')
         >>> task = user.add_task('Read Chapter 4.')
         >>> task.complete()
@@ -936,7 +922,7 @@ class Task(TodoistObject):
         """Mark the task uncomplete.
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('Homework')
         >>> task = user.add_task('Read Chapter 4.')
         >>> task.uncomplete()
@@ -954,7 +940,7 @@ class Task(TodoistObject):
         :rtype: :mod:`pytodoist.todoist.Note`
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('Homework')
         >>> task = user.add_task('Read Chapter 4.')
         >>> note = task.add_note('Page 56')
@@ -973,7 +959,7 @@ class Task(TodoistObject):
         :rtype: list :mod:`pytodoist.todoist.Note`
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('Homework')
         >>> task = user.add_task('Read Chapter 4.')
         >>> task.add_note('Page 56')
@@ -990,7 +976,7 @@ class Task(TodoistObject):
         """Advance the recurring date of this task.
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('Homework')
         >>> task = user.add_task('Read Chapter 4.')
         >>> task.due_date
@@ -1013,7 +999,7 @@ class Task(TodoistObject):
         :type project: :mod:`pytodoist.todoist.Project`
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('Homework')
         >>> task = user.add_task('Read Chapter 4.')
         >>> print task.project.name
@@ -1058,7 +1044,7 @@ class Note(TodoistObject):
         Todoist.
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('Homework')
         >>> task = user.add_task('Read Chapter 4.')
         >>> note = task.add_note('Page 56')
@@ -1075,7 +1061,7 @@ class Note(TodoistObject):
         """Delete the note, removing it from it's task.
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('Homework')
         >>> task = user.add_task('Read Chapter 4.')
         >>> note = task.add_note('Page 56')
@@ -1114,7 +1100,7 @@ class Label(TodoistObject):
         Todoist.
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> label = user.create_label('work')
         >>> label.name = 'football'
         ... # At this point Todoist still thinks the name is 'work'
@@ -1131,7 +1117,7 @@ class Label(TodoistObject):
         """Delete the label.
 
         >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> label = user.create_label('work')
         >>> label.delete()
         """
@@ -1144,7 +1130,7 @@ class Color(object):
     colors.
 
     >>> from pytodoist import todoist
-    >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+    >>> user = todoist.login('john.doe@gmail.com', 'password')
     >>> user.add_project('Homework', color=todoist.Color.RED)
 
     The supported colors:
@@ -1180,7 +1166,7 @@ class Priority(object):
     priority.
 
     >>> from pytodoist import todoist
-    >>> user = todoist.login('john.doe@gmail.com', 'passwd')
+    >>> user = todoist.login('john.doe@gmail.com', 'password')
     >>> inbox = user.get_project('Inbox')
     >>> inbox.add_task('Read Chapter 4', priority=todoist.Priority.LOW)
 
@@ -1198,6 +1184,23 @@ class Priority(object):
     VERY_HIGH = 4
 
 class Event(object):
+    """This class acts as an easy way to specify Todoist event
+    types.
+
+    >>> from pytodoist import todoist
+    >>> user = todoist.login('john.doe@gmail.com', 'password')
+    >>> user.enable_email_notifications(todoist.Event.NOTE_ADDED)
+
+    The supported events:
+        * USER_LEFT_PROJECT
+        * USER_REMOVED_FROM_PROJECT
+        * ITEM_COMPLETED
+        * ITEM_UNCOMPLETED
+        * ITEM_ASSIGNED
+        * SHARE_INVITATION_REJECTED
+        * SHARE NOTIFICATION_ACCEPTED
+        * NOTE_ADDED
+    """
     USER_LEFT_PROJECT = 'user_left_project'
     USER_REMOVED_FROM_PROJECT = 'user_removed_from_project'
     ITEM_COMPLETED = 'item_completed'
