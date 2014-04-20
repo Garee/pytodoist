@@ -1210,6 +1210,24 @@ class Event(object):
     SHARE_NOTIFICATION_ACCEPTED = 'share_notification_accepted'
     NOTE_ADDED = 'note_added'
 
+class Interval(object):
+    """This class acts as an easy way to specify Todoist intervals.
+
+    >>> from pytodoist import todoist
+    >>> user = todoist.login('john.doe@gmail.com', 'password')
+    >>> tasks = user.search_completed_tasks(interval=todoist.Interval.ALL)
+
+    The supported events:
+        * PAST_2_WEEKS
+        * PAST_MONTH
+        * PAST_6_MONTHS
+        * ALL
+    """
+    PAST_2_WEEKS = 'past 2 weeks'
+    PAST_MONTH = 'past month'
+    PAST_6_MONTHS = 'past 6 months'
+    ALL = 'all'
+
 
 class RequestError(Exception):
     """Will be raised whenever a Todoist API call fails."""
