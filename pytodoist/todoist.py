@@ -34,8 +34,8 @@ def login(email, password):
 
     >>> from pytodoist import todoist
     >>> user = todoist.login('john.doe@gmail.com', 'password')
-    >>> print user.join_date
-    Sun 09 Mar 2014 19:54:01 +0000
+    >>> print user.full_name
+    John Doe
     """
     user = _login(API.login, email, password)
     user.password = password
@@ -56,8 +56,8 @@ def login_with_google(email, oauth2_token):
     >>> from pytodoist import todoist
     ... # Get the oauth2 token.
     >>> user = todoist.login_with_google('john.doe@gmail.com', oauth2_token)
-    >>> print user.join_date
-    Sun 09 Mar 2014 19:54:01 +0000
+    >>> print user.full_name
+    John Doe
     """
     return _login(API.login_with_google, email, oauth2_token)
 
@@ -298,9 +298,9 @@ class User(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> project = user.add_project('Homework')
+        >>> project = user.add_project('PyTodoist')
         >>> print project.name
-        Homework
+        PyTodoist
         """
         response = API.add_project(self.token, name,
                                    color=color, indent=indent, order=order)
@@ -316,12 +316,12 @@ class User(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> user.add_project('Homework')
+        >>> user.add_project('PyTodoist')
         >>> projects = user.get_projects()
         >>> for project in projects:
         ...    print project.name
         Inbox
-        Homework
+        PyTodoist
         """
         response = API.get_projects(self.token)
         _fail_if_contains_errors(response)
@@ -378,15 +378,15 @@ class User(TodoistObject):
         >>> projects = user.get_projects()
         >>> for project in projects:
         ...    print project.name
+        PyTodoist
         Homework
-        Shopping
         >>> rev_projects = projects[::-1]
         >>> user.update_project_orders(rev_projects)
         >>> projects = user.get_projects()
         >>> for project in projects:
         ...    print project.name
-        Shopping
         Homework
+        PyTodoist
         """
         project_ids = str([project.id for project in projects])
         response = API.update_project_orders(self.token, project_ids)
@@ -437,7 +437,7 @@ class User(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> completed_tasks = user.search_completed_tasks(label_name='School')
+        >>> completed_tasks = user.search_completed_tasks(label_name='family')
         >>> for task in completed_tasks:
         ...     task.uncomplete()
         """
@@ -508,7 +508,7 @@ class User(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> label = user.get_label('School')
+        >>> label = user.get_label('family')
         """
         for label in self.get_labels():
             if label.name == label_name:
@@ -538,7 +538,7 @@ class User(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> label = user.create_label('School')
+        >>> label = user.create_label('family')
         """
         response = API.create_label(self.token, name, color=color)
         _fail_if_contains_errors(response)
@@ -685,7 +685,7 @@ class Project(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> project = user.get_project('Homework')
+        >>> project = user.get_project('PyTodoist')
         >>> project.delete()
         """
         response = API.delete_project(self.owner.token, self.id)
@@ -699,9 +699,9 @@ class Project(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> project = user.get_project('Homework')
-        >>> project.name = 'Find Employment'
-        ... # At this point Todoist still thinks the name is 'Homework'
+        >>> project = user.get_project('PyTodoist')
+        >>> project.name = 'Homework'
+        ... # At this point Todoist still thinks the name is 'PyTodoist'.
         >>> project.update()
         ... # Now the name has been updated on Todoist.
         """
@@ -714,7 +714,7 @@ class Project(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> project = user.get_project('Homework')
+        >>> project = user.get_project('PyTodoist')
         >>> project.archive()
         """
         response = API.archive_project(self.owner.token, self.id)
@@ -725,7 +725,7 @@ class Project(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> project = user.get_project('Homework')
+        >>> project = user.get_project('PyTodoist')
         >>> project.unarchive()
         """
         response = API.unarchive_project(self.owner.token, self.id)
@@ -736,7 +736,7 @@ class Project(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> project = user.get_project('Homework')
+        >>> project = user.get_project('PyTodoist')
         >>> project.collapse()
         """
         response = API.update_project(self.owner.token, self.id, collapsed=1)
@@ -759,10 +759,10 @@ class Project(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> project = user.get_project('Homework')
-        >>> task = project.add_task('Read chapter 4.')
+        >>> project = user.get_project('PyTodoist')
+        >>> task = project.add_task('Install PyTodoist.')
         >>> print task.content
-        Read Chapter 4
+        Install PyTodoist.
         """
         response = API.add_task(self.owner.token, content, project_id=self.id,
                                 date_string=date, priority=priority)
@@ -778,12 +778,14 @@ class Project(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> project = user.get_project('Homework')
-        >>> project.add_task('Read chapter 4.')
+        >>> project = user.get_project('PyTodoist')
+        >>> project.add_task('Install PyTodoist.')
+        >>> project.add_task('Have fun!')
         >>> tasks = project.get_tasks()
         >>> for task in tasks:
         ...    print task.content
-        Read Chapter 4.
+        Install PyTodoist.
+        Have fun!
         """
         return self.get_uncompleted_tasks() + self.get_completed_tasks()
 
@@ -795,11 +797,11 @@ class Project(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> project = user.get_project('Homework')
-        >>> project.add_task('Read chapter 4.')
+        >>> project = user.get_project('PyTodoist')
+        >>> project.add_task('Install PyTodoist.')
         >>> uncompleted_tasks = project.get_uncompleted_tasks()
         >>> for task in uncompleted_tasks:
-        ...    print task.complete()
+        ...    task.complete()
         """
         response = API.get_uncompleted_tasks(self.owner.token, self.id)
         _fail_if_contains_errors(response)
@@ -814,12 +816,12 @@ class Project(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> project = user.get_project('Homework')
-        >>> task = project.add_task('Read chapter 4.')
+        >>> project = user.get_project('PyTodoist')
+        >>> task = project.add_task('Install PyTodoist.')
         >>> task.complete()
         >>> completed_tasks = project.get_completed_tasks()
         >>> for task in completed_tasks:
-        ...    print task.uncomplete()
+        ...    task.uncomplete()
         """
         response = API.get_completed_tasks(self.owner.token, self.id)
         _fail_if_contains_errors(response)
@@ -834,7 +836,7 @@ class Project(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> project = user.get_project('Homework')
+        >>> project = user.get_project('PyTodoist')
         >>> tasks = project.get_tasks()
         >>> rev_tasks = tasks[::-1]
         >>> project.update_task_orders(rev_tasks)
@@ -887,10 +889,11 @@ class Task(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> project = user.get_project('Homework')
-        >>> task = user.add_task('Read Chapter 4.')
-        >>> task.content = 'Read Chapter 5'
-        ... # At this point Todoist still thinks the content is 'Read Chapter 4'
+        >>> project = user.get_project('PyTodoist')
+        >>> task = user.add_task('Install PyTodoist.')
+        >>> task.content = 'Install the latest version of PyTodoist.'
+        ... # At this point Todoist still thinks the content is
+        ... # 'Install PyTodoist.'
         >>> task.update()
         ... # Now the content has been updated on Todoist.
         """
@@ -916,8 +919,8 @@ class Task(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> project = user.get_project('Homework')
-        >>> task = user.add_task('Read Chapter 4.')
+        >>> project = user.get_project('PyTodoist')
+        >>> task = user.add_task('Install PyTodoist.')
         >>> task.complete()
         """
         task_ids = '[{id}]'.format(id=self.id)
@@ -929,8 +932,8 @@ class Task(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> project = user.get_project('Homework')
-        >>> task = user.add_task('Read Chapter 4.')
+        >>> project = user.get_project('PyTodoist')
+        >>> task = user.add_task('Install PyTodoist.')
         >>> task.uncomplete()
         """
         task_ids = '[{id}]'.format(id=self.id)
@@ -947,11 +950,11 @@ class Task(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> project = user.get_project('Homework')
-        >>> task = user.add_task('Read Chapter 4.')
-        >>> note = task.add_note('Page 56')
+        >>> project = user.get_project('PyTodoist')
+        >>> task = user.add_task('Install Todoist.')
+        >>> note = task.add_note('https://pypi.python.org/pypi')
         >>> print note.content
-        Page 56
+        https://pypi.python.org/pypi
         """
         response = API.add_note(self.project.owner.token, self.id, content)
         _fail_if_contains_errors(response)
@@ -966,9 +969,9 @@ class Task(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> project = user.get_project('Homework')
-        >>> task = user.add_task('Read Chapter 4.')
-        >>> task.add_note('Page 56')
+        >>> project = user.get_project('PyTodoist')
+        >>> task = user.add_task('Install PyTodoist.')
+        >>> task.add_note('https://pypi.python.org/pypi')
         >>> notes = task.get_notes()
         >>> len(notes)
         1
@@ -983,8 +986,8 @@ class Task(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> project = user.get_project('Homework')
-        >>> task = user.add_task('Read Chapter 4.')
+        >>> project = user.get_project('PyTodoist')
+        >>> task = user.add_task('Install PyTodoist.', date='today')
         >>> task.due_date
         Sun 09 Mar 2014 19:54:01 +0000
         >>> task.advance_recurring_date()
@@ -1006,10 +1009,10 @@ class Task(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> project = user.get_project('Homework')
-        >>> task = user.add_task('Read Chapter 4.')
+        >>> project = user.get_project('PyTodoist')
+        >>> task = user.add_task('Install PyTodoist.')
         >>> print task.project.name
-        Homework
+        PyTodoist
         >>> inbox = user.get_project('Inbox')
         >>> task.move(inbox)
         >>> print task.project.name
@@ -1052,10 +1055,10 @@ class Note(TodoistObject):
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('Homework')
-        >>> task = user.add_task('Read Chapter 4.')
-        >>> note = task.add_note('Page 56')
-        >>> note.content = 'Page 65'
-        ... # At this point Todoist still thinks the content is 'Page 56'
+        >>> task = user.add_task('Install PyTodoist.')
+        >>> note = task.add_note('https://pypi.python.org/pypi')
+        >>> note.content = 'https://pypi.python.org/pypi/pytodoist/0.5'
+        ... # At this point Todoist still thinks the content is the old URL.
         >>> note.update()
         ... # Now the content has been updated on Todoist.
         """
@@ -1068,9 +1071,9 @@ class Note(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> project = user.get_project('Homework')
-        >>> task = user.add_task('Read Chapter 4.')
-        >>> note = task.add_note('Page 56')
+        >>> project = user.get_project('PyTodoist')
+        >>> task = user.add_task('Install PyTodoist.')
+        >>> note = task.add_note('https://pypi.python.org/pypi')
         >>> note.delete()
         >>> notes = task.get_notes()
         >>> len(notes)
@@ -1107,9 +1110,9 @@ class Label(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> label = user.create_label('work')
-        >>> label.name = 'football'
-        ... # At this point Todoist still thinks the name is 'work'
+        >>> label = user.create_label('family')
+        >>> label.name = 'friends'
+        ... # At this point Todoist still thinks the name is 'family'.
         >>> label.update()
         ... # Now the name has been updated on Todoist.
         """
@@ -1124,7 +1127,7 @@ class Label(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> label = user.create_label('work')
+        >>> label = user.create_label('family')
         >>> label.delete()
         """
         response = API.delete_label(self.owner.token, self.id)
@@ -1137,7 +1140,7 @@ class Color(object):
 
     >>> from pytodoist import todoist
     >>> user = todoist.login('john.doe@gmail.com', 'password')
-    >>> user.add_project('Homework', color=todoist.Color.RED)
+    >>> user.add_project('PyTodoist', color=todoist.Color.RED)
 
     The supported colors:
         * GREEN
@@ -1174,7 +1177,7 @@ class Priority(object):
     >>> from pytodoist import todoist
     >>> user = todoist.login('john.doe@gmail.com', 'password')
     >>> inbox = user.get_project('Inbox')
-    >>> inbox.add_task('Read Chapter 4', priority=todoist.Priority.LOW)
+    >>> inbox.add_task('Install PyTodoist', priority=todoist.Priority.HIGH)
 
     The supported priorities:
         * NO
@@ -1223,7 +1226,7 @@ class Interval(object):
     >>> user = todoist.login('john.doe@gmail.com', 'password')
     >>> tasks = user.search_completed_tasks(interval=todoist.Interval.ALL)
 
-    The supported events:
+    The supported intervals:
         * PAST_2_WEEKS
         * PAST_MONTH
         * PAST_6_MONTHS
