@@ -468,7 +468,7 @@ class User(TodoistObject):
         """Return a list of tasks that match some search criteria.
 
         .. note:: Example queries can be found
-            `here https://todoist.com/Help/timeQuery`_.
+            `here <https://todoist.com/Help/timeQuery>`_.
 
         :param queries: Return tasks that match at least one of these queries.
         :type queries: list string
@@ -753,6 +753,9 @@ class Project(TodoistObject):
         :type priority: int
         :return: The added task.
         :rtype: :mod:`pytodoist.todoist.Task`
+
+        .. note:: See `here <https://todoist.com/Help/timeInsert>`_ for possible
+            date strings.
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
