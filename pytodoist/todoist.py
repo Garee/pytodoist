@@ -467,6 +467,9 @@ class User(TodoistObject):
     def search_tasks(self, queries):
         """Return a list of tasks that match some search criteria.
 
+        .. note:: Example queries can be found
+            `here https://todoist.com/Help/timeQuery`_.
+
         :param queries: Return tasks that match at least one of these queries.
         :type queries: list string
         :return: A list tasks that match at least one query.
