@@ -32,6 +32,10 @@ class UserTest(unittest.TestCase):
         with self.assertRaises(todoist.RequestError):
             user = todoist.login('', '')
 
+    def test_login_with_token(self):
+        user = todoist.login_with_token(self.user.token)
+        self.assertTrue(user.is_logged_in())
+
     def test_registration_failure(self):
         with self.assertRaises(todoist.RequestError):
             user = todoist.register('', '', '')

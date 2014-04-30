@@ -61,6 +61,24 @@ def login_with_google(email, oauth2_token):
     """
     return _login(API.login_with_google, email, oauth2_token)
 
+def login_with_token(token):
+    """Login to Todoist using a user's secret token.
+
+    .. note:: It is up to you to obtain the secret token.
+
+    :param token: A Todoist user's secret token.
+    :type token: string
+    :return: The Todoist user.
+    :rtype: :mod:`pytodoist.todoist.User`
+
+    >>> from pytodoist import todoist
+    ... # Get the secret token.
+    >>> user = login_with_token(token)
+    >>> print user.full_name
+    John Doe
+    """
+    return _login(API.update_user, token)
+
 def _login(login_func, *args):
     """A helper function for logging in.
 
