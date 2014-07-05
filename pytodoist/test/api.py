@@ -5,6 +5,8 @@ import sys
 import unittest
 from pytodoist.api import TodoistAPI
 
+N_DEFAULT_PROJECTS = 8
+
 class TestUser(object):
     """A fake user to use in each unit test."""
 
@@ -30,6 +32,7 @@ class TodoistAPITest(unittest.TestCase):
             response = self.t.login(self.user.email, self.user.password)
         user = response.json()
         self.user.token = user['token']
+        response = self.t.get_projects(self.user.token)
 
     def tearDown(self):
         self.t.delete_user(self.user.token, self.user.password)
@@ -88,7 +91,7 @@ class TodoistAPITest(unittest.TestCase):
         response = self.t.get_projects(self.user.token)
         self.assertEqual(response.status_code, 200)
         projects = response.json()
-        self.assertEqual(len(projects), 1) # Inbox always exists.
+        self.assertEqual(len(projects), N_DEFAULT_PROJECTS)
 
     def test_get_project_success(self):
         project_id = self._get_inbox_id()
@@ -147,7 +150,7 @@ class TodoistAPITest(unittest.TestCase):
         response = self.t.delete_project(self.user.token, project['id'])
         self.assertEqual(response.status_code, 200)
         response = self.t.get_projects(self.user.token)
-        self.assertTrue(len(response.json()) == 1) # Only Inbox remains.
+        self.assertTrue(len(response.json()) == N_DEFAULT_PROJECTS)
 
     def test_archive_project(self):
         project = self._add_project()

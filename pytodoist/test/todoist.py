@@ -4,6 +4,8 @@ import sys
 import unittest
 from pytodoist import todoist
 
+N_DEFAULT_PROJECTS = 8
+
 full_name = "Py Todoist"
 email = "pytodoist.test.email@gmail.com"
 password = "pytodoist.test.password"
@@ -49,7 +51,7 @@ class UserTest(unittest.TestCase):
     def test_add_project(self):
         project = self.user.add_project('Project 1')
         projects = self.user.get_projects()
-        self.assertEqual(len(projects), 2) # Project 1 + Inbox.
+        self.assertEqual(len(projects), N_DEFAULT_PROJECTS + 1)
         project = self.user.get_project('Project 1')
         self.assertIsNotNone(project)
 
@@ -61,7 +63,7 @@ class UserTest(unittest.TestCase):
         for i in range(5):
             self.user.add_project('Project ' + str(i))
         projects = self.user.get_projects()
-        self.assertEqual(len(projects), 6) # 5 + Inbox
+        self.assertEqual(len(projects), N_DEFAULT_PROJECTS + 5)
 
     def test_get_project(self):
         inbox = self.user.get_project('Inbox')
@@ -163,7 +165,7 @@ class ProjectTest(unittest.TestCase):
     def test_delete(self):
         self.project.delete()
         projects = self.user.get_projects()
-        self.assertEqual(len(projects), 1) # Only Inbox.
+        self.assertEqual(len(projects), N_DEFAULT_PROJECTS)
 
     def test_update(self):
         self.project.name = 'Project_2'
