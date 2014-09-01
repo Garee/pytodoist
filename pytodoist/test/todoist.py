@@ -50,6 +50,11 @@ class UserTest(unittest.TestCase):
         self.user = todoist.login(email, password)
         self.assertEqual(self.user.full_name, 'Todoist Py')
 
+    def test_get_redirect_link(self):
+        link = self.user.get_redirect_link()
+        self.assertIsNotNone(link)
+        self.assertTrue(len(link) > 0)
+
     def test_add_project(self):
         project = self.user.add_project('Project 1')
         projects = self.user.get_projects()

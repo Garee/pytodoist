@@ -297,6 +297,36 @@ class TodoistAPI(object):
         files = {'image': image} if image else None
         return self._post('updateAvatar', params, files, **kwargs)
 
+    def get_redirect_link(self, token, **kwargs):
+        """Return the absolute URL to redirect or to open in
+        a browser. The first time the link is used it logs in the user
+        automatically and performs a redirect to a given page. Once used,
+        the link keeps working as a plain redirect.
+
+        :param token: The user's login token.
+        :type token: string
+        :param path: The path to redirect the user's browser. Default ``/app``.
+        :type path: string
+        :param hash: The has part of the path to redirect the user's browser.
+        :type hash: string
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain the redirect link.
+
+        >>> from pytodoist import TodoistAPI
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'password')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> response = api.get_redirect_link(user_token)
+        >>> print response.json()['link']
+        https://todoist.com/secureRedirect?path=adflk...
+        """
+        params = {
+            'token': token
+        }
+        return self._post('getRedirectLink', params, **kwargs)
+
     def get_projects(self, token):
         """Return a list of all of a user's projects.
 

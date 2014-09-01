@@ -89,6 +89,12 @@ class TodoistAPITest(unittest.TestCase):
         response = self.t.update_avatar(self.user.token, delete=1)
         self.assertEqual(response.status_code, 200)
 
+    def test_get_redirect_link(self):
+        response = self.t.get_redirect_link(self.user.token)
+        self.assertEqual(response.status_code, 200)
+        link = response.json()['link']
+        self.assertIsNotNone(link)
+
     def test_get_projects(self):
         response = self.t.get_projects(self.user.token)
         self.assertEqual(response.status_code, 200)

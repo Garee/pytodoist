@@ -308,6 +308,20 @@ class User(TodoistObject):
         response = API.update_avatar(self.token, delete=1)
         _fail_if_contains_errors(response)
 
+    def get_redirect_link(self):
+        """Return the absolute URL to redirect or to open in
+        a browser. The first time the link is used it logs in the user
+        automatically and performs a redirect to a given page. Once used,
+        the link keeps working as a plain redirect.
+
+        :return: The user's redirect link.
+        :rtype: string
+        """
+        response = API.get_redirect_link(self.token)
+        _fail_if_contains_errors(response)
+        link_json = response.json()
+        return link_json['link']
+
     def add_project(self, name, color=None, indent=None, order=None):
         """Add a project to the user's account.
 
