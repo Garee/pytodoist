@@ -24,6 +24,7 @@ Install from source:
 Example
 -------
 
+```python
 >>> from pytodoist import todoist
 >>> user = todoist.login('gary@garyblackwood.co.uk', 'mysecretpassword')
 >>> user.is_logged_in()
@@ -40,3 +41,4 @@ PyTodoist
 >>> task = inbox.add_task('Install PyTodoist',
 ...                        priority=todoist.Priority.VERY_HIGH)
 >>> task.complete()
+```
