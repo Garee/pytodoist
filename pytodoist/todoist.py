@@ -547,7 +547,7 @@ class User(TodoistObject):
         labels_json = response.json().values()
         return [Label(label_json, self) for label_json in labels_json]
 
-    def create_label(self, name, color=None):
+    def add_label(self, name, color=None):
         """Create a new label.
 
         :param name: The name of the label.
@@ -556,9 +556,9 @@ class User(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> label = user.create_label('family')
+        >>> label = user.add_label('family')
         """
-        response = API.create_label(self.token, name, color=color)
+        response = API.add_label(self.token, name, color=color)
         _fail_if_contains_errors(response)
         label_json = response.json()
         return Label(label_json, self)
@@ -1128,7 +1128,7 @@ class Label(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> label = user.create_label('family')
+        >>> label = user.add_label('family')
         >>> label.name = 'friends'
         ... # At this point Todoist still thinks the name is 'family'.
         >>> label.update()
@@ -1145,7 +1145,7 @@ class Label(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> label = user.create_label('family')
+        >>> label = user.add_label('family')
         >>> label.delete()
         """
         response = API.delete_label(self.owner.token, self.id)

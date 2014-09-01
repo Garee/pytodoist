@@ -114,24 +114,24 @@ class UserTest(unittest.TestCase):
         self.assertEqual(len(tasks), 2)
 
     def test_add_label(self):
-        self.user.create_label('Label 1', color=1)
+        self.user.add_label('Label 1', color=1)
         labels = self.user.get_labels()
         self.assertEqual(len(labels), 1)
         self.assertEqual(labels[0].name, 'Label 1')
 
     def test_get_label(self):
-        self.user.create_label('homework')
+        self.user.add_label('homework')
         label = self.user.get_label('homework')
         self.assertIsNotNone(label)
 
     def test_get_labels(self):
         for i in range(5):
-            self.user.create_label('Label_' + str(i))
+            self.user.add_label('Label_' + str(i))
         labels = self.user.get_labels()
         self.assertEqual(len(labels), 5)
 
-    def test_create_label(self):
-        label = self.user.create_label('homework')
+    def test_add_label(self):
+        label = self.user.add_label('homework')
         labels = self.user.get_labels()
         self.assertEqual(len(labels), 1)
 
@@ -298,7 +298,7 @@ class LabelTest(unittest.TestCase):
 
     def setUp(self):
         self.user = _get_user()
-        self.label = self.user.create_label('Label_1')
+        self.label = self.user.add_label('Label_1')
 
     def tearDown(self):
         self.user.delete()

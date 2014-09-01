@@ -588,7 +588,7 @@ class TodoistAPI(object):
         >>> response = api.login('john.doe@gmail.com', 'password')
         >>> user_info = response.json()
         >>> user_token = user_info['token']
-        >>> api.create_label(user_token, 'Python')
+        >>> api.add_label(user_token, 'Python')
         >>> response = api.get_labels(user_token)
         >>> labels = response.json().values()
         >>> for label in labels:
@@ -601,7 +601,7 @@ class TodoistAPI(object):
         }
         return self._get('getLabels', params, **kwargs)
 
-    def create_label(self, token, label_name, **kwargs):
+    def add_label(self, token, label_name, **kwargs):
         """Add a label.
 
         If a label with the given name already exists it will be returned.
@@ -621,7 +621,7 @@ class TodoistAPI(object):
         >>> response = api.login('john.doe@gmail.com', 'password')
         >>> user_info = response.json()
         >>> user_token = user_info['token']
-        >>> response = api.create_label(user_token, 'Python')
+        >>> response = api.add_label(user_token, 'Python')
         >>> label = response.json()
         >>> print label['name']
         Python
@@ -650,7 +650,7 @@ class TodoistAPI(object):
         >>> response = api.login('john.doe@gmail.com', 'password')
         >>> user_info = response.json()
         >>> user_token = user_info['token']
-        >>> response = api.create_label(user_token, 'Python')
+        >>> response = api.add_label(user_token, 'Python')
         >>> label = response.json()
         >>> print label['name']
         Python
@@ -684,7 +684,7 @@ class TodoistAPI(object):
         >>> response = api.login('john.doe@gmail.com', 'password')
         >>> user_info = response.json()
         >>> user_token = user_info['token']
-        >>> response = api.create_label(user_token, 'Python')
+        >>> response = api.add_label(user_token, 'Python')
         >>> label = response.json()
         >>> print label['color']
         0

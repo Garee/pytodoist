@@ -168,7 +168,7 @@ class TodoistAPITest(unittest.TestCase):
         self.assertEqual(len(unarchived_ids), 1)
 
     def test_get_labels(self):
-        self.t.create_label(self.user.token, 'Label 1')
+        self.t.add_label(self.user.token, 'Label 1')
         response = self.t.get_labels(self.user.token)
         self.assertEqual(response.status_code, 200)
         labels = response.json()
@@ -180,9 +180,9 @@ class TodoistAPITest(unittest.TestCase):
         self.assertTrue(isinstance(labels, list))
         self.assertEqual(len(labels), 1)
 
-    def test_create_label(self):
+    def test_add_label(self):
         label_name = 'Label 1'
-        response = self.t.create_label(self.user.token, label_name)
+        response = self.t.add_label(self.user.token, label_name)
         self.assertEqual(response.status_code, 200)
         label = response.json()
         self.assertEqual(label['name'], label_name)
@@ -193,7 +193,7 @@ class TodoistAPITest(unittest.TestCase):
     def test_update_label_name(self):
         label_name = "Label 1"
         new_name = "Updated"
-        self.t.create_label(self.user.token, label_name)
+        self.t.add_label(self.user.token, label_name)
         response = self.t.update_label_name(self.user.token, label_name,
                                             new_name)
         self.assertEqual(response.status_code, 200)
@@ -203,7 +203,7 @@ class TodoistAPITest(unittest.TestCase):
     def test_update_label_color(self):
         label_name = "Label 1"
         label_color = 0
-        self.t.create_label(self.user.token, label_name, color=label_color)
+        self.t.add_label(self.user.token, label_name, color=label_color)
         response = self.t.update_label_color(self.user.token, label_name, 1)
         self.assertEqual(response.status_code, 200)
         label = response.json()
@@ -211,7 +211,7 @@ class TodoistAPITest(unittest.TestCase):
 
     def test_delete_label(self):
         label_name = "Label 1"
-        self.t.create_label(self.user.token, label_name)
+        self.t.add_label(self.user.token, label_name)
         response = self.t.get_labels(self.user.token)
         labels = response.json()
         self.assertEqual(len(labels), 1)
@@ -491,7 +491,7 @@ class TodoistAPITest(unittest.TestCase):
         return response.json()
 
     def _add_label(self):
-        response = self.t.create_label(self.user.token, 'Label')
+        response = self.t.add_label(self.user.token, 'Label')
         return response.json()
 
     def _get_inbox(self):
