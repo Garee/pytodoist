@@ -37,6 +37,7 @@ Install PyTodoist
 """
 import requests
 
+
 class TodoistAPI(object):
     """A wrapper around the Todoist API.
 
@@ -98,7 +99,8 @@ class TodoistAPI(object):
         >>> from pytodoist.api import TodoistAPI
         >>> api = TodoistAPI()
         ... # Get the oauth2_token from Google.
-        >>> response = api.login_with_google('john.doe@gmail.com', oauth2_token)
+        >>> response = api.login_with_google('john.doe@gmail.com',
+                                              oauth2_token)
         >>> user_info = response.json()
         >>> print user_info['full_name']
         John Doe
@@ -232,9 +234,9 @@ class TodoistAPI(object):
         :type date_format: int
         :param time_format: ``0``: ``13:00``. ``1``: ``1:00pm``.
         :type time_format: int
-        :param start_day: The new first day of the week ``(1-7, Mon-Sun)``.
+        :param start_day: New first day of the week ``(1-7, Mon-Sun)``.
         :type start_day: int
-        :param next_week: The new day to use when postponing ``(1-7, Mon-Sun)``.
+        :param next_week: New day to use when postponing ``(1-7, Mon-Sun)``.
         :type next_week: int
         :param start_page: The new start page. ``_blank``: for a blank page,
             ``_info_page`` for the info page, ``_project_$PROJECT_ID`` for a
@@ -597,7 +599,7 @@ class TodoistAPI(object):
         Python
         """
         params = {
-          'token': token
+            'token': token
         }
         return self._get('getLabels', params, **kwargs)
 
@@ -627,8 +629,8 @@ class TodoistAPI(object):
         Python
         """
         params = {
-          'token': token,
-          'name': label_name
+            'token': token,
+            'name': label_name
         }
         return self._post('addLabel', params, **kwargs)
 
@@ -660,9 +662,9 @@ class TodoistAPI(object):
         Cobra
         """
         params = {
-          'token': token,
-          'old_name': label_name,
-          'new_name': new_name
+            'token': token,
+            'old_name': label_name,
+            'new_name': new_name
         }
         return self._post('updateLabel', params)
 
@@ -694,9 +696,9 @@ class TodoistAPI(object):
         1
         """
         params = {
-          'token': token,
-          'name': label_name,
-          'color': color
+            'token': token,
+            'name': label_name,
+            'color': color
         }
         return self._post('updateLabelColor', params)
 
@@ -721,8 +723,8 @@ class TodoistAPI(object):
         "ok"
         """
         params = {
-          'token': token,
-          'name': label_name
+            'token': token,
+            'name': label_name
         }
         return self._post('deleteLabel', params)
 
@@ -877,7 +879,7 @@ class TodoistAPI(object):
         :type token: string
         :param content: The task description.
         :type content: string
-        :param project_id: The project to add the task to. Defaults to ``Inbox``
+        :param project_id: The project to add the task to. Default is ``Inbox``
         :type project_id: string
         :param date_string: The deadline date for the task.
         :type date_string: string
@@ -954,7 +956,7 @@ class TodoistAPI(object):
         :type children: string
         :param labels: The new list of label IDs.
         :type labels: string
-        :param assigned_by_uid: The new ID of the user who assigns current task.
+        :param assigned_by_uid: New ID of the user who assigns current task.
             Accepts 0 or any user id from the list of project collaborators.
             If value is unset or invalid it will automatically be set up by
             your uid.
@@ -981,7 +983,8 @@ class TodoistAPI(object):
         >>> print task['content']
         Install PyTodoist
         >>> task_id = task['id']
-        >>> response = api.update_task(user_token, task_id, content='Read Docs')
+        >>> response = api.update_task(user_token, task_id,
+                                       content='Read Docs')
         >>> task = response.json()
         >>> print task['content']
         Read Docs
@@ -1035,8 +1038,8 @@ class TodoistAPI(object):
 
         :param token: The user's login token.
         :type token: string
-        :param task_locations: The current locations of the tasks to move. It is
-            a map of ``project_id -> task_id`` e.g. ``{'1534': ['23453']}``.
+        :param task_locations: The current locations of the tasks to move. It
+            is a map of ``project_id -> task_id`` e.g. ``{'1534': ['23453']}``.
         :type task_locations: string
         :param project_id: The project to move the tasks to.
         :type project_id: string
@@ -1076,7 +1079,8 @@ class TodoistAPI(object):
         :type js_date: int
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
-        :on success: ``response.json()`` will contain the list of updated tasks.
+        :on success: ``response.json()`` will contain the list of updated
+            tasks.
 
         >>> from pytodoist.api import TodoistAPI
         >>> api = TodoistAPI()
@@ -1133,7 +1137,7 @@ class TodoistAPI(object):
         :type token: string
         :param task_ids: The IDs of the tasks to complete.
         :type task_ids: string
-        :param in_history: If ``0``, the tasks will not be moved to the history.
+        :param in_history: If ``0``, tasks will not be moved to the history.
         :type in_history: int
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
@@ -1165,7 +1169,7 @@ class TodoistAPI(object):
         :type token: string
         :param task_ids: The IDs of the tasks to complete.
         :type task_ids: string
-        :param in_history: If ``0``, the tasks will not be moved to the history.
+        :param in_history: If ``0``, tasks will not be moved to the history.
         :type in_history: int
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`

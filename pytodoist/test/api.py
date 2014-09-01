@@ -7,6 +7,7 @@ from pytodoist.api import TodoistAPI
 
 N_DEFAULT_PROJECTS = 8
 
+
 class TestUser(object):
     """A fake user to use in each unit test."""
 
@@ -15,6 +16,7 @@ class TestUser(object):
         self.email = "pytodoist.test.email@gmail.com"
         self.password = "pytodoist.test.password"
         self.token = None
+
 
 class TodoistAPITest(unittest.TestCase):
     """Test the functionality of the pytodoist.Todoist class"""
@@ -74,12 +76,12 @@ class TodoistAPITest(unittest.TestCase):
         self.assertEqual(user_details['email'], new_email)
 
     def test_update_user_bad_password(self):
-        new_password = "007" # Too short.
+        new_password = "007"  # Too short.
         response = self.t.update_user(self.user.token, password=new_password)
         self.assertEqual(response.status_code, 400)
 
     def test_update_user_bad_email(self):
-        new_email = "gareeblackwood@gmail.com" # Already exists.
+        new_email = "gareeblackwood@gmail.com"  # Already exists.
         response = self.t.update_user(self.user.token, email=new_email)
         self.assertEqual(response.text, '"ERROR_EMAIL_FOUND"')
 
@@ -255,7 +257,7 @@ class TodoistAPITest(unittest.TestCase):
         self.assertEqual(updated_task['id'], task_id)
 
     def test_update_task_failure(self):
-        task_id = '-1' # Bad id - won't exist.
+        task_id = '-1'  # Bad id - won't exist.
         response = self.t.update_task(self.user.token, task_id)
         self.assertEqual(response.text, '"ERROR_ITEM_NOT_FOUND"')
 
@@ -267,7 +269,7 @@ class TodoistAPITest(unittest.TestCase):
         response = self.t.get_all_completed_tasks(self.user.token)
         self.assertEqual(response.status_code, 200)
         tasks = response.json()['items']
-        self.assertEqual(len(tasks), 0) # Premium users only.
+        self.assertEqual(len(tasks), 0)  # Premium users only.
 
     def test_get_completed_tasks_failure(self):
         project_id = 'badid'
@@ -354,7 +356,7 @@ class TodoistAPITest(unittest.TestCase):
         task_id = task['id']
         task_due_date = task['due_date']
         response = self.t.advance_recurring_dates(self.user.token,
-                                                       str([task_id]))
+                                                  str([task_id]))
         self.assertEqual(response.status_code, 200)
         tasks = response.json()
         task = tasks[0]
@@ -404,7 +406,7 @@ class TodoistAPITest(unittest.TestCase):
         response = self.t.add_note(self.user.token, task_id, 'Note 1')
         note = response.json()
         note_id = note['id']
-        response =self.t.update_note(self.user.token, note_id, 'Note 2')
+        response = self.t.update_note(self.user.token, note_id, 'Note 2')
         self.assertEqual(response.status_code, 200)
         response = self.t.get_notes(self.user.token, task_id)
         notes = response.json()

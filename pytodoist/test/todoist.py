@@ -10,6 +10,7 @@ full_name = "Py Todoist"
 email = "pytodoist.test.email@gmail.com"
 password = "pytodoist.test.password"
 
+
 def _get_user():
     try:
         user = todoist.register(full_name, email, password)
@@ -18,6 +19,7 @@ def _get_user():
         user.delete()
         user = todoist.register(full_name, email, password)
     return user
+
 
 class UserTest(unittest.TestCase):
 
@@ -103,7 +105,7 @@ class UserTest(unittest.TestCase):
         task.complete()
         tasks = self.user.search_completed_tasks(label_name='homework')
         # self.assertEqual(len(tasks), 1)
-        self.assertEqual(len(tasks), 0) # Requires premium.
+        self.assertEqual(len(tasks), 0)  # Requires premium.
 
     def test_get_tasks(self):
         inbox = self.user.get_project('Inbox')
@@ -153,6 +155,7 @@ class UserTest(unittest.TestCase):
         is_recv = self.user.is_email_notified_when(todoist.Event.NOTE_ADDED)
         self.assertTrue(is_recv)
 
+
 class ProjectTest(unittest.TestCase):
 
     def setUp(self):
@@ -174,10 +177,10 @@ class ProjectTest(unittest.TestCase):
         self.assertEqual(project.name, 'Project_2')
 
     def test_archive(self):
-        self.project.archive() # Premium only.
+        self.project.archive()  # Premium only.
 
     def test_unarchive(self):
-        self.project.unarchive() # Premium only.
+        self.project.unarchive()  # Premium only.
 
     def test_add_task(self):
         self.project.add_task('Task_1')
@@ -198,14 +201,15 @@ class ProjectTest(unittest.TestCase):
         self.assertEqual(len(tasks), 5)
 
     def test_update_task_orders(self):
-      for i in range(5):
-        self.project.add_task('Task_' + str(i))
-      tasks = self.project.get_tasks()
-      rev_tasks = tasks[::-1]
-      self.project.update_task_orders(rev_tasks)
-      tasks = self.project.get_tasks()
-      for i, task in enumerate(tasks):
-        self.assertEqual(task.id, rev_tasks[i].id)
+        for i in range(5):
+            self.project.add_task('Task_' + str(i))
+        tasks = self.project.get_tasks()
+        rev_tasks = tasks[::-1]
+        self.project.update_task_orders(rev_tasks)
+        tasks = self.project.get_tasks()
+        for i, task in enumerate(tasks):
+            self.assertEqual(task.id, rev_tasks[i].id)
+
 
 class TaskTest(unittest.TestCase):
 
@@ -271,6 +275,7 @@ class TaskTest(unittest.TestCase):
         tasks = inbox.get_uncompleted_tasks()
         self.assertEqual(len(tasks), 1)
 
+
 class NoteTest(unittest.TestCase):
 
     def setUp(self):
@@ -293,6 +298,7 @@ class NoteTest(unittest.TestCase):
         self.note.delete()
         notes = self.task.get_notes()
         self.assertEqual(len(notes), 0)
+
 
 class LabelTest(unittest.TestCase):
 

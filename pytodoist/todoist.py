@@ -22,6 +22,7 @@ from pytodoist.api import TodoistAPI
 
 API = TodoistAPI()
 
+
 def login(email, password):
     """Login to Todoist.
 
@@ -40,6 +41,7 @@ def login(email, password):
     user = _login(API.login, email, password)
     user.password = password
     return user
+
 
 def login_with_google(email, oauth2_token):
     """Login to Todoist using Google oauth2 authentication.
@@ -61,6 +63,7 @@ def login_with_google(email, oauth2_token):
     """
     return _login(API.login_with_google, email, oauth2_token)
 
+
 def login_with_token(token):
     """Login to Todoist using a user's secret token.
 
@@ -79,6 +82,7 @@ def login_with_token(token):
     """
     return _login(API.update_user, token)
 
+
 def _login(login_func, *args):
     """A helper function for logging in.
 
@@ -88,6 +92,7 @@ def _login(login_func, *args):
     _fail_if_contains_errors(response)
     user_json = response.json()
     return User(user_json)
+
 
 def register(full_name, email, password, lang=None, timezone=None):
     """Register a new Todoist account.
@@ -117,6 +122,7 @@ def register(full_name, email, password, lang=None, timezone=None):
     user = User(user_json)
     user.password = password
     return user
+
 
 def register_with_google(full_name, email, oauth2_token,
                          lang=None, timezone=None):
@@ -152,6 +158,7 @@ def register_with_google(full_name, email, oauth2_token,
     user = User(user_json)
     return user
 
+
 def get_timezones():
     """Return a list of Todoist supported timezones.
 
@@ -166,6 +173,7 @@ def get_timezones():
     _fail_if_contains_errors(response)
     timezones_json = response.json()
     return [timezone_json[0] for timezone_json in timezones_json]
+
 
 class TodoistObject(object):
     # A helper class which 'converts' a JSON object into a python object.
@@ -201,7 +209,7 @@ class User(TodoistObject):
         as ``13:00`` otherwise ``1pm``.
     :ivar image_id: The ID of the user's avatar.
     :ivar beta: The user's beta status.
-    :ivar premium_until: The date on which the user's premium status is revoked.
+    :ivar premium_until: The date on which the premium status is revoked.
     :ivar mobile_number: The user's mobile number.
     :ivar mobile_host: The host of the user's mobile.
     :ivar password: The user's password.
@@ -772,8 +780,8 @@ class Project(TodoistObject):
         :return: The added task.
         :rtype: :mod:`pytodoist.todoist.Task`
 
-        .. note:: See `here <https://todoist.com/Help/timeInsert>`_ for possible
-            date strings.
+        .. note:: See `here <https://todoist.com/Help/timeInsert>`_
+            for possible date strings.
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
@@ -860,7 +868,8 @@ class Project(TodoistObject):
         >>> project.update_task_orders(rev_tasks)
         """
         task_ids = str([task.id for task in tasks])
-        response = API.update_task_ordering(self.owner.token, self.id, task_ids)
+        response = API.update_task_ordering(self.owner.token,
+                                            self.id, task_ids)
         _fail_if_contains_errors(response)
 
 
@@ -879,9 +888,9 @@ class Task(TodoistObject):
     :ivar priority: The task priority.
     :ivar item_order: The task order.
     :ivar project_id: The ID of the parent project.
-    :ivar date_string: How did the user enter the task? Could be every day or
-        every day @ 10. The time should be shown when formating the date if @ OR
-        at is found anywhere in the string.
+    :ivar date_string: How did the user enter the task? Could be every day
+        or every day @ 10. The time should be shown when formating the date if
+        @ OR at is found anywhere in the string.
     :ivar due_date: When is the task due?
     :ivar due_date_utc: When is the task due (in UTC).
     :ivar assigned_by_uid: ID of the user who assigned the task.
@@ -1137,7 +1146,8 @@ class Label(TodoistObject):
         response = API.update_label_name(self.owner.token, self.id, self.name)
         _fail_if_contains_errors(response)
         self.id = self.name
-        response = API.update_label_color(self.owner.token, self.id, self.color)
+        response = API.update_label_color(self.owner.token,
+                                          self.id, self.color)
         _fail_if_contains_errors(response)
 
     def delete(self):
@@ -1210,6 +1220,7 @@ class Priority(object):
     HIGH = 3
     VERY_HIGH = 4
 
+
 class Event(object):
     """This class acts as an easy way to specify Todoist event
     types.
@@ -1236,6 +1247,7 @@ class Event(object):
     SHARE_INVITATION_REJECTED = 'share_invitation_rejected'
     SHARE_NOTIFICATION_ACCEPTED = 'share_notification_accepted'
     NOTE_ADDED = 'note_added'
+
 
 class Interval(object):
     """This class acts as an easy way to specify Todoist intervals.
@@ -1290,12 +1302,14 @@ _ERROR_TEXT_RESPONSES = [
     '"ERROR_ITEM_NOT_FOUND"',
 ]
 
+
 def _fail_if_contains_errors(response):
     """Raise a RequestError Exception if a given response
     does not denote a successful request.
     """
     if _contains_errors(response):
         raise RequestError(response)
+
 
 def _contains_errors(response):
     """Return True if a given response contains errors."""
