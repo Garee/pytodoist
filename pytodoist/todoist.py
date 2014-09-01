@@ -504,16 +504,22 @@ class User(TodoistObject):
         query_results = response.json()
         tasks = []
         for query in query_results:
-            projects_with_results = query['data']
-            for project in projects_with_results:
-                uncompleted_tasks = project.get('uncompleted', [])
-                completed_tasks = project.get('completed', [])
-                found_tasks = uncompleted_tasks + completed_tasks
-                for task_json in found_tasks:
-                    project_id = task_json['project_id']
-                    project = self.get_project_with_id(project_id)
-                    task = Task(task_json, project)
-                    tasks.append(task)
+            if query['type'] == 'date':
+                found_tasks = query['data']
+            # TODO: eventually handle other query types ...
+            else:
+                projects_with_results = query['data']
+                for project in projects_with_results:
+                    uncompleted_tasks = project.get('uncompleted', [])
+                    completed_tasks = project.get('completed', [])
+                    found_tasks = uncompleted_tasks + completed_tasks
+
+            for task_json in found_tasks:
+                project_id = task_json['project_id']
+                project = self.get_project_with_id(project_id)
+                task = Task(task_json, project)
+                tasks.append(task)
+
         return tasks
 
     def get_label(self, label_name):
