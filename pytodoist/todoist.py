@@ -387,6 +387,29 @@ class User(TodoistObject):
             if project.name == project_name:
                 return project
 
+    def get_archived_projects(self):
+        """Return a list of a user's archived projects.
+
+        :return: The user's archived projects.
+        :rtype: list :mod:`pytodoist.todoist.Project`
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> user.archive_project('PyTodoist')
+        >>> projects = user.get_archived_projects()
+        >>> for project in projects:
+        ...    print project.name
+        PyTodoist
+        """
+        response = API.get_archived_projects(self.token)
+        archived_project_info = response.json()
+        archived_project_ids = (info['id'] for info in archived_project_info)
+        archived_projects = []
+        for project_id in archived_project_ids:
+            project = self.get_project_with_id(project_id)
+            archived_projects.append(project)
+        return archived_projects
+
     def get_project_with_id(self, project_id):
         """Return the project with a given ID.
 

@@ -76,6 +76,16 @@ class UserTest(unittest.TestCase):
         inbox = self.user.get_project('Inbox')
         self.assertEqual(inbox.name, 'Inbox')
 
+    def test_get_archived_projects(self):
+        n_arch_projects = len(self.user.get_archived_projects())
+        self.assertEqual(n_arch_projects, 0)
+        self.user.add_project('Project 1')
+        n_projects = len(self.user.get_projects())
+        project = self.user.get_project('Project 1')
+        project.archive()
+        n_arch_projects = len(self.user.get_archived_projects())
+        self.assertEqual(n_arch_projects, 1)
+
     def test_get_project_with_id(self):
         inbox = self.user.get_project('Inbox')
         project = self.user.get_project_with_id(inbox.id)

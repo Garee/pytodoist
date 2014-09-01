@@ -570,6 +570,29 @@ class TodoistAPI(object):
         }
         return self._post('archiveProject', params)
 
+    def get_archived_projects(self, token):
+        """Returns a user's archived projects.
+
+        :param token: The user's login token.
+        :type token: string
+        :return: The HTTP response to the request.
+        :rtype: :mod:`requests.Response`
+        :on success: ``response.json()`` will contain a list of archived
+            project IDs. e.g. ``[1234, 3435, 5235]``.
+
+        >>> from pytodoist.api import TodoistAPI
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'password')
+        >>> user_info = response.json()
+        >>> user_token = user_info['token']
+        >>> response = api.get_archived_projects(user_token)
+        >>> archived_project_ids = response.json()
+        """
+        params = {
+            'token': token
+        }
+        return self._get('getArchived', params)
+
     def unarchive_project(self, token, project_id):
         """Unarchive a user's project.
 

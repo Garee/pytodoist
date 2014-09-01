@@ -168,6 +168,14 @@ class TodoistAPITest(unittest.TestCase):
         print archived_ids
         self.assertEqual(len(archived_ids), 1)
 
+    def test_get_archived_projects(self):
+        project = self._add_project()
+        self.t.archive_project(self.user.token, project['id'])
+        response = self.t.archive_project(self.user.token, project['id'])
+        archived_projects = response.json()
+        print response.json()
+        self.assertEqual(len(archived_projects), 1)
+
     def test_unarchive_project(self):
         project = self._add_project()
         response = self.t.unarchive_project(self.user.token, project['id'])
