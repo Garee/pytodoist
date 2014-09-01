@@ -316,7 +316,7 @@ class LabelTest(unittest.TestCase):
 
 
 def main():
-    unittest.main()
+    unittest.main(warnings='ignore')
     return 0
 
 if __name__ == '__main__':
