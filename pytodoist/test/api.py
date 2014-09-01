@@ -157,16 +157,15 @@ class TodoistAPITest(unittest.TestCase):
         response = self.t.archive_project(self.user.token, project['id'])
         self.assertEqual(response.status_code, 200)
         archived_ids = response.json()
-        # self.assertEqual(len(archived_ids), 1)
-        self.assertEqual(len(archived_ids), 0) # Premium users only.
+        print archived_ids
+        self.assertEqual(len(archived_ids), 1)
 
     def test_unarchive_project(self):
         project = self._add_project()
         response = self.t.unarchive_project(self.user.token, project['id'])
         self.assertEqual(response.status_code, 200)
         unarchived_ids = response.json()
-        # self.assertEqual(len(unarchived_ids), 1)
-        self.assertEqual(len(unarchived_ids), 0) # Premium users only.
+        self.assertEqual(len(unarchived_ids), 1)
 
     def test_get_labels(self):
         self.t.create_label(self.user.token, 'Label 1')
