@@ -167,6 +167,8 @@ class UserTest(unittest.TestCase):
         queries = ['today']
         tasks = self.user.search_tasks(queries)
         self.assertEqual(len(tasks), 2)
+        for task in tasks:
+            task.delete()
 
     def test_is_email_notified_when(self):
         self.user.disable_email_notifications(todoist.Event.NOTE_ADDED)
