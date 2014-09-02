@@ -549,7 +549,7 @@ class User(TodoistObject):
         query_results = response.json()
         tasks = []
         for query in query_results:
-            if query['type'] == 'date':
+            if query['type'] in ['date', 'overdue']:
                 found_tasks = query['data']
             # TODO: eventually handle other query types ...
             else:
