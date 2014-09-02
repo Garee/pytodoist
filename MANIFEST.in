@@ -1,4 +1,4 @@
-include README
+include README.md
 include LICENCE
 include setup.py
 include pytodoist/*.py
