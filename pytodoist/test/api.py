@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 """This module contains unit tests for the pytodoist.api module."""
 
-from __future__ import print_function
 import sys
 import unittest
 from pytodoist.api import TodoistAPI
@@ -166,7 +165,6 @@ class TodoistAPITest(unittest.TestCase):
         response = self.t.archive_project(self.user.token, project['id'])
         self.assertEqual(response.status_code, 200)
         archived_ids = response.json()
-        print(archived_ids)
         self.assertEqual(len(archived_ids), 1)
 
     def test_get_archived_projects(self):
@@ -174,7 +172,6 @@ class TodoistAPITest(unittest.TestCase):
         self.t.archive_project(self.user.token, project['id'])
         response = self.t.archive_project(self.user.token, project['id'])
         archived_projects = response.json()
-        print(response.json())
         self.assertEqual(len(archived_projects), 1)
 
     def test_unarchive_project(self):
