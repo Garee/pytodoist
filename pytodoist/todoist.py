@@ -527,11 +527,14 @@ class User(TodoistObject):
         """
         return self.get_uncompleted_tasks() + self.get_completed_tasks()
 
-    def search_tasks(self, queries):
+    def search_tasks(self, *queries):
         """Return a list of tasks that match some search criteria.
 
         .. note:: Example queries can be found
             `here <https://todoist.com/Help/timeQuery>`_.
+
+        .. note:: A standard set of queries are available
+            in the :mod:`pytodoist.todoist.Query` class.
 
         :param queries: Return tasks that match at least one of these queries.
         :type queries: list string
@@ -540,31 +543,28 @@ class User(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> queries = ['today', 'tomorrow']
-        >>> tasks = user.search_tasks(queries)
+        >>> tasks = user.search_tasks(todoist.Query.TOMORROW, '18 Sep')
         """
         queries = json.dumps(queries)
         response = API.search_tasks(self.token, queries)
         _fail_if_contains_errors(response)
         query_results = response.json()
         tasks = []
-        for query in query_results:
-            if query['type'] in ['date', 'overdue']:
-                found_tasks = query['data']
-            # TODO: eventually handle other query types ...
-            else:
-                projects_with_results = query['data']
-                for project in projects_with_results:
-                    uncompleted_tasks = project.get('uncompleted', [])
-                    completed_tasks = project.get('completed', [])
-                    found_tasks = uncompleted_tasks + completed_tasks
-
-            for task_json in found_tasks:
+        for result in query_results:
+            if not 'data' in result:
+                continue
+            all_tasks = result['data']
+            if result['type'] == Query.ALL:
+                all_projects = all_tasks
+                for project_json in all_projects:
+                    uncompleted_tasks = project_json.get('uncompleted', [])
+                    completed_tasks = project_json.get('completed', [])
+                    all_tasks = uncompleted_tasks + completed_tasks
+            for task_json in all_tasks:
                 project_id = task_json['project_id']
                 project = self.get_project_with_id(project_id)
                 task = Task(task_json, project)
                 tasks.append(task)
-
         return tasks
 
     def get_label(self, label_name):
@@ -1309,6 +1309,48 @@ class Interval(object):
     PAST_MONTH = 'past month'
     PAST_6_MONTHS = 'past 6 months'
     ALL = 'all'
+
+
+class Query(object):
+    """This class acts as an easy way to specify search queries.
+
+    >>> from pytodoist import todoist
+    >>> user = todoist.login('john.doe@gmail.com', 'password')
+    >>> tasks = user.search_tasks(todoist.Query.TOMORROW,
+    ...                           todoist.Query.SUNDAY)
+
+    The supported queries:
+        * ALL
+        * TODAY
+        * TOMORROW
+        * MONDAY
+        * TUESDAY
+        * WEDNESDAY
+        * THURSDAY
+        * FRIDAY
+        * SATURDAY
+        * SUNDAY
+        * NO_DUE_DATE
+        * OVERDUE
+        * PRIORITY_1
+        * PRIORITY_2
+        * PRIORITY_3
+    """
+    ALL = 'viewall'
+    TODAY = 'today'
+    TOMORROW = 'tomorrow'
+    MONDAY = 'mon'
+    TUESDAY = 'tue'
+    WEDNESDAY = 'wed'
+    THURSDAY = 'thu'
+    FRIDAY = 'fri'
+    SATURDAY = 'sat'
+    SUNDAY = 'sun'
+    NO_DUE_DATE = 'no due date'
+    OVERDUE = 'over due'
+    PRIORITY_1 = 'p1'
+    PRIORITY_2 = 'p2'
+    PRIORITY_3 = 'p3'
 
 
 class RequestError(Exception):

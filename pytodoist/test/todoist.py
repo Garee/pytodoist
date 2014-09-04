@@ -156,16 +156,14 @@ class UserTest(unittest.TestCase):
         inbox = self.user.get_project('Inbox')
         inbox.add_task('Task Red')
         inbox.add_task('Task Blue')
-        queries = ['view all']
-        tasks = self.user.search_tasks(queries)
+        tasks = self.user.search_tasks(todoist.Query.ALL)
         self.assertEqual(len(tasks), 2)
 
     def test_search_tasks_today(self):
         inbox = self.user.get_project('Inbox')
         inbox.add_task('Task Red', date='today')
         inbox.add_task('Task Blue', date='today')
-        queries = ['today']
-        tasks = self.user.search_tasks(queries)
+        tasks = self.user.search_tasks(todoist.Query.TODAY)
         self.assertEqual(len(tasks), 2)
         for task in tasks:
             task.delete()
@@ -174,8 +172,7 @@ class UserTest(unittest.TestCase):
         inbox = self.user.get_project('Inbox')
         inbox.add_task('Task Red', date='yesterday')
         inbox.add_task('Task Blue', date='yesterday')
-        queries = ['overdue']
-        tasks = self.user.search_tasks(queries)
+        tasks = self.user.search_tasks(todoist.Query.OVERDUE)
         self.assertEqual(len(tasks), 2)
         for task in tasks:
             task.delete()
