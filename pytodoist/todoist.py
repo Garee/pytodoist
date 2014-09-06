@@ -1362,7 +1362,7 @@ class RequestError(Exception):
         super(RequestError, self).__init__(response.text)
 
 # Avoid magic numbers.
-HTTP_OK = 200
+_HTTP_OK = 200
 
 _ERROR_TEXT_RESPONSES = [
     '"LOGIN_ERROR"',
@@ -1399,5 +1399,5 @@ def _fail_if_contains_errors(response):
 
 def _contains_errors(response):
     """Return True if a given response contains errors."""
-    return (response.status_code != HTTP_OK
+    return (response.status_code != _HTTP_OK
             or response.text in _ERROR_TEXT_RESPONSES)
