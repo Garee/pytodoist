@@ -21,6 +21,16 @@ Install from source:
     $ cd PyTodoist
     $ python setup.py install
 
+Test
+----
+This project uses Travis for continuous integration testing:
+
+     https://travis-ci.org/Garee/PyTodoist
+
+Run the unit tests locally:
+
+    $ make test
+
 Example
 -------
 
