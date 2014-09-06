@@ -1,5 +1,7 @@
 *.pyc
 .idea
-dist
+.coverage
 MANIFEST
+dist/
 docs/build/
+htmlcov/

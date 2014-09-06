@@ -2,3 +2,4 @@ include README
 include LICENCE
 include setup.py
 include pytodoist/*.py
+include pytodoist/test/*.py
