@@ -34,7 +34,6 @@ class TodoistAPITest(unittest.TestCase):
             response = self.t.login(self.user.email, self.user.password)
         user = response.json()
         self.user.token = user['token']
-        response = self.t.get_projects(self.user.token)
 
     def tearDown(self):
         self.t.delete_user(self.user.token, self.user.password)
@@ -457,7 +456,7 @@ class TodoistAPITest(unittest.TestCase):
         response = self.t.add_task(self.user.token, 'Task 1')
         task = response.json()
         task_id = task['id']
-        response = self.t.add_note(self.user.token, task_id, 'Note 1')
+        self.t.add_note(self.user.token, task_id, 'Note 1')
         response = self.t.get_notes_and_task(self.user.token, task_id)
         self.assertEqual(response.status_code, 200)
         notes_and_task = response.json()
@@ -472,6 +471,7 @@ class TodoistAPITest(unittest.TestCase):
         queries = '["tomorrow"]'
         response = self.t.search_tasks(self.user.token, queries)
         self.assertEqual(response.status_code, 200)
+        tasks = []
         for entry in response.json():
             if entry['query'] == 'tomorrow':
                 tasks = entry['data']

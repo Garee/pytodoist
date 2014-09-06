@@ -53,9 +53,9 @@ class TodoistAPI(object):
         """Login to Todoist.
 
         :param email: The user's email address.
-        :type email: string
+        :type email: str
         :param password: The user's password.
-        :type password: string
+        :type password: str
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
         :on success: ``response.json()`` will contain the user details.
@@ -77,18 +77,18 @@ class TodoistAPI(object):
         """Login to Todoist using Google's oauth2 authentication.
 
         :param email: The user's Google email address.
-        :type email: string
+        :type email: str
         :param oauth2_token: The user's Google oauth2 token.
-        :type oauth2_token: string
+        :type oauth2_token: str
         :param auto_signup: If ``1`` register an account automatically.
         :type auto_signup: int
         :param full_name: The full name to use if the account is registered
             automatically. If no name is given an email based nickname is used.
-        :type full_name: string
+        :type full_name: str
         :param timezone: The timezone to use if the account is registered
             automatically. If no timezone is given one is chosen based on the
             user's IP address.
-        :type timezone: string
+        :type timezone: str
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
         :on success: ``response.json()`` will contain the user details.
@@ -115,7 +115,7 @@ class TodoistAPI(object):
         """Test a user's login token.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
         :on success: ``response.text`` will contain ``ok``.
@@ -154,15 +154,15 @@ class TodoistAPI(object):
         """Register a new user on Todoist.
 
         :param email: The user's email.
-        :type email: string
+        :type email: str
         :param full_name: The user's full name.
-        :type full_name: string
+        :type full_name: str
         :param password: The user's password. Must be at least 4 characters.
-        :type password: string
+        :type password: str
         :param lang: The user's language.
-        :type lang: string
+        :type lang: str
         :param timezone: The user's timezone.
-        :type timezone: string
+        :type timezone: str
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
         :on success: ``response.json()`` will contain the user's details.
@@ -190,11 +190,11 @@ class TodoistAPI(object):
         """Delete a registered Todoist user's account.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param password: The user's password.
-        :type password: string
+        :type password: str
         :param reason_for_delete: The reason for deletion.
-        :type reason_for_delete: string
+        :type reason_for_delete: str
         :param in_background: If ``0``, delete the user instantly.
         :type in_background: int
         :return: The HTTP response to the request.
@@ -221,15 +221,15 @@ class TodoistAPI(object):
         """Update a registered Todoist user's account.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param email: The new email address.
-        :type email: string
+        :type email: str
         :param full_name: The new full name.
-        :type full_name: string
+        :type full_name: str
         :param password: The new password.
-        :type password: string
+        :type password: str
         :param timezone: The new timezone.
-        :type timezone: string
+        :type timezone: str
         :param date_format: ``0``: ``DD-MM-YYYY``, ``1``: ``MM-DD-YYYY``.
         :type date_format: int
         :param time_format: ``0``: ``13:00``. ``1``: ``1:00pm``.
@@ -241,7 +241,7 @@ class TodoistAPI(object):
         :param start_page: The new start page. ``_blank``: for a blank page,
             ``_info_page`` for the info page, ``_project_$PROJECT_ID`` for a
             project page or ``$ANY_QUERY`` to show query results.
-        :type start_page: string
+        :type start_page: str
         :param default_reminder: ``email`` for email, ``mobile`` for SMS,
             ``push`` for smart device notifications or ``no_default`` to
             turn off notifications.
@@ -272,7 +272,7 @@ class TodoistAPI(object):
         """Update a registered Todoist user's avatar.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param image: The image file. The maximum size is 2mb.
         :type image: fileIO[str]
         :param delete: If ``1``, delete the current avatar and use the default.
@@ -304,11 +304,11 @@ class TodoistAPI(object):
         the link keeps working as a plain redirect.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param path: The path to redirect the user's browser. Default ``/app``.
-        :type path: string
+        :type path: str
         :param hash: The has part of the path to redirect the user's browser.
-        :type hash: string
+        :type hash: str
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
         :on success: ``response.json()`` will contain the redirect link.
@@ -331,7 +331,7 @@ class TodoistAPI(object):
         """Return a list of all of a user's projects.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
         :on success: ``response.json()`` will contain a list of projects.
@@ -357,9 +357,9 @@ class TodoistAPI(object):
         """Return a project's details.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param project_id: The ID of a project.
-        :type project_id: string
+        :type project_id: str
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
         :on success: ``response.json()`` will contain the project details.
@@ -391,9 +391,9 @@ class TodoistAPI(object):
         """Add a new project to a user's account.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param project_name: The name of the new project.
-        :type project_name: string
+        :type project_name: str
         :param color: The color of the new project.
         :type color: int
         :param indent: The indentation of the new project ``(1-4)``.
@@ -425,11 +425,11 @@ class TodoistAPI(object):
         """Update a user's project.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param project_id: The ID of a project.
-        :type project_id: string
+        :type project_id: str
         :param name: The new name.
-        :type name: string
+        :type name: str
         :param color: The new color.
         :type color: int
         :param indent: The new indentation ``(1-4)``.
@@ -474,9 +474,9 @@ class TodoistAPI(object):
         """Update a user's project orderings.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param ordered_project_ids: An ordered list of project IDs.
-        :type ordered_project_ids: string
+        :type ordered_project_ids: str
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
         :on success: ``response.text`` will contain ``"ok"``.
@@ -502,9 +502,9 @@ class TodoistAPI(object):
         """Delete a user's project.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param project_id: The ID of the project to delete.
-        :type project_id: string
+        :type project_id: str
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
         :on success: ``response.text`` will contain ``"ok"``.
@@ -542,9 +542,9 @@ class TodoistAPI(object):
         .. warning:: Only works if the user has Todoist premium.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param project_id: The ID of the project to archive.
-        :type project_id: string
+        :type project_id: str
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
         :on success: ``response.json()`` will contain a list of archived
@@ -574,7 +574,7 @@ class TodoistAPI(object):
         """Returns a user's archived projects.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
         :on success: ``response.json()`` will contain a list of archived
@@ -599,9 +599,9 @@ class TodoistAPI(object):
         .. warning:: Only works if the user has Todoist premium.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param project_id: The ID of the project to unarchive.
-        :type project_id: string
+        :type project_id: str
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
         :on success: ``response.json()`` will contain a list of unarchived
@@ -630,7 +630,7 @@ class TodoistAPI(object):
         """Return all of a user's labels.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param as_list: If ``1``, return a list of label names only.
         :type as_list: int
         :return: The HTTP response to the request.
@@ -662,9 +662,9 @@ class TodoistAPI(object):
         If a label with the given name already exists it will be returned.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param label_name: The name of the label.
-        :type label_name: string
+        :type label_name: str
         :param color: The color of the label.
         :type color: int
         :return: The HTTP response to the request.
@@ -691,11 +691,11 @@ class TodoistAPI(object):
         """Update the name of a user's label.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param label_name: The current name of the label.
-        :type label_name: string
+        :type label_name: str
         :param new_name: The new name of the label.
-        :type new_name: string
+        :type new_name: str
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
         :on success: ``response.json()`` will contain the label details.
@@ -725,9 +725,9 @@ class TodoistAPI(object):
         """Update the color of a user's label.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param label_name: The name of the label.
-        :type label_name: string
+        :type label_name: str
         :param color: The new color of the label.
         :type color: int
         :return: The HTTP response to the request.
@@ -759,9 +759,9 @@ class TodoistAPI(object):
         """Delete a user's label.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param label_name: The name of the label.
-        :type label_name: string
+        :type label_name: str
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
         :on success: ``response.text`` will contain ``"ok"``.
@@ -785,9 +785,9 @@ class TodoistAPI(object):
         """Return a list of a project's uncompleted tasks.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param project_id: The ID of the project to get tasks from.
-        :type project_id: string
+        :type project_id: str
         :param js_date: If ``1``: ``new Date("Sun Apr 29 2007 23:59:59")``,
             otherwise ``Sun Apr 2007 23:59:59``.
         :type js_date: int
@@ -821,17 +821,17 @@ class TodoistAPI(object):
         .. warning:: Only works if the user has Todoist premium.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param project_id: Filter the tasks by project.
-        :type project_id: string
+        :type project_id: str
         :param js_date: If ``1``: ``new Date("Sun Apr 29 2007 23:59:59")``,
             otherwise ``Sun Apr 2007 23:59:59``.
         :type js_date: int
         :param label: Filter the tasks by label.
-        :type label: string
+        :type label: str
         :param interval: Filter the tasks by time range.
             Defaults to ``past 2 weeks``.
-        :type interval: string
+        :type interval: str
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
         :on success: ``response.json()`` will contain a list of tasks. The list
@@ -855,9 +855,9 @@ class TodoistAPI(object):
         """Return a list of a project's completed tasks.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param project_id: The project to get tasks from.
-        :type project_id: string
+        :type project_id: str
         :param js_date: If ``1``: ``new Date("Sun Apr 29 2007 23:59:59")``,
             otherwise ``Sun Apr 2007 23:59:59``.
         :type js_date: int
@@ -889,9 +889,9 @@ class TodoistAPI(object):
         """Return a list of tasks with given IDs.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param task_ids: A list of task IDs.
-        :type task_ids: string
+        :type task_ids: str
         :param js_date: If ``1``: ``new Date("Sun Apr 29 2007 23:59:59")``,
             otherwise ``Sun Apr 2007 23:59:59``.
         :type js_date: int
@@ -929,13 +929,13 @@ class TodoistAPI(object):
         """Add a task to a project.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param content: The task description.
-        :type content: string
+        :type content: str
         :param project_id: The project to add the task to. Default is ``Inbox``
-        :type project_id: string
+        :type project_id: str
         :param date_string: The deadline date for the task.
-        :type date_string: string
+        :type date_string: str
         :param priority: The task priority ``(1-4)``.
         :type priority: int
         :param indent: The task indentation ``(1-4)``.
@@ -946,21 +946,21 @@ class TodoistAPI(object):
         :param item_order: The task order.
         :type item_order: int
         :param children: A list of child tasks IDs.
-        :type children: string
+        :type children: str
         :param labels: A list of label IDs.
-        :type labels: string
+        :type labels: str
         :param assigned_by_uid: The ID of the user who assigns current task.
             Accepts 0 or any user id from the list of project collaborators.
             If value is unset or invalid it will automatically be set up by
             your uid.
-        :type assigned_by_uid: string
+        :type assigned_by_uid: str
         :param responsible_uid: The id of user who is responsible for
             accomplishing the current task. Accepts 0 or any user id from
             the list of project collaborators. If the value is unset or
             invalid it will automatically be set to null.
-        :type responsible_uid: string
+        :type responsible_uid: str
         :param note: Content of a note to add.
-        :type note: string
+        :type note: str
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
         :on success: ``response.json()`` will contain the task details.
@@ -987,15 +987,15 @@ class TodoistAPI(object):
         """Update the details of a task.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param task_id: The ID of the task to update.
-        :type task_id: string
+        :type task_id: str
         :param content: The new task description.
-        :type content: string
+        :type content: str
         :param project_id: The new project.
-        :type project_id: string
+        :type project_id: str
         :param date_string: The new deadline date for the task.
-        :type date_string: string
+        :type date_string: str
         :param priority: The newtask priority ``(1-4)``.
         :type priority: int
         :param indent: The new task indentation ``(1-4)``.
@@ -1006,21 +1006,21 @@ class TodoistAPI(object):
         :param item_order: The new task order.
         :type item_order: int
         :param children: The new list of child tasks IDs.
-        :type children: string
+        :type children: str
         :param labels: The new list of label IDs.
-        :type labels: string
+        :type labels: str
         :param assigned_by_uid: New ID of the user who assigns current task.
             Accepts 0 or any user id from the list of project collaborators.
             If value is unset or invalid it will automatically be set up by
             your uid.
-        :type assigned_by_uid: string
+        :type assigned_by_uid: str
         :param responsible_uid: The new id of user who is responsible for
             accomplishing the current task. Accepts 0 or any user id from
             the list of project collaborators. If the value is unset or
             invalid it will automatically be set to null.
-        :type responsible_uid: string
+        :type responsible_uid: str
         :param note: Content of a note to add.
-        :type note: string
+        :type note: str
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
         :on success: ``response.json()`` will contain the updated task details.
@@ -1052,11 +1052,11 @@ class TodoistAPI(object):
         """Update the order of a project's tasks.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param project_id: The new project.
-        :type project_id: string
+        :type project_id: str
         :param task_ids: An ordered list of task IDs.
-        :type task_ids: string
+        :type task_ids: str
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
         :on success: ``response.text`` will contain ``"ok"``
@@ -1090,12 +1090,12 @@ class TodoistAPI(object):
         """Move tasks to another project.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param task_locations: The current locations of the tasks to move. It
             is a map of ``project_id -> task_id`` e.g. ``{'1534': ['23453']}``.
-        :type task_locations: string
+        :type task_locations: str
         :param project_id: The project to move the tasks to.
-        :type project_id: string
+        :type project_id: str
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
         :on success: ``response.json()`` will contain the task counts of each
@@ -1121,12 +1121,12 @@ class TodoistAPI(object):
 
     def advance_recurring_dates(self, token, task_ids, **kwargs):
         """Update the recurring dates of a list of tasks. The date
-        will be advanced to the next date with respect to their 'date_string'.
+        will be advanced to the next date with respect to their 'date_str'.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param task_ids: The IDs of the tasks to update.
-        :type task_ids: string
+        :type task_ids: str
         :param js_date: If ``1``: ``new Date("Sun Apr 29 2007 23:59:59")``,
             otherwise ``Sun Apr 2007 23:59:59``.
         :type js_date: int
@@ -1157,9 +1157,9 @@ class TodoistAPI(object):
         """Delete a given list of tasks.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param task_ids: The IDs of the tasks to delete.
-        :type task_ids: string
+        :type task_ids: str
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
         :on success: ``response.text`` will contain ``"ok"``.
@@ -1187,9 +1187,9 @@ class TodoistAPI(object):
         """Complete a given list of tasks.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param task_ids: The IDs of the tasks to complete.
-        :type task_ids: string
+        :type task_ids: str
         :param in_history: If ``0``, tasks will not be moved to the history.
         :type in_history: int
         :return: The HTTP response to the request.
@@ -1219,9 +1219,9 @@ class TodoistAPI(object):
         """Uncomplete a given list of tasks.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param task_ids: The IDs of the tasks to complete.
-        :type task_ids: string
+        :type task_ids: str
         :param in_history: If ``0``, tasks will not be moved to the history.
         :type in_history: int
         :return: The HTTP response to the request.
@@ -1251,11 +1251,11 @@ class TodoistAPI(object):
         """Add a note to a task.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param task_id: The ID of the task to add the note to.
-        :type task_id: string
+        :type task_id: str
         :param note_content: The note to add.
-        :type note_content: string
+        :type note_content: str
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
         :on success: ``response.json()`` will contain the note details.
@@ -1283,11 +1283,11 @@ class TodoistAPI(object):
         """Update the content of a note.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param note_id: The ID of the note to update.
-        :type note_id: string
+        :type note_id: str
         :param new_content: The new note content.
-        :type new_content: string
+        :type new_content: str
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
         :on success: ``response.text`` will contain ``"ok"``.
@@ -1320,11 +1320,11 @@ class TodoistAPI(object):
         """Delete a note from a task.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param task_id: The ID of the task to delete the note from.
-        :type task_id: string
+        :type task_id: str
         :param note_id: The ID of the note to delete.
-        :type note_id: string
+        :type note_id: str
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
         :on success: ``response.text`` will contain ``"ok"``.
@@ -1353,9 +1353,9 @@ class TodoistAPI(object):
         """Return the list of notes for a task.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param task_id: The ID of the task to get the notes from.
-        :type task_id: string
+        :type task_id: str
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
         :on success: ``response.json()`` will contain a list of notes.
@@ -1384,9 +1384,9 @@ class TodoistAPI(object):
         provided queries.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param queries: A list of queries.
-        :type queries: string
+        :type queries: str
         :param as_count: If ``1``, a count of the tasks will be returned.
         :type as_count: int
         :param js_date: If ``1``: ``new Date("Sun Apr 29 2007 23:59:59")``,
@@ -1420,9 +1420,9 @@ class TodoistAPI(object):
         """Return the list of notes for a task and the task itself.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param task_id: The ID of the task.
-        :type task_id: string
+        :type task_id: str
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
         :on success: ``response.json()`` will contain the task and notes.
@@ -1452,7 +1452,7 @@ class TodoistAPI(object):
         """Return a user's notification settings.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
         :on success: ``response.json()`` will contain a list of settings.
@@ -1479,11 +1479,11 @@ class TodoistAPI(object):
         """Update a user's notification settings.
 
         :param token: The user's login token.
-        :type token: string
+        :type token: str
         :param event: Update the notification settings of this event.
-        :type event: string
+        :type event: str
         :param service: ``email`` or ``push``
-        :type service: string
+        :type service: str
         :param should_notify: If ``0`` notify, otherwise do not.
         :type should_notify: int
         :return: The HTTP response to the request.
@@ -1512,7 +1512,7 @@ class TodoistAPI(object):
         """Send a HTTP GET request to a Todoist API end-point.
 
         :param end_point: The Todoist API end-point.
-        :type end_point: string
+        :type end_point: str
         :param params: The required request parameters.
         :type params: dict
         :param kwargs: Any optional parameters.
@@ -1526,7 +1526,7 @@ class TodoistAPI(object):
         """Send a HTTP POST request to a Todoist API end-point.
 
         :param end_point: The Todoist API end-point.
-        :type end_point: string
+        :type end_point: str
         :param params: The required request parameters.
         :type params: dict
         :param files: Any files that are being sent as multipart/form-data.
@@ -1544,7 +1544,7 @@ class TodoistAPI(object):
         :param req_func: The request function to use e.g. get or post.
         :type req_func: A request function from the :mod:`requests` module.
         :param end_point: The Todoist API end-point.
-        :type end_point: string
+        :type end_point: str
         :param params: The required request parameters.
         :type params: dict
         :param files: Any files that are being sent as multipart/form-data.

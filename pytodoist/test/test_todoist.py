@@ -34,7 +34,7 @@ class UserTest(unittest.TestCase):
 
     def test_login_failure(self):
         with self.assertRaises(todoist.RequestError):
-            user = todoist.login('', '')
+            todoist.login('', '')
 
     def test_login_with_token(self):
         user = todoist.login_with_token(self.user.token)
@@ -42,7 +42,7 @@ class UserTest(unittest.TestCase):
 
     def test_registration_failure(self):
         with self.assertRaises(todoist.RequestError):
-            user = todoist.register('', '', '')
+            todoist.register('', '', '')
 
     def test_update(self):
         self.user.full_name = 'Todoist Py'
@@ -56,7 +56,7 @@ class UserTest(unittest.TestCase):
         self.assertTrue(len(link) > 0)
 
     def test_add_project(self):
-        project = self.user.add_project('Project 1')
+        self.user.add_project('Project 1')
         projects = self.user.get_projects()
         self.assertEqual(len(projects), N_DEFAULT_PROJECTS + 1)
         project = self.user.get_project('Project 1')
@@ -80,7 +80,6 @@ class UserTest(unittest.TestCase):
         n_arch_projects = len(self.user.get_archived_projects())
         self.assertEqual(n_arch_projects, 0)
         self.user.add_project('Project 1')
-        n_projects = len(self.user.get_projects())
         project = self.user.get_project('Project 1')
         project.archive()
         n_arch_projects = len(self.user.get_archived_projects())
@@ -124,9 +123,8 @@ class UserTest(unittest.TestCase):
 
     def test_get_tasks(self):
         inbox = self.user.get_project('Inbox')
-        task = inbox.add_task('Task 1')
-        task = inbox.add_task('Task 2')
-        task.complete()
+        inbox.add_task('Task 1')
+        inbox.add_task('Task 2')
         tasks = self.user.get_tasks()
         self.assertEqual(len(tasks), 2)
 
@@ -146,11 +144,6 @@ class UserTest(unittest.TestCase):
             self.user.add_label('Label_' + str(i))
         labels = self.user.get_labels()
         self.assertEqual(len(labels), 5)
-
-    def test_add_label(self):
-        label = self.user.add_label('homework')
-        labels = self.user.get_labels()
-        self.assertEqual(len(labels), 1)
 
     def test_search_tasks(self):
         inbox = self.user.get_project('Inbox')

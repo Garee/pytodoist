@@ -27,9 +27,9 @@ def login(email, password):
     """Login to Todoist.
 
     :param email: A Todoist user's email address.
-    :type email: string
+    :type email: str
     :param password: A Todoist user's password.
-    :type password: string
+    :type password: str
     :return: The Todoist user.
     :rtype: :mod:`pytodoist.todoist.User`
 
@@ -47,9 +47,9 @@ def login_with_google(email, oauth2_token):
     """Login to Todoist using Google oauth2 authentication.
 
     :param email: A Todoist user's email address.
-    :type email: string
+    :type email: str
     :param oauth2_token: The oauth2 token associated with the email.
-    :type oauth2_token: string
+    :type oauth2_token: str
     :return: The Todoist user.
     :rtype: :mod:`pytodoist.todoist.User`
 
@@ -70,7 +70,7 @@ def login_with_token(token):
     .. note:: It is up to you to obtain the secret token.
 
     :param token: A Todoist user's secret token.
-    :type token: string
+    :type token: str
     :return: The Todoist user.
     :rtype: :mod:`pytodoist.todoist.User`
 
@@ -98,15 +98,15 @@ def register(full_name, email, password, lang=None, timezone=None):
     """Register a new Todoist account.
 
     :param full_name: The user's full name.
-    :type full_name: string
+    :type full_name: str
     :param email: The user's email address.
-    :type email: string
+    :type email: str
     :param password: The user's password.
-    :type password: string
+    :type password: str
     :param lang: The user's language.
-    :type lang: string
+    :type lang: str
     :param timezone: The user's timezone.
-    :type timezone: string
+    :type timezone: str
     :return: The Todoist user.
     :rtype: :mod:`pytodoist.todoist.User`
 
@@ -129,15 +129,15 @@ def register_with_google(full_name, email, oauth2_token,
     """Register a new Todoist account by linking a Google account.
 
     :param full_name: The user's full name.
-    :type full_name: string
+    :type full_name: str
     :param email: The user's email address.
-    :type email: string
+    :type email: str
     :param oauth2_token: The oauth2 token associated with the email.
-    :type oauth2_token: string
+    :type oauth2_token: str
     :param lang: The user's language.
-    :type lang: string
+    :type lang: str
     :param timezone: The user's timezone.
-    :type timezone: string
+    :type timezone: str
     :return: The Todoist user.
     :rtype: :mod:`pytodoist.todoist.User`
 
@@ -163,7 +163,7 @@ def get_timezones():
     """Return a list of Todoist supported timezones.
 
     :return: A list of timezones
-    :rtype: list string
+    :rtype: list str
 
     >>> from pytodoist import todoist
     >>> todoist.get_timezones()
@@ -257,7 +257,7 @@ class User(TodoistObject):
         .. warning:: You cannot recover the user after deletion!
 
         :param reason: The reason for deletion.
-        :type reason: string
+        :type reason: str
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
@@ -288,7 +288,7 @@ class User(TodoistObject):
         """Change the user's avatar.
 
         :param image_file: The path to the image.
-        :type image_file: string
+        :type image_file: str
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
@@ -315,7 +315,7 @@ class User(TodoistObject):
         the link keeps working as a plain redirect.
 
         :return: The user's redirect link.
-        :rtype: string
+        :rtype: str
         """
         response = API.get_redirect_link(self.token)
         _fail_if_contains_errors(response)
@@ -326,7 +326,7 @@ class User(TodoistObject):
         """Add a project to the user's account.
 
         :param name: The project name.
-        :type name: string
+        :type name: str
         :param color: The project color.
         :type color: int
         :param indent: The project indentation.
@@ -372,7 +372,7 @@ class User(TodoistObject):
         """Return the project with a given name.
 
         :param project_name: The name to search for.
-        :type project_name: string
+        :type project_name: str
         :return: The project that has the name ``project_name`` or ``None``
             if no project is found.
         :rtype: :mod:`pytodoist.todoist.Project`
@@ -414,7 +414,7 @@ class User(TodoistObject):
         """Return the project with a given ID.
 
         :param project_id: The ID to search for.
-        :type project_id: string
+        :type project_id: str
         :return: The project that has the ID ``project_id``.
         :rtype: :mod:`pytodoist.todoist.Project`
 
@@ -491,9 +491,9 @@ class User(TodoistObject):
         .. warning:: Requires the user to have Todoist premium.
 
         :param label_name: Only return tasks with this label.
-        :type label_name: string
+        :type label_name: str
         :param interval: Only return tasks completed this time period.
-        :type interval: string
+        :type interval: str
         :return: A list of tasks that meet the search criteria. If the user
             does not have Todoist premium an empty list is returned.
         :rtype: list :mod:`pytodoist.todoist.Task`
@@ -537,7 +537,7 @@ class User(TodoistObject):
             in the :mod:`pytodoist.todoist.Query` class.
 
         :param queries: Return tasks that match at least one of these queries.
-        :type queries: list string
+        :type queries: list str
         :return: A list tasks that match at least one query.
         :rtype: list :mod:`pytodoist.todoist.Task`
 
@@ -571,7 +571,7 @@ class User(TodoistObject):
         """Return the user's label that has a given name.
 
         :param label_name: The name to search for.
-        :type label_name: string
+        :type label_name: str
         :return: A label that has a matching name or ``None`` if not found.
         :rtype: :mod:`pytodoist.todoist.Label`
 
@@ -602,7 +602,7 @@ class User(TodoistObject):
         """Create a new label.
 
         :param name: The name of the label.
-        :type name: string
+        :type name: str
         :rtype: :mod:`pytodoist.todoist.Label`
 
         >>> from pytodoist import todoist
@@ -629,9 +629,9 @@ class User(TodoistObject):
         """Update the settings of a an events notifications.
 
         :param event: Update the notification settings of this event.
-        :type event: string
+        :type event: str
         :param service: The notification service to update.
-        :type service: string
+        :type service: str
         :param should_notify: Notify if this is ``1``.
         :type should_notify: int
         """
@@ -644,7 +644,7 @@ class User(TodoistObject):
         event.
 
         :param event: The type of the notification.
-        :type event: string
+        :type event: str
         :return: ``True`` if the user's settings allow for emails,
             ``False`` otherwise.
         :rtype: bool
@@ -662,7 +662,7 @@ class User(TodoistObject):
         a given event.
 
         :param event: The type of the notification.
-        :type event: string
+        :type event: str
         :return: ``True`` if the user's settings allow for push
             notifications, ``False`` otherwise.
         :rtype: bool
@@ -679,7 +679,7 @@ class User(TodoistObject):
         """Enable push notifications for a given event.
 
         :param event: The event to enable push notifications for.
-        :type event: string
+        :type event: str
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
@@ -691,7 +691,7 @@ class User(TodoistObject):
         """Disable push notifications for a given event.
 
         :param event: The event to disable push notifications for.
-        :type event: string
+        :type event: str
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
@@ -703,7 +703,7 @@ class User(TodoistObject):
         """Enable email notifications for a given event.
 
         :param event: The event to enable email notifications for.
-        :type event: string
+        :type event: str
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
@@ -715,7 +715,7 @@ class User(TodoistObject):
         """Disable email notifications for a given event.
 
         :param event: The event to disable email notifications for.
-        :type event: string
+        :type event: str
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
@@ -816,9 +816,9 @@ class Project(TodoistObject):
         """Add a task to the project
 
         :param content: The task description.
-        :type content: string
+        :type content: str
         :param date: The task deadline.
-        :type date: string
+        :type date: str
         :param priority: The priority of the task.
         :type priority: int
         :return: The added task.
@@ -1015,7 +1015,7 @@ class Task(TodoistObject):
         """Add a note to the Task.
 
         :param content: The content of the note.
-        :type content: string
+        :type content: str
         :return: The added note.
         :rtype: :mod:`pytodoist.todoist.Note`
 
