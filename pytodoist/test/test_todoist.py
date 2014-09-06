@@ -21,6 +21,14 @@ def _get_user():
     return user
 
 
+class TodoistTest(unittest.TestCase):
+
+    def test_get_timezones(self):
+        timezones = todoist.get_timezones()
+        self.assertTrue(len(timezones) > 0)
+        self.assertTrue('GMT' in timezones)
+
+
 class UserTest(unittest.TestCase):
 
     def setUp(self):
@@ -39,6 +47,12 @@ class UserTest(unittest.TestCase):
     def test_login_with_token(self):
         user = todoist.login_with_token(self.user.token)
         self.assertTrue(user.is_logged_in())
+
+    def test_is_logged_in(self):
+        self.user.token = None
+        self.assertFalse(self.user.is_logged_in())
+        self.user = todoist.login(email, password)
+        self.assertTrue(self.user.is_logged_in())
 
     def test_registration_failure(self):
         with self.assertRaises(todoist.RequestError):
@@ -118,8 +132,8 @@ class UserTest(unittest.TestCase):
         task = inbox.add_task('Task 1 @homework')
         task.complete()
         tasks = self.user.search_completed_tasks(label_name='homework')
-        # self.assertEqual(len(tasks), 1)
-        self.assertEqual(len(tasks), 0)  # Requires premium.
+        # self.assertEqual(len(tasks), 1)  # Requires premium.
+        self.assertEqual(len(tasks), 0)
 
     def test_get_tasks(self):
         inbox = self.user.get_project('Inbox')
@@ -152,6 +166,10 @@ class UserTest(unittest.TestCase):
         tasks = self.user.search_tasks(todoist.Query.ALL)
         self.assertEqual(len(tasks), 2)
 
+    def test_search_tasks_no_results(self):
+        tasks = self.user.search_tasks(todoist.Query.ALL)
+        self.assertEqual(len(tasks), 0)
+
     def test_search_tasks_today(self):
         inbox = self.user.get_project('Inbox')
         inbox.add_task('Task Red', date='today')
@@ -178,6 +196,16 @@ class UserTest(unittest.TestCase):
     def test_enable_email_notifications(self):
         self.user.enable_email_notifications(todoist.Event.NOTE_ADDED)
         is_recv = self.user.is_email_notified_when(todoist.Event.NOTE_ADDED)
+        self.assertTrue(is_recv)
+
+    def test_is_push_notified_when(self):
+        self.user.disable_push_notifications(todoist.Event.NOTE_ADDED)
+        is_recv = self.user.is_push_notified_when(todoist.Event.NOTE_ADDED)
+        self.assertFalse(is_recv)
+
+    def test_enable_push_notifications(self):
+        self.user.enable_push_notifications(todoist.Event.NOTE_ADDED)
+        is_recv = self.user.is_push_notified_when(todoist.Event.NOTE_ADDED)
         self.assertTrue(is_recv)
 
 
