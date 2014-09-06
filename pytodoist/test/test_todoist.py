@@ -214,8 +214,8 @@ class UserTest(unittest.TestCase):
 
     def test_search_tasks_overdue(self):
         inbox = self.user.get_project(_INBOX_PROJECT_NAME)
-        inbox.add_task(_TASK, date='yesterday')
-        inbox.add_task(_TASK + '2', date='today')
+        inbox.add_task(_TASK, date='today')
+        inbox.add_task(_TASK + '2', date='1 Jan 2000')
         tasks = self.user.search_tasks(todoist.Query.OVERDUE)
         self.assertEqual(len(tasks), 1)
 
