@@ -176,7 +176,7 @@ def get_timezones():
 
 
 class TodoistObject(object):
-    # A helper class which 'converts' a JSON object into a python object.
+    """A helper class which 'converts' a JSON object into a python object."""
 
     def __init__(self, object_json):
         for attr in object_json:
@@ -294,7 +294,7 @@ class User(TodoistObject):
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> user.change_avatar('/home/john/pictures/avatar.png')
         """
-        with open(image_file, 'r') as image:
+        with open(image_file) as image:
             response = API.update_avatar(self.token, image)
             _fail_if_contains_errors(response)
 
@@ -603,6 +603,8 @@ class User(TodoistObject):
 
         :param name: The name of the label.
         :type name: str
+        :param color: The color of the label.
+        :type color: str
         :rtype: :mod:`pytodoist.todoist.Label`
 
         >>> from pytodoist import todoist
