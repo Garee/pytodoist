@@ -1551,7 +1551,8 @@ class TodoistAPI(object):
         >>> print is_successful_request
         True
         """
-        return response.status_code == _HTTP_OK and response.text not in self.ERROR_TEXT_RESPONSES
+        return (response.status_code == _HTTP_OK and
+                response.text not in self.ERROR_TEXT_RESPONSES)
 
     def _get(self, end_point, params=None, **kwargs):
         """Send a HTTP GET request to a Todoist API end-point.

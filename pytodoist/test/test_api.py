@@ -44,7 +44,8 @@ class TodoistAPITest(unittest.TestCase):
         cls.user = TestUser()
 
     def setUp(self):
-        response = self.api.register(self.user.email, self.user.full_name, self.user.password)
+        response = self.api.register(self.user.email, self.user.full_name,
+                                     self.user.password)
         if not self.api.is_response_success(response):
             response = self.api.login(self.user.email, self.user.password)
         user_json = response.json()
@@ -78,12 +79,14 @@ class TodoistAPITest(unittest.TestCase):
 
     def test_register_success(self):
         self.api.delete_user(self.user.token, self.user.password)
-        response = self.api.register(self.user.email, self.user.full_name, self.user.password)
+        response = self.api.register(self.user.email, self.user.full_name,
+                                     self.user.password)
         self.assertTrue(self.api.is_response_success(response))
         self.assertIn('token', response.json())
 
     def test_register_failure(self):
-        response = self.api.register(self.user.email, self.user.full_name, self.user.password)
+        response = self.api.register(self.user.email, self.user.full_name,
+                                     self.user.password)
         self.assertFalse(self.api.is_response_success(response))
 
     def test_delete_user(self):
@@ -100,15 +103,16 @@ class TodoistAPITest(unittest.TestCase):
         self.assertEqual(user_json['email'], new_email)
 
     def test_update_user_bad_email(self):
-        other_user = TestUser()
-        other_user.email = 'other.user.pytodoist.email@gmail.com'
-        response = self.api.register(other_user.email, other_user.full_name, other_user.password)
+        user = TestUser()
+        user.email = 'other.user.pytodoist.email@gmail.com'
+        response = self.api.register(user.email, user.full_name,
+                                     user.password)
         self.assertTrue(self.api.is_response_success(response))
         other_user_json = response.json()
         other_user_token = other_user_json['token']
-        response = self.api.update_user(self.user.token, email=other_user.email)
+        response = self.api.update_user(self.user.token, email=user.email)
         self.assertFalse(self.api.is_response_success(response))
-        response = self.api.delete_user(other_user_token, other_user.password)
+        response = self.api.delete_user(other_user_token, user.password)
         self.assertTrue(self.api.is_response_success(response))
 
     def test_update_avatar_use_default(self):
@@ -160,24 +164,28 @@ class TodoistAPITest(unittest.TestCase):
     def test_update_project_success(self):
         project = self._add_project()
         new_name = 'update'
-        response = self.api.update_project(self.user.token, project['id'], name=new_name)
+        response = self.api.update_project(self.user.token, project['id'],
+                                           name=new_name)
         self.assertTrue(self.api.is_response_success(response))
         updated_project = response.json()
         self.assertEqual(updated_project['name'], new_name)
 
     def test_update_project_failure(self):
-        response = self.api.update_project(self.user.token, _INVALID_ID, name=None)
+        response = self.api.update_project(self.user.token, _INVALID_ID,
+                                           name=None)
         self.assertFalse(self.api.is_response_success(response))
 
     def test_update_project_orders_success(self):
         for i in range(5):
-            response = self.api.add_project(self.user.token, _PROJECT_NAME + str(i))
+            response = self.api.add_project(self.user.token,
+                                            _PROJECT_NAME + str(i))
             self.assertTrue(self.api.is_response_success(response))
         response = self.api.get_projects(self.user.token)
         self.assertTrue(self.api.is_response_success(response))
         current_order = [project['id'] for project in response.json()]
         reverse_order = current_order[::-1]
-        response = self.api.update_project_orders(self.user.token, str(reverse_order))
+        response = self.api.update_project_orders(self.user.token,
+                                                  str(reverse_order))
         self.assertTrue(self.api.is_response_success(response))
         response = self.api.get_projects(self.user.token)
         self.assertTrue(self.api.is_response_success(response))
@@ -269,7 +277,8 @@ class TodoistAPITest(unittest.TestCase):
     def test_update_label_name(self):
         new_name = 'update' + _LABEL_NAME
         self.api.add_label(self.user.token, _LABEL_NAME)
-        response = self.api.update_label_name(self.user.token, _LABEL_NAME, new_name)
+        response = self.api.update_label_name(self.user.token, _LABEL_NAME,
+                                              new_name)
         self.assertTrue(self.api.is_response_success(response))
         label = response.json()
         self.assertEqual(label['name'], new_name)
@@ -277,7 +286,8 @@ class TodoistAPITest(unittest.TestCase):
     def test_update_label_color_success(self):
         new_color = 1
         self.api.add_label(self.user.token, _LABEL_NAME, color=0)
-        response = self.api.update_label_color(self.user.token, _LABEL_NAME, new_color)
+        response = self.api.update_label_color(self.user.token, _LABEL_NAME,
+                                               new_color)
         self.assertTrue(self.api.is_response_success(response))
         label = response.json()
         self.assertEqual(label['color'], new_color)
@@ -298,7 +308,8 @@ class TodoistAPITest(unittest.TestCase):
 
     def test_get_uncompleted_tasks_success(self):
         self._add_task()
-        response = self.api.get_uncompleted_tasks(self.user.token, self._get_inbox_id())
+        response = self.api.get_uncompleted_tasks(self.user.token,
+                                                  self._get_inbox_id())
         self.assertTrue(self.api.is_response_success(response))
         tasks = response.json()
         self.assertEqual(len(tasks), 1)
@@ -310,19 +321,22 @@ class TodoistAPITest(unittest.TestCase):
     def test_add_task_success(self):
         response = self.api.add_task(self.user.token, _TASK)
         self.assertTrue(self.api.is_response_success(response))
-        response = self.api.get_uncompleted_tasks(self.user.token, self._get_inbox_id())
+        response = self.api.get_uncompleted_tasks(self.user.token,
+                                                  self._get_inbox_id())
         self.assertTrue(self.api.is_response_success(response))
         uncompleted_tasks = response.json()
         self.assertEqual(len(uncompleted_tasks), 1)
 
     def test_add_task_failure(self):
-        response = self.api.add_task(self.user.token, _TASK, date_string=_INVALID_DATE_STRING)
+        response = self.api.add_task(self.user.token, _TASK,
+                                     date_string=_INVALID_DATE_STRING)
         self.assertFalse(self.api.is_response_success(response))
 
     def test_update_task_success(self):
         task = self._add_task()
         new_content = _TASK + '2'
-        response = self.api.update_task(self.user.token, task['id'], content=new_content)
+        response = self.api.update_task(self.user.token, task['id'],
+                                        content=new_content)
         self.assertTrue(self.api.is_response_success(response))
         updated_task = response.json()
         self.assertEqual(updated_task['content'], new_content)
@@ -346,7 +360,8 @@ class TodoistAPITest(unittest.TestCase):
         task_ids = str([task['id']])
         response = self.api.complete_tasks(self.user.token, task_ids)
         self.assertTrue(self.api.is_response_success(response))
-        response = self.api.get_completed_tasks(self.user.token, self._get_inbox_id())
+        response = self.api.get_completed_tasks(self.user.token,
+                                                self._get_inbox_id())
         self.assertTrue(self.api.is_response_success(response))
         tasks = response.json()
         self.assertEqual(len(tasks), 1)
@@ -372,13 +387,15 @@ class TodoistAPITest(unittest.TestCase):
         self.assertTrue(self.api.is_response_success(response))
         response = self.api.add_task(self.user.token, _TASK + '2')
         self.assertTrue(self.api.is_response_success(response))
-        response = self.api.get_uncompleted_tasks(self.user.token, self._get_inbox_id())
+        response = self.api.get_uncompleted_tasks(self.user.token,
+                                                  self._get_inbox_id())
         self.assertTrue(self.api.is_response_success(response))
         tasks = response.json()
         task_ids = str([task['id'] for task in tasks])
         response = self.api.complete_tasks(self.user.token, task_ids)
         self.assertTrue(self.api.is_response_success(response))
-        response = self.api.get_uncompleted_tasks(self.user.token, self._get_inbox_id())
+        response = self.api.get_uncompleted_tasks(self.user.token,
+                                                  self._get_inbox_id())
         self.assertTrue(self.api.is_response_success(response))
         tasks = response.json()
         self.assertEqual(len(tasks), 0)
@@ -386,66 +403,80 @@ class TodoistAPITest(unittest.TestCase):
     def test_update_task_ordering_success(self):
         for i in range(5):
             self.api.add_task(self.user.token, _TASK + str(i))
-        response = self.api.get_uncompleted_tasks(self.user.token, self._get_inbox_id())
+        response = self.api.get_uncompleted_tasks(self.user.token,
+                                                  self._get_inbox_id())
         self.assertTrue(self.api.is_response_success(response))
         tasks = response.json()
         task_ordering = [task['id'] for task in tasks]
         rev_ordering = task_ordering[::-1]
-        response = self.api.update_task_ordering(self.user.token, self._get_inbox_id(), str(rev_ordering))
+        response = self.api.update_task_ordering(self.user.token,
+                                                 self._get_inbox_id(),
+                                                 str(rev_ordering))
         self.assertTrue(self.api.is_response_success(response))
-        response = self.api.get_uncompleted_tasks(self.user.token, self._get_inbox_id())
+        response = self.api.get_uncompleted_tasks(self.user.token,
+                                                  self._get_inbox_id())
         self.assertTrue(self.api.is_response_success(response))
         tasks = response.json()
         task_ordering = [task['id'] for task in tasks]
         self.assertEqual(task_ordering, rev_ordering)
 
     def test_update_task_ordering_failure(self):
-        response = self.api.update_task_ordering(self.user.token, _INVALID_ID, '')
+        response = self.api.update_task_ordering(self.user.token,
+                                                 _INVALID_ID, '')
         self.assertFalse(self.api.is_response_success(response))
 
     def test_move_tasks(self):
         project = self._add_project()
         task = self._add_task()
-        task_locations = '{{"{p_id}": ["{t_id}"]}}'.format(p_id=self._get_inbox_id(), t_id=task['id'])
-        response = self.api.move_tasks(self.user.token, str(task_locations), project['id'])
+        task_locations = ('{{"{p_id}": ["{t_id}"]}}'
+                          .format(p_id=self._get_inbox_id(), t_id=task['id']))
+        response = self.api.move_tasks(self.user.token, str(task_locations),
+                                       project['id'])
         self.assertTrue(self.api.is_response_success(response))
-        response = self.api.get_uncompleted_tasks(self.user.token, self._get_inbox_id())
+        response = self.api.get_uncompleted_tasks(self.user.token,
+                                                  self._get_inbox_id())
         self.assertTrue(self.api.is_response_success(response))
         tasks = response.json()
         self.assertEqual(len(tasks), 0)
-        response = self.api.get_uncompleted_tasks(self.user.token, project['id'])
+        response = self.api.get_uncompleted_tasks(self.user.token,
+                                                  project['id'])
         self.assertTrue(self.api.is_response_success(response))
         tasks = response.json()
         self.assertEqual(len(tasks), 1)
 
     def test_advance_recurring_dates(self):
-        response = self.api.add_task(self.user.token, _TASK, date_string='every day')
+        response = self.api.add_task(self.user.token, _TASK,
+                                     date_string='every day')
         self.assertTrue(self.api.is_response_success(response))
         task = response.json()
         task_id = task['id']
         task_due_date = task['due_date']
-        response = self.api.advance_recurring_dates(self.user.token, str([task_id]))
+        response = self.api.advance_recurring_dates(self.user.token,
+                                                    str([task_id]))
         self.assertTrue(self.api.is_response_success(response))
         tasks = response.json()
         task = tasks[0]
         self.assertNotEqual(task['due_date'], task_due_date)
 
     def test_advance_recurring_dates_failure(self):
-        response = self.api.add_task(self.user.token, _TASK, date_string=_INVALID_DATE_STRING)
+        response = self.api.add_task(self.user.token, _TASK,
+                                     date_string=_INVALID_DATE_STRING)
         self.assertFalse(self.api.is_response_success(response))
 
     def test_delete_tasks(self):
         for i in range(5):
             response = self.api.add_task(self.user.token, _TASK + str(i))
             self.assertTrue(self.api.is_response_success(response))
-        response = self.api.get_uncompleted_tasks(self.user.token, self._get_inbox_id())
+        response = self.api.get_uncompleted_tasks(self.user.token,
+                                                  self._get_inbox_id())
         self.assertTrue(self.api.is_response_success(response))
         tasks = response.json()
         task_ids = [task['id'] for task in tasks]
         self.assertTrue(len(tasks) > 0)
         response = self.api.delete_tasks(self.user.token, str(task_ids))
         self.assertTrue(self.api.is_response_success(response))
-        response = self.api.get_uncompleted_tasks(self.user.token, self._get_inbox_id())
+        response = self.api.get_uncompleted_tasks(self.user.token,
+                                                  self._get_inbox_id())
         self.assertTrue(self.api.is_response_success(response))
         tasks = response.json()
         self.assertEqual(len(tasks), 0)
@@ -454,13 +485,16 @@ class TodoistAPITest(unittest.TestCase):
         task = self._add_task()
         response = self.api.complete_tasks(self.user.token, str([task['id']]))
         self.assertTrue(self.api.is_response_success(response))
-        response = self.api.get_uncompleted_tasks(self.user.token, self._get_inbox_id())
+        response = self.api.get_uncompleted_tasks(self.user.token,
+                                                  self._get_inbox_id())
         self.assertTrue(self.api.is_response_success(response))
         tasks = response.json()
+        task_id = task['id']
         self.assertEqual(len(tasks), 0)
-        response = self.api.uncomplete_tasks(self.user.token, str([task['id']]))
+        response = self.api.uncomplete_tasks(self.user.token, str([task_id]))
         self.assertTrue(self.api.is_response_success(response))
-        response = self.api.get_uncompleted_tasks(self.user.token, self._get_inbox_id())
+        response = self.api.get_uncompleted_tasks(self.user.token,
+                                                  self._get_inbox_id())
         self.assertTrue(self.api.is_response_success(response))
         tasks = response.json()
         self.assertEqual(len(tasks), 1)
@@ -496,7 +530,8 @@ class TodoistAPITest(unittest.TestCase):
         self.assertEqual(note['content'], new_note)
 
     def test_update_note_failure(self):
-        response = self.api.update_note(self.user.token, _INVALID_ID, _INVALID_NOTE)
+        response = self.api.update_note(self.user.token, _INVALID_ID,
+                                        _INVALID_NOTE)
         self.assertFalse(self.api.is_response_success(response))
 
     def test_delete_note(self):
@@ -535,7 +570,8 @@ class TodoistAPITest(unittest.TestCase):
         self.assertEqual(len(notes_and_task), 3)
 
     def test_search_tasks(self):
-        response = self.api.add_task(self.user.token, _TASK, date_string='tomorrow')
+        response = self.api.add_task(self.user.token, _TASK,
+                                     date_string='tomorrow')
         self.assertTrue(self.api.is_response_success(response))
         task = response.json()
         task_id = task['id']
@@ -557,7 +593,10 @@ class TodoistAPITest(unittest.TestCase):
         self.assertTrue(len(settings) > 0)
 
     def test_update_notification_settings(self):
-        response = self.api.update_notification_settings(self.user.token, 'user_left_project', 'push', 0)
+        response = self.api.update_notification_settings(self.user.token,
+                                                         'user_left_project',
+                                                         'push',
+                                                         0)
         self.assertTrue(self.api.is_response_success(response))
         response = self.api.get_notification_settings(self.user.token)
         self.assertTrue(self.api.is_response_success(response))
