@@ -325,7 +325,7 @@ class TodoistAPI(object):
         params = {
             'token': token
         }
-        return self._post('getRedirectLink', params, **kwargs)
+        return self._get('getRedirectLink', params, **kwargs)
 
     def get_projects(self, token):
         """Return a list of all of a user's projects.
