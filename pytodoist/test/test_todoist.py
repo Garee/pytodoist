@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import sys
 import unittest
 from pytodoist import todoist
 
@@ -435,4 +436,7 @@ class LabelTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    if sys.version_info > (3, 0):
+        # Avoid the ResourceWarning spam bug.
+        unittest.main(warnings='ignore')
     unittest.main()
