@@ -37,6 +37,9 @@ Install PyTodoist
 """
 import requests
 
+# No magic numbers
+_HTTP_OK = 200
+
 
 class TodoistAPI(object):
     """A wrapper around the Todoist API.
@@ -48,6 +51,30 @@ class TodoistAPI(object):
     """
 
     URL = 'https://todoist.com/API/'
+
+    ERROR_TEXT_RESPONSES = [
+        '"LOGIN_ERROR"',
+        '"INTERNAL_ERROR"',
+        '"EMAIL_MISMATCH"',
+        '"ACCOUNT_NOT_CONNECTED_WITH_GOOGLE"',
+        '"ALREADY_REGISTRED"',
+        '"TOO_SHORT_PASSWORD"',
+        '"INVALID_EMAIL"',
+        '"INVALID_TIMEZONE"',
+        '"INVALID_FULL_NAME"',
+        '"UNKNOWN_ERROR"',
+        '"ERROR_PASSWORD_TOO_SHORT"',
+        '"ERROR_EMAIL_FOUND"',
+        '"UNKNOWN_IMAGE_FORMAT"',
+        '"AVATAR_NOT_FOUND"',
+        '"UNABLE_TO_RESIZE_IMAGE"',
+        '"IMAGE_TOO_BIG"',
+        '"UNABLE_TO_RESIZE_IMAGE"',
+        '"ERROR_PROJECT_NOT_FOUND"',
+        '"ERROR_NAME_IS_EMPTY"',
+        '"ERROR_WRONG_DATE_SYNTAX"',
+        '"ERROR_ITEM_NOT_FOUND"'
+    ]
 
     def login(self, email, password):
         """Login to Todoist.
@@ -1507,6 +1534,24 @@ class TodoistAPI(object):
             'dont_notify': should_notify
         }
         return self._post('updateNotificationSetting', params)
+
+    def is_response_success(self, response):
+        """Return True if the given response contains no todoist API errors
+        and indicates a successful request.
+
+        :param response: The response to check.
+        :type response: :mod:`requests.Response`
+        :return: True if the request was successful, false otherwise.
+        :rtype: bool
+
+        >>> from pytodoist.api import TodoistAPI
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'password')
+        >>> is_successful_request = api.is_response_success(response)
+        >>> print is_successful_request
+        True
+        """
+        return response.status_code == _HTTP_OK and response.text not in self.ERROR_TEXT_RESPONSES
 
     def _get(self, end_point, params=None, **kwargs):
         """Send a HTTP GET request to a Todoist API end-point.

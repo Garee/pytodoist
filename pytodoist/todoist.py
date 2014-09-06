@@ -175,6 +175,14 @@ def get_timezones():
     return [timezone_json[0] for timezone_json in timezones_json]
 
 
+def _fail_if_contains_errors(response):
+    """Raise a RequestError Exception if a given response
+    does not denote a successful request.
+    """
+    if not API.is_response_success(response):
+        raise RequestError(response)
+
+
 class TodoistObject(object):
     """A helper class which 'converts' a JSON object into a python object."""
 
@@ -249,7 +257,7 @@ class User(TodoistObject):
         if not self.token:
             return False
         response = API.ping(self.token)
-        return not _contains_errors(response)
+        return API.is_response_success(response)
 
     def delete(self, reason=None):
         """Delete the user's account from Todoist.
@@ -1362,44 +1370,3 @@ class RequestError(Exception):
     def __init__(self, response):
         self.response = response
         super(RequestError, self).__init__(response.text)
-
-# Avoid magic numbers.
-_HTTP_OK = 200
-
-_ERROR_TEXT_RESPONSES = [
-    '"LOGIN_ERROR"',
-    '"INTERNAL_ERROR"',
-    '"EMAIL_MISMATCH"',
-    '"ACCOUNT_NOT_CONNECTED_WITH_GOOGLE"',
-    '"ALREADY_REGISTRED"',
-    '"TOO_SHORT_PASSWORD"',
-    '"INVALID_EMAIL"',
-    '"INVALID_TIMEZONE"',
-    '"INVALID_FULL_NAME"',
-    '"UNKNOWN_ERROR"',
-    '"ERROR_PASSWORD_TOO_SHORT"',
-    '"ERROR_EMAIL_FOUND"',
-    '"UNKNOWN_IMAGE_FORMAT"',
-    '"AVATAR_NOT_FOUND"',
-    '"UNABLE_TO_RESIZE_IMAGE"',
-    '"IMAGE_TOO_BIG"',
-    '"UNABLE_TO_RESIZE_IMAGE"',
-    '"ERROR_PROJECT_NOT_FOUND"',
-    '"ERROR_NAME_IS_EMPTY"',
-    '"ERROR_WRONG_DATE_SYNTAX"',
-    '"ERROR_ITEM_NOT_FOUND"',
-]
-
-
-def _fail_if_contains_errors(response):
-    """Raise a RequestError Exception if a given response
-    does not denote a successful request.
-    """
-    if _contains_errors(response):
-        raise RequestError(response)
-
-
-def _contains_errors(response):
-    """Return True if a given response contains errors."""
-    return (response.status_code != _HTTP_OK
-            or response.text in _ERROR_TEXT_RESPONSES)
