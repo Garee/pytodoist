@@ -274,7 +274,7 @@ class TodoistAPI(object):
         :param token: The user's login token.
         :type token: string
         :param image: The image file. The maximum size is 2mb.
-        :type image: file
+        :type image: fileIO[str]
         :param delete: If ``1``, delete the current avatar and use the default.
         :type delete: int
         :return: The HTTP response to the request.
@@ -283,7 +283,7 @@ class TodoistAPI(object):
         :on failure: ``response.text`` will contain ``"UNKNOWN_IMAGE_FORMAT"``,
             ``"UNABLE_TO_RESIZE_IMAGE"`` or ``"IMAGE_TOO_BIG"``.
 
-        >>> from pytodoist import TodoistAPI
+        >>> from pytodoist.api import TodoistAPI
         >>> api = TodoistAPI()
         >>> response = api.login('john.doe@gmail.com', 'password')
         >>> user_info = response.json()
@@ -313,7 +313,7 @@ class TodoistAPI(object):
         :rtype: :mod:`requests.Response`
         :on success: ``response.json()`` will contain the redirect link.
 
-        >>> from pytodoist import TodoistAPI
+        >>> from pytodoist.api import TodoistAPI
         >>> api = TodoistAPI()
         >>> response = api.login('john.doe@gmail.com', 'password')
         >>> user_info = response.json()
@@ -771,7 +771,7 @@ class TodoistAPI(object):
         >>> response = api.login('john.doe@gmail.com', 'password')
         >>> user_info = response.json()
         >>> user_token = user_info['token']
-        >>> response = api.delete_label(token, 'Python')
+        >>> response = api.delete_label(user_token, 'Python')
         >>> print response.text
         "ok"
         """
@@ -1106,11 +1106,11 @@ class TodoistAPI(object):
         >>> response = api.login('john.doe@gmail.com', 'password')
         >>> user_info = response.json()
         >>> user_token = user_info['token']
-        ... # Get the locations of the tasks to move
-        ... # and the project to move them to.
+        >>> task_locations = '{'1534': ['23453']}'
+        >>> project_id = '1234'
         >>> response = api.move_tasks(user_token, task_locations, project_id)
         >>> print response.json()
-        {"counts": {"1523": 0, "1245": 1}}
+        {"counts": {"1534": 0, "1245": 1}}
         """
         params = {
             'token': token,
@@ -1141,7 +1141,7 @@ class TodoistAPI(object):
         >>> user_info = response.json()
         >>> user_token = user_info['token']
         ... # Get the ID(s) of the task(s) you want to update.
-        >>> task_ids = str([task_id])
+        >>> task_ids = '[1234, 5678]'
         >>> response = api.advance_recurring_dates(user_token, task_ids)
         >>> tasks = response.json()
         >>> len(tasks)
@@ -1215,7 +1215,7 @@ class TodoistAPI(object):
         }
         return self._post('completeItems', params, **kwargs)
 
-    def uncomplete_tasks(self, token, task_ids):
+    def uncomplete_tasks(self, token, task_ids, **kwargs):
         """Uncomplete a given list of tasks.
 
         :param token: The user's login token.
@@ -1245,7 +1245,7 @@ class TodoistAPI(object):
             'token': token,
             'ids': task_ids
         }
-        return self._post('uncompleteItems', params)
+        return self._post('uncompleteItems', params, **kwargs)
 
     def add_note(self, token, task_id, note_content):
         """Add a note to a task.
@@ -1286,8 +1286,8 @@ class TodoistAPI(object):
         :type token: string
         :param note_id: The ID of the note to update.
         :type note_id: string
-        :param note_content: The new note content.
-        :type note_content: string
+        :param new_content: The new note content.
+        :type new_content: string
         :return: The HTTP response to the request.
         :rtype: :mod:`requests.Response`
         :on success: ``response.text`` will contain ``"ok"``.
@@ -1548,7 +1548,7 @@ class TodoistAPI(object):
         :param params: The required request parameters.
         :type params: dict
         :param files: Any files that are being sent as multipart/form-data.
-        :type files: file
+        :type files: dict
         :param kwargs: Any optional parameters.
         :type kwargs: dict
         :return: The HTTP response to the request.

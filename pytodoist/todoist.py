@@ -56,7 +56,7 @@ def login_with_google(email, oauth2_token):
     .. note:: It is up to you to obtain the valid oauth2 token.
 
     >>> from pytodoist import todoist
-    ... # Get the oauth2 token.
+    >>> oauth2_token = "mytoken" # Get the oauth2 token.
     >>> user = todoist.login_with_google('john.doe@gmail.com', oauth2_token)
     >>> print user.full_name
     John Doe
@@ -75,8 +75,8 @@ def login_with_token(token):
     :rtype: :mod:`pytodoist.todoist.User`
 
     >>> from pytodoist import todoist
-    ... # Get the secret token.
-    >>> user = login_with_token(token)
+    >>> token = 'mytoken' # Get the secret token.
+    >>> user = todoist.login_with_token(token)
     >>> print user.full_name
     John Doe
     """
@@ -144,7 +144,7 @@ def register_with_google(full_name, email, oauth2_token,
     .. note:: It is up to you to obtain the valid oauth2 token.
 
     >>> from pytodoist import todoist
-    ... # Get the oauth2 token.
+    >>> oauth2_token = 'mytoken' # Get the oauth2 token.
     >>> user = todoist.register_with_google('John Doe', 'john.doe@gmail.com',
     ...                                      oauth2_token)
     >>> user.is_logged_in()
@@ -287,8 +287,8 @@ class User(TodoistObject):
     def change_avatar(self, image_file):
         """Change the user's avatar.
 
-        :param image: The path to the image.
-        :type image: string
+        :param image_file: The path to the image.
+        :type image_file: string
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
@@ -421,7 +421,7 @@ class User(TodoistObject):
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> inbox = user.get_project('Inbox')
-        >>> projct = user.get_project_with_id(inbox.id)
+        >>> project = user.get_project_with_id(inbox.id)
         >>> print project.name
         Inbox
         """
@@ -510,7 +510,7 @@ class User(TodoistObject):
         tasks_json = response.json()['items']
         tasks = []
         for task_json in tasks_json:
-            project_id = json['project_id']
+            project_id = task_json['project_id']
             project = self.get_project_with_id(project_id)
             tasks.append(Task(task_json, project))
         return tasks
@@ -618,7 +618,7 @@ class User(TodoistObject):
         """Return a list of all notification settings.
 
         :return: A JSON representation of the settings.
-        :rtype: string
+        :rtype: dict
         """
         response = API.get_notification_settings(self.token)
         _fail_if_contains_errors(response)
@@ -746,6 +746,7 @@ class Project(TodoistObject):
 
     def __init__(self, project_json, owner):
         self.id = None
+        self.name = None
         self.owner = owner
         super(Project, self).__init__(project_json)
 
