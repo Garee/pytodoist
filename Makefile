@@ -1,8 +1,8 @@
-.PHONY: test docs
+.PHONY: test docs pep8
 
 test:
-	python -m pytodoist.test.api
-	python -m pytodoist.test.todoist
+	python -m pytodoist.test.test_api
+	python -m pytodoist.test.test_todoist
 
 docs:
 	cd ./docs && $(MAKE) clean && $(MAKE) html
