@@ -31,7 +31,7 @@ def login(email, password):
     :param password: A Todoist user's password.
     :type password: str
     :return: The Todoist user.
-    :rtype: :mod:`pytodoist.todoist.User`
+    :rtype: :class:`pytodoist.todoist.User`
 
     >>> from pytodoist import todoist
     >>> user = todoist.login('john.doe@gmail.com', 'password')
@@ -51,7 +51,7 @@ def login_with_google(email, oauth2_token):
     :param oauth2_token: The oauth2 token associated with the email.
     :type oauth2_token: str
     :return: The Todoist user.
-    :rtype: :mod:`pytodoist.todoist.User`
+    :rtype: :class:`pytodoist.todoist.User`
 
     .. note:: It is up to you to obtain the valid oauth2 token.
 
@@ -72,7 +72,7 @@ def login_with_token(token):
     :param token: A Todoist user's secret token.
     :type token: str
     :return: The Todoist user.
-    :rtype: :mod:`pytodoist.todoist.User`
+    :rtype: :class:`pytodoist.todoist.User`
 
     >>> from pytodoist import todoist
     >>> token = 'mytoken' # Get the secret token.
@@ -108,7 +108,7 @@ def register(full_name, email, password, lang=None, timezone=None):
     :param timezone: The user's timezone.
     :type timezone: str
     :return: The Todoist user.
-    :rtype: :mod:`pytodoist.todoist.User`
+    :rtype: :class:`pytodoist.todoist.User`
 
     >>> from pytodoist import todoist
     >>> user = todoist.register('John Doe', 'john.doe@gmail.com', 'password')
@@ -139,7 +139,7 @@ def register_with_google(full_name, email, oauth2_token,
     :param timezone: The user's timezone.
     :type timezone: str
     :return: The Todoist user.
-    :rtype: :mod:`pytodoist.todoist.User`
+    :rtype: :class:`pytodoist.todoist.User`
 
     .. note:: It is up to you to obtain the valid oauth2 token.
 
@@ -163,7 +163,7 @@ def get_timezones():
     """Return a list of Todoist supported timezones.
 
     :return: A list of timezones
-    :rtype: list str
+    :rtype: list of str
 
     >>> from pytodoist import todoist
     >>> todoist.get_timezones()
@@ -201,20 +201,20 @@ class User(TodoistObject):
     :ivar join_date: The date the user joined Todoist.
     :ivar last_used_ip: The IP address of the computer last used to login.
     :ivar is_premium: Does the user have Todoist premium?
-    :ivar sort_order: The user's sort order. If it's ``0`` then show the oldest
-        dates first when viewing projects, otherwise oldest dates last.
+    :ivar sort_order: The user's sort order. If it's ``0`` then show the
+        oldest dates first when viewing projects, otherwise oldest dates last.
     :ivar api_token: The user's API token.
     :ivar shard_id: The user's shard ID.
     :ivar timezone: The user's chosen timezone.
     :ivar id: The ID of the user.
-    :ivar next_week: The new day to use when postponing ``(1-7, Mon-Sun)``.
+    :ivar next_week: The day to use when postponing ``(1-7, Mon-Sun)``.
     :ivar tz_offset: The user's timezone offset.
     :ivar email: The user's email address.
     :ivar start_day: The new first day of the week ``(1-7, Mon-Sun)``.
     :ivar is_dummy: Is this a real or a dummy user?
     :ivar inbox_project: The ID of the user's Inbox project.
-    :ivar time_format: The user's selected time_format. If ``0`` then show time
-        as ``13:00`` otherwise ``1pm``.
+    :ivar time_format: The user's selected time_format. If ``0`` then show
+    time as ``13:00`` otherwise ``1pm``.
     :ivar image_id: The ID of the user's avatar.
     :ivar beta: The user's beta status.
     :ivar premium_until: The date on which the premium status is revoked.
@@ -342,7 +342,7 @@ class User(TodoistObject):
         :param order: The project ordering.
         :type order: int
         :return: The project that was added.
-        :rtype: :mod:`pytodoist.todoist.Project`
+        :rtype: :class:`pytodoist.todoist.Project`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
@@ -360,7 +360,7 @@ class User(TodoistObject):
         """Return a list of a user's projects.
 
         :return: The user's projects.
-        :rtype: list :mod:`pytodoist.todoist.Project`
+        :rtype: list of :class:`pytodoist.todoist.Project`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
@@ -383,7 +383,7 @@ class User(TodoistObject):
         :type project_name: str
         :return: The project that has the name ``project_name`` or ``None``
             if no project is found.
-        :rtype: :mod:`pytodoist.todoist.Project`
+        :rtype: :class:`pytodoist.todoist.Project`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
@@ -399,11 +399,12 @@ class User(TodoistObject):
         """Return a list of a user's archived projects.
 
         :return: The user's archived projects.
-        :rtype: list :mod:`pytodoist.todoist.Project`
+        :rtype: list of :class:`pytodoist.todoist.Project`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> user.archive_project('PyTodoist')
+        >>> project = user.get_project('PyTodoist')
+        >>> project.archive()
         >>> projects = user.get_archived_projects()
         >>> for project in projects:
         ...    print project.name
@@ -424,7 +425,7 @@ class User(TodoistObject):
         :param project_id: The ID to search for.
         :type project_id: str
         :return: The project that has the ID ``project_id``.
-        :rtype: :mod:`pytodoist.todoist.Project`
+        :rtype: :class:`pytodoist.todoist.Project`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
@@ -442,7 +443,7 @@ class User(TodoistObject):
         """Update the order in which projects are displayed on Todoist.
 
         :param projects: A list of projects in the order to be displayed.
-        :type projects: list :mod:`pytodoist.todoist.Project`
+        :type projects: list :class:`pytodoist.todoist.Project`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
@@ -467,7 +468,7 @@ class User(TodoistObject):
         """Return all of a user's uncompleted tasks.
 
         :return: A list of uncompleted tasks.
-        :rtype: list :mod:`pytodoist.todoist.Task`
+        :rtype: list of :class:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
@@ -482,7 +483,7 @@ class User(TodoistObject):
         """Return all of a user's completed tasks.
 
         :return: A list of completed tasks.
-        :rtype: list :mod:`pytodoist.todoist.Task`
+        :rtype: list of :class:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
@@ -504,7 +505,7 @@ class User(TodoistObject):
         :type interval: str
         :return: A list of tasks that meet the search criteria. If the user
             does not have Todoist premium an empty list is returned.
-        :rtype: list :mod:`pytodoist.todoist.Task`
+        :rtype: list of :class:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
@@ -527,7 +528,7 @@ class User(TodoistObject):
         """Return all of a user's tasks, regardless of completion state.
 
         :return: A list of all of a user's tasks.
-        :rtype: list :mod:`pytodoist.todoist.Task`
+        :rtype: list of :class:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
@@ -542,12 +543,12 @@ class User(TodoistObject):
             `here <https://todoist.com/Help/timeQuery>`_.
 
         .. note:: A standard set of queries are available
-            in the :mod:`pytodoist.todoist.Query` class.
+            in the :class:`pytodoist.todoist.Query` class.
 
         :param queries: Return tasks that match at least one of these queries.
         :type queries: list str
         :return: A list tasks that match at least one query.
-        :rtype: list :mod:`pytodoist.todoist.Task`
+        :rtype: list of :class:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
@@ -581,7 +582,7 @@ class User(TodoistObject):
         :param label_name: The name to search for.
         :type label_name: str
         :return: A label that has a matching name or ``None`` if not found.
-        :rtype: :mod:`pytodoist.todoist.Label`
+        :rtype: :class:`pytodoist.todoist.Label`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
@@ -595,7 +596,7 @@ class User(TodoistObject):
         """Return a list of all of a user's labels.
 
         :return: A list of labels.
-        :rtype: list :mod:`pytodoist.todoist.Label`
+        :rtype: list of :class:`pytodoist.todoist.Label`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
@@ -613,7 +614,7 @@ class User(TodoistObject):
         :type name: str
         :param color: The color of the label.
         :type color: str
-        :rtype: :mod:`pytodoist.todoist.Label`
+        :rtype: :class:`pytodoist.todoist.Label`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
@@ -832,7 +833,7 @@ class Project(TodoistObject):
         :param priority: The priority of the task.
         :type priority: int
         :return: The added task.
-        :rtype: :mod:`pytodoist.todoist.Task`
+        :rtype: :class:`pytodoist.todoist.Task`
 
         .. note:: See `here <https://todoist.com/Help/timeInsert>`_
             for possible date strings.
@@ -854,7 +855,7 @@ class Project(TodoistObject):
         """Return all tasks in this project.
 
         :return: A list of all tasks in this project.
-        :rtype: list :mod:`pytodoist.todoist.Task`
+        :rtype: list of `:class:pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
@@ -873,7 +874,7 @@ class Project(TodoistObject):
         """Return a list of all uncompleted tasks in this project.
 
         :return: A list of all uncompleted tasks in this project.
-        :rtype: list :mod:`pytodoist.todoist.Task`
+        :rtype: list of :class:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
@@ -892,7 +893,7 @@ class Project(TodoistObject):
         """Return a list of all completed tasks in this project.
 
         :return: A list of all completed tasks in this project.
-        :rtype: list :mod:`pytodoist.todoist.Task`
+        :rtype: list of :class:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
@@ -912,7 +913,7 @@ class Project(TodoistObject):
         """Update the order in which tasks are displayed on Todoist.
 
         :param tasks: A list of tasks in the order to be displayed.
-        :type tasks: list :mod:`pytodoist.todoist.Task`
+        :type tasks: list :class:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
@@ -971,7 +972,7 @@ class Task(TodoistObject):
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('PyTodoist')
-        >>> task = user.add_task('Install PyTodoist.')
+        >>> task = project.add_task('Install PyTodoist.')
         >>> task.content = 'Install the latest version of PyTodoist.'
         ... # At this point Todoist still thinks the content is
         ... # 'Install PyTodoist.'
@@ -988,7 +989,7 @@ class Task(TodoistObject):
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('Homework')
-        >>> task = user.add_task('Read Chapter 4.')
+        >>> task = project.add_task('Read Chapter 4.')
         >>> task.delete()
         """
         task_ids = '[{id}]'.format(id=self.id)
@@ -1001,7 +1002,7 @@ class Task(TodoistObject):
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('PyTodoist')
-        >>> task = user.add_task('Install PyTodoist.')
+        >>> task = project.add_task('Install PyTodoist.')
         >>> task.complete()
         """
         task_ids = '[{id}]'.format(id=self.id)
@@ -1014,7 +1015,7 @@ class Task(TodoistObject):
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('PyTodoist')
-        >>> task = user.add_task('Install PyTodoist.')
+        >>> task = project.add_task('Install PyTodoist.')
         >>> task.uncomplete()
         """
         task_ids = '[{id}]'.format(id=self.id)
@@ -1027,12 +1028,12 @@ class Task(TodoistObject):
         :param content: The content of the note.
         :type content: str
         :return: The added note.
-        :rtype: :mod:`pytodoist.todoist.Note`
+        :rtype: :class:`pytodoist.todoist.Note`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('PyTodoist')
-        >>> task = user.add_task('Install Todoist.')
+        >>> task = project.add_task('Install Todoist.')
         >>> note = task.add_note('https://pypi.python.org/pypi')
         >>> print note.content
         https://pypi.python.org/pypi
@@ -1046,12 +1047,12 @@ class Task(TodoistObject):
         """Return all notes attached to this Task.
 
         :return: A list of all notes attached to this Task.
-        :rtype: list :mod:`pytodoist.todoist.Note`
+        :rtype: list of :class:`pytodoist.todoist.Note`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('PyTodoist')
-        >>> task = user.add_task('Install PyTodoist.')
+        >>> task = project.add_task('Install PyTodoist.')
         >>> task.add_note('https://pypi.python.org/pypi')
         >>> notes = task.get_notes()
         >>> len(notes)
@@ -1068,7 +1069,7 @@ class Task(TodoistObject):
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('PyTodoist')
-        >>> task = user.add_task('Install PyTodoist.', date='today')
+        >>> task = project.add_task('Install PyTodoist.', date='today')
         >>> task.due_date
         Sun 09 Mar 2014 19:54:01 +0000
         >>> task.advance_recurring_date()
@@ -1086,12 +1087,12 @@ class Task(TodoistObject):
         """Move this task to another project.
 
         :param project: The project to move the task to.
-        :type project: :mod:`pytodoist.todoist.Project`
+        :type project: :class:`pytodoist.todoist.Project`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('PyTodoist')
-        >>> task = user.add_task('Install PyTodoist.')
+        >>> task = project.add_task('Install PyTodoist.')
         >>> print task.project.name
         PyTodoist
         >>> inbox = user.get_project('Inbox')
@@ -1136,7 +1137,7 @@ class Note(TodoistObject):
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('Homework')
-        >>> task = user.add_task('Install PyTodoist.')
+        >>> task = project.add_task('Install PyTodoist.')
         >>> note = task.add_note('https://pypi.python.org/pypi')
         >>> note.content = 'https://pypi.python.org/pypi/pytodoist/0.5'
         ... # At this point Todoist still thinks the content is the old URL.
@@ -1153,7 +1154,7 @@ class Note(TodoistObject):
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('PyTodoist')
-        >>> task = user.add_task('Install PyTodoist.')
+        >>> task = project.add_task('Install PyTodoist.')
         >>> note = task.add_note('https://pypi.python.org/pypi')
         >>> note.delete()
         >>> notes = task.get_notes()

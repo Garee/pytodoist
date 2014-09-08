@@ -3,7 +3,7 @@ takes away any functionality that is provided by Todoist. It uses the
 popular requests package to provide a simple way in which to use the API in
 Python.
 
-For :mod:`requests.Response` documentation see here:
+For :class:`requests.Response` documentation see here:
 
     http://docs.python-requests.org/en/latest/api/#requests.Response
 
@@ -84,7 +84,7 @@ class TodoistAPI(object):
         :param password: The user's password.
         :type password: str
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain the user details.
         :on failure: ``response.text`` will contain ``"LOGIN_ERROR"``.
 
@@ -117,7 +117,7 @@ class TodoistAPI(object):
             user's IP address.
         :type timezone: str
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain the user details.
         :on failure: ``response.text`` will contain ``"LOGIN_ERROR"``,
             ``"INTERNAL_ERROR"``, ``"EMAIL_MISMATCH"`` or
@@ -144,7 +144,7 @@ class TodoistAPI(object):
         :param token: The user's login token.
         :type token: str
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.text`` will contain ``ok``.
         :on failure: ``response.status_code`` will be ``401``.
 
@@ -166,7 +166,7 @@ class TodoistAPI(object):
         """Return the timezones that Todoist supports.
 
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain the supported timezones.
 
         >>> from pytodoist.api import TodoistAPI
@@ -191,7 +191,7 @@ class TodoistAPI(object):
         :param timezone: The user's timezone.
         :type timezone: str
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain the user's details.
         :on failure: ``response.text`` will contain ``"ALREADY_REGISTRED"``,
             ``"TOO_SHORT_PASSWORD"``, ``"INVALID_EMAIL"``,
@@ -225,7 +225,7 @@ class TodoistAPI(object):
         :param in_background: If ``0``, delete the user instantly.
         :type in_background: int
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.text`` will contain ``"ok"``.
         :on failure: ``response.status_code`` will be ``403``.
 
@@ -273,7 +273,7 @@ class TodoistAPI(object):
             ``push`` for smart device notifications or ``no_default`` to
             turn off notifications.
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain the updated user details.
         :on failure: ``response.status_code`` will be ``400`` or
             ``response.text`` will contain ``"ERROR_EMAIL_FOUND"``.
@@ -305,7 +305,7 @@ class TodoistAPI(object):
         :param delete: If ``1``, delete the current avatar and use the default.
         :type delete: int
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain the updated user details.
         :on failure: ``response.text`` will contain ``"UNKNOWN_IMAGE_FORMAT"``,
             ``"UNABLE_TO_RESIZE_IMAGE"`` or ``"IMAGE_TOO_BIG"``.
@@ -337,7 +337,7 @@ class TodoistAPI(object):
         :param hash: The has part of the path to redirect the user's browser.
         :type hash: str
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain the redirect link.
 
         >>> from pytodoist.api import TodoistAPI
@@ -360,7 +360,7 @@ class TodoistAPI(object):
         :param token: The user's login token.
         :type token: str
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain a list of projects.
 
         >>> from pytodoist.api import TodoistAPI
@@ -388,7 +388,7 @@ class TodoistAPI(object):
         :param project_id: The ID of a project.
         :type project_id: str
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain the project details.
         :on failure: ``response.status_code`` will be ``400``.
 
@@ -428,7 +428,7 @@ class TodoistAPI(object):
         :param order: The order of the new project ``(1+)``.
         :type order: int
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain the project details.
         :on failure: ``response.text`` will contain ``"ERROR_NAME_IS_EMPTY"``.
 
@@ -466,7 +466,7 @@ class TodoistAPI(object):
         :param collapsed: If ``1``, collapse the project.
         :type collapsed: int
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain the updated details.
         :on failure: ``response.status_code`` will be ``400``.
 
@@ -505,7 +505,7 @@ class TodoistAPI(object):
         :param ordered_project_ids: An ordered list of project IDs.
         :type ordered_project_ids: str
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.text`` will contain ``"ok"``.
 
         >>> from pytodoist.api import TodoistAPI
@@ -533,7 +533,7 @@ class TodoistAPI(object):
         :param project_id: The ID of the project to delete.
         :type project_id: str
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.text`` will contain ``"ok"``.
 
         >>> from pytodoist.api import TodoistAPI
@@ -573,7 +573,7 @@ class TodoistAPI(object):
         :param project_id: The ID of the project to archive.
         :type project_id: str
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain a list of archived
             project IDs. e.g. ``[1234, 3435, 5235]``. The list will be empty
             if the user does not have Todoist premium.
@@ -603,7 +603,7 @@ class TodoistAPI(object):
         :param token: The user's login token.
         :type token: str
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain a list of archived
             project IDs. e.g. ``[1234, 3435, 5235]``.
 
@@ -630,7 +630,7 @@ class TodoistAPI(object):
         :param project_id: The ID of the project to unarchive.
         :type project_id: str
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain a list of unarchived
             project IDs. e.g. ``[1234, 3435, 5235]``. The list will be empty
             if the user does not have Todoist premium.
@@ -661,7 +661,7 @@ class TodoistAPI(object):
         :param as_list: If ``1``, return a list of label names only.
         :type as_list: int
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain a map of
             label name -> label details.
 
@@ -695,7 +695,7 @@ class TodoistAPI(object):
         :param color: The color of the label.
         :type color: int
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain the label details.
 
         >>> from pytodoist.api import TodoistAPI
@@ -724,7 +724,7 @@ class TodoistAPI(object):
         :param new_name: The new name of the label.
         :type new_name: str
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain the label details.
 
         >>> from pytodoist.api import TodoistAPI
@@ -758,7 +758,7 @@ class TodoistAPI(object):
         :param color: The new color of the label.
         :type color: int
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain the label details.
 
         >>> from pytodoist.api import TodoistAPI
@@ -790,7 +790,7 @@ class TodoistAPI(object):
         :param label_name: The name of the label.
         :type label_name: str
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.text`` will contain ``"ok"``.
 
         >>> from pytodoist.api import TodoistAPI
@@ -819,7 +819,7 @@ class TodoistAPI(object):
             otherwise ``Sun Apr 2007 23:59:59``.
         :type js_date: int
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain a list of tasks.
         :on failure: ``response.status_code`` will be ``400``.
 
@@ -860,7 +860,7 @@ class TodoistAPI(object):
             Defaults to ``past 2 weeks``.
         :type interval: str
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain a list of tasks. The list
             will be empty is the user does not have Todoist premium.
         :on failure: ``response.status_code`` will be ``400``.
@@ -889,7 +889,7 @@ class TodoistAPI(object):
             otherwise ``Sun Apr 2007 23:59:59``.
         :type js_date: int
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain a list of tasks.
         :on failure: ``response.status_code`` will be ``400``.
 
@@ -923,7 +923,7 @@ class TodoistAPI(object):
             otherwise ``Sun Apr 2007 23:59:59``.
         :type js_date: int
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain a list of tasks.
 
         >>> from pytodoist.api import TodoistAPI
@@ -989,7 +989,7 @@ class TodoistAPI(object):
         :param note: Content of a note to add.
         :type note: str
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain the task details.
         :on failure: ``response.status_code`` will be ``400`` or
             ``response.text`` will contain ``"ERROR_WRONG_DATE_SYNTAX"``
@@ -1049,7 +1049,7 @@ class TodoistAPI(object):
         :param note: Content of a note to add.
         :type note: str
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain the updated task details.
         :on failure: ``response.text`` will contain ``"ERROR_ITEM_NOT_FOUND"``
 
@@ -1085,7 +1085,7 @@ class TodoistAPI(object):
         :param task_ids: An ordered list of task IDs.
         :type task_ids: str
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.text`` will contain ``"ok"``
         :on failure: ``response.status_code`` will be ``400``
 
@@ -1124,7 +1124,7 @@ class TodoistAPI(object):
         :param project_id: The project to move the tasks to.
         :type project_id: str
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain the task counts of each
             project e.g. ``{"counts": {"1523": 0, "1245": 1}}``.
 
@@ -1158,7 +1158,7 @@ class TodoistAPI(object):
             otherwise ``Sun Apr 2007 23:59:59``.
         :type js_date: int
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain the list of updated
             tasks.
 
@@ -1188,7 +1188,7 @@ class TodoistAPI(object):
         :param task_ids: The IDs of the tasks to delete.
         :type task_ids: str
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.text`` will contain ``"ok"``.
 
         >>> from pytodoist.api import TodoistAPI
@@ -1220,7 +1220,7 @@ class TodoistAPI(object):
         :param in_history: If ``0``, tasks will not be moved to the history.
         :type in_history: int
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.text`` will contain ``"ok"``.
 
         >>> from pytodoist.api import TodoistAPI
@@ -1252,7 +1252,7 @@ class TodoistAPI(object):
         :param in_history: If ``0``, tasks will not be moved to the history.
         :type in_history: int
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.text`` will contain ``"ok"``.
 
         >>> from pytodoist.api import TodoistAPI
@@ -1284,7 +1284,7 @@ class TodoistAPI(object):
         :param note_content: The note to add.
         :type note_content: str
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain the note details.
 
         >>> from pytodoist.api import TodoistAPI
@@ -1316,7 +1316,7 @@ class TodoistAPI(object):
         :param new_content: The new note content.
         :type new_content: str
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.text`` will contain ``"ok"``.
 
         >>> from pytodoist.api import TodoistAPI
@@ -1353,7 +1353,7 @@ class TodoistAPI(object):
         :param note_id: The ID of the note to delete.
         :type note_id: str
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.text`` will contain ``"ok"``.
 
         >>> from pytodoist.api import TodoistAPI
@@ -1384,7 +1384,7 @@ class TodoistAPI(object):
         :param task_id: The ID of the task to get the notes from.
         :type task_id: str
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain a list of notes.
 
         >>> from pytodoist.api import TodoistAPI
@@ -1420,7 +1420,7 @@ class TodoistAPI(object):
             otherwise ``Sun Apr 2007 23:59:59``.
         :type js_date: int
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain a list of queries and
             the tasks that matched them.
 
@@ -1451,7 +1451,7 @@ class TodoistAPI(object):
         :param task_id: The ID of the task.
         :type task_id: str
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain the task and notes.
 
         >>> from pytodoist.api import TodoistAPI
@@ -1481,7 +1481,7 @@ class TodoistAPI(object):
         :param token: The user's login token.
         :type token: str
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain a list of settings.
 
         >>> from pytodoist.api import TodoistAPI
@@ -1514,7 +1514,7 @@ class TodoistAPI(object):
         :param should_notify: If ``0`` notify, otherwise do not.
         :type should_notify: int
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         :on success: ``response.text`` will contain ``"ok"``
 
         >>> from pytodoist.api import TodoistAPI
@@ -1540,7 +1540,7 @@ class TodoistAPI(object):
         and indicates a successful request.
 
         :param response: The response to check.
-        :type response: :mod:`requests.Response`
+        :type response: :class:`requests.Response`
         :return: True if the request was successful, false otherwise.
         :rtype: bool
 
@@ -1564,7 +1564,7 @@ class TodoistAPI(object):
         :param kwargs: Any optional parameters.
         :type kwargs: dict
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         """
         return self._request(requests.get, end_point, params, **kwargs)
 
@@ -1580,7 +1580,7 @@ class TodoistAPI(object):
         :param kwargs: Any optional parameters.
         :type kwargs: dict
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         """
         return self._request(requests.post, end_point, params, files, **kwargs)
 
@@ -1588,7 +1588,7 @@ class TodoistAPI(object):
         """Send a HTTP request to a Todoist API end-point.
 
         :param req_func: The request function to use e.g. get or post.
-        :type req_func: A request function from the :mod:`requests` module.
+        :type req_func: A request function from the :class:`requests` module.
         :param end_point: The Todoist API end-point.
         :type end_point: str
         :param params: The required request parameters.
@@ -1598,7 +1598,7 @@ class TodoistAPI(object):
         :param kwargs: Any optional parameters.
         :type kwargs: dict
         :return: The HTTP response to the request.
-        :rtype: :mod:`requests.Response`
+        :rtype: :class:`requests.Response`
         """
         url = self.URL + end_point
         if params and kwargs:
