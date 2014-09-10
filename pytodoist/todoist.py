@@ -194,48 +194,82 @@ class TodoistObject(object):
 class User(TodoistObject):
     """A Todoist User that has the following attributes:
 
+    :ivar id: The ID of the user.
+    :ivar email: The user's email address.
+    :ivar password: The user's password.
     :ivar full_name: The user's full name.
+    :ivar join_date: The date the user joined Todoist.
+    :ivar is_premium: Does the user have Todoist premium?
+    :ivar premium_until: The date on which the premium status is revoked.
+    :ivar timezone: The user's chosen timezone.
+    :ivar tz_offset: The user's timezone offset.
+    :ivar time_format: The user's selected time_format. If ``0`` then show
+        time as ``13:00`` otherwise ``1pm``.
+    :ivar date_format: The user's selected date format. If ``0`` show
+        dates as ``DD-MM-YYY`` otherwise ``MM-DD-YYYY``.
     :ivar start_page: The new start page. ``_blank``: for a blank page,
         ``_info_page`` for the info page, ``_project_$PROJECT_ID`` for a
         project page or ``$ANY_QUERY`` to show query results.
-    :ivar join_date: The date the user joined Todoist.
-    :ivar last_used_ip: The IP address of the computer last used to login.
-    :ivar is_premium: Does the user have Todoist premium?
+    :ivar start_day: The new first day of the week ``(1-7, Mon-Sun)``.
+    :ivar next_week: The day to use when postponing ``(1-7, Mon-Sun)``.
     :ivar sort_order: The user's sort order. If it's ``0`` then show the
         oldest dates first when viewing projects, otherwise oldest dates last.
-    :ivar api_token: The user's API token.
-    :ivar shard_id: The user's shard ID.
-    :ivar timezone: The user's chosen timezone.
-    :ivar id: The ID of the user.
-    :ivar next_week: The day to use when postponing ``(1-7, Mon-Sun)``.
-    :ivar tz_offset: The user's timezone offset.
-    :ivar email: The user's email address.
-    :ivar start_day: The new first day of the week ``(1-7, Mon-Sun)``.
-    :ivar is_dummy: Is this a real or a dummy user?
-    :ivar inbox_project: The ID of the user's Inbox project.
-    :ivar time_format: The user's selected time_format. If ``0`` then show
-    time as ``13:00`` otherwise ``1pm``.
-    :ivar image_id: The ID of the user's avatar.
-    :ivar beta: The user's beta status.
-    :ivar premium_until: The date on which the premium status is revoked.
     :ivar mobile_number: The user's mobile number.
     :ivar mobile_host: The host of the user's mobile.
-    :ivar password: The user's password.
-    :ivar has_push_reminders: Does this user have push reminders?
-    :ivar date_format: The user's selected date format. If ``0`` show
-        dates as ``DD-MM-YYY`` otherwise ``MM-DD-YYYY``.
+    :ivar business_account_id: The ID of the user's business account.
     :ivar karma: The user's karma.
     :ivar karma_trend: The user's karma trend.
-    :ivar token: The user's secret token.
-    :ivar seq_no: The user's sequence number.
+    :ivar has_push_reminders: Does the user have a push reminder enabled?
     :ivar default_reminder: ``email`` for email, ``mobile`` for SMS,
         ``push`` for smart device notifications or ``no_default`` to
         turn off notifications. Only for premium users.
+    :ivar inbox_project: The ID of the user's Inbox project.
+    :ivar team_inbox: The ID of the user's team Inbox project.
+    :ivar token: The user's secret token.
+    :ivar api_token: The user's API token.
+    :ivar shard_id: The user's shard ID.
+    :ivar seq_no: The user's sequence number.
+    :ivar beta: The user's beta status.
+    :ivar image_id: The ID of the user's avatar.
+    :ivar is_biz_admin: Is the user a business administrator?
+    :ivar last_used_ip: The IP address of the computer last used to login.
+    :ivar is_dummy: Is this a real or a dummy user?
     """
 
     def __init__(self, user_json):
-        self.token = None
+        self.id = None
+        self.email = None
         self.password = None
+        self.full_name = None
+        self.join_date = None
+        self.is_premium = None
+        self.premium_until = None
+        self.timezone = None
+        self.tz_offset = None
+        self.time_format = None
+        self.date_format = None
+        self.start_page = None
+        self.start_day = None
+        self.next_week = None
+        self.sort_order = None
+        self.mobile_number = None
+        self.mobile_host = None
+        self.business_account_id = None
+        self.karma = None
+        self.karma_trend = None
+        self.has_push_reminders = None
+        self.default_reminder = None
+        self.inbox_project = None
+        self.team_inbox = None
+        self.token = None
+        self.api_token = None
+        self.shard_id = None
+        self.seq_no = None
+        self.beta = None
+        self.image_id = None
+        self.is_biz_admin = None
+        self.last_used_ip = None
+        self.is_dummy = None
         super(User, self).__init__(user_json)
 
     def is_logged_in(self):
@@ -738,27 +772,39 @@ class User(TodoistObject):
 class Project(TodoistObject):
     """A Todoist Project with the following attributes:
 
-    :ivar user_id: The user ID of the owner.
+    :ivar id: The ID of the project.
     :ivar name: The name of the project.
     :ivar color: The color of the project.
-    :ivar is_deleted: Has this project been deleted?
     :ivar collapsed: Is this project collapsed?
-    :ivar cache_count: The cache count of the project.
-    :ivar inbox_project: Is this project the Inbox?
-    :ivar archived_date: The date on which the project was archived.
-    :ivar item_order: The task ordering.
-    :ivar indent: The indentation level of the project.
-    :ivar is_archived: Is this project archived?
-    :ivar archived_timestamp: The timestamp of the project archiving.
     :ivar owner: The owner of the project.
     :ivar last_updated: When the project was last updated.
-    :ivar id: The ID of the project.
+    :ivar user_id: The user ID of the owner.
+    :ivar cache_count: The cache count of the project.
+    :ivar item_order: The task ordering.
+    :ivar indent: The indentation level of the project.
+    :ivar is_deleted: Has this project been deleted?
+    :ivar is_archived: Is this project archived?
+    :ivar archived_date: The date on which the project was archived.
+    :ivar archived_timestamp: The timestamp of the project archiving.
+    :ivar inbox_project: Is this project the Inbox?
     """
 
     def __init__(self, project_json, owner):
         self.id = None
         self.name = None
+        self.color = None
+        self.collapsed = None
         self.owner = owner
+        self.last_updated = None
+        self.user_id = None
+        self.cache_count = None
+        self.item_order = None
+        self.indent = None
+        self.is_deleted = None
+        self.is_archived = None
+        self.archived_date = None
+        self.archived_timestamp = None
+        self.inbox_project = None
         super(Project, self).__init__(project_json)
 
     def delete(self):
@@ -854,7 +900,7 @@ class Project(TodoistObject):
     def get_tasks(self):
         """Return all tasks in this project.
 
-        :return: A list of all tasks in this project.
+        :return: A list of all tasks in this project.class
         :rtype: list of `:class:pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
@@ -931,36 +977,57 @@ class Project(TodoistObject):
 class Task(TodoistObject):
     """A Todoist Task with the following attributes:
 
-    :ivar is_archived: Is the task archived?
-    :ivar labels: A list of attached label names.
-    :ivar sync_id: The task sync ID.
-    :ivar in_history: Is the task in the task history?
-    :ivar date_added: The date the task was added.
-    :ivar children: A list of child tasks.
-    :ivar content: The task content.
-    :ivar checked: Is the task checked?
     :ivar id: The task ID.
-    :ivar priority: The task priority.
-    :ivar item_order: The task order.
-    :ivar project_id: The ID of the parent project.
+    :ivar content: The task content.
+    :ivar due_date: When is the task due?
+    :ivar due_date_utc: When is the task due (in UTC).
     :ivar date_string: How did the user enter the task? Could be every day
         or every day @ 10. The time should be shown when formating the date if
         @ OR at is found anywhere in the string.
-    :ivar due_date: When is the task due?
-    :ivar due_date_utc: When is the task due (in UTC).
-    :ivar assigned_by_uid: ID of the user who assigned the task.
-    :ivar responsible_uid: ID of the user who responsible for the task.
+    :ivar project: The parent project.
+    :ivar project_id: The ID of the parent project.
+    :ivar checked: Is the task checked?
+    :ivar priority: The task priority.
+    :ivar is_archived: Is the task archived?
+    :ivar indent: The task indentation level.
+    :ivar labels: A list of attached label names.
+    :ivar sync_id: The task sync ID.
+    :ivar in_history: Is the task in the task history?
+    :ivar user_id: The ID of the user who owns the task.
+    :ivar date_added: The date the task was added.
+    :ivar children: A list of child tasks.
+    :ivar item_order: The task order.
     :ivar collapsed: Is the task collapsed?
     :ivar has_notifications: Does the task have notifications?
-    :ivar indent: The task indentation level.
     :ivar is_deleted: Has the task been deleted?
-    :ivar user_id: The ID of the user who owns the task.
-    :ivar project: The parent project.
+    :ivar assigned_by_uid: ID of the user who assigned the task.
+    :ivar responsible_uid: ID of the user who responsible for the task.
     """
 
     def __init__(self, task_json, project):
         self.id = None
+        self.content = None
+        self.due_date = None
+        self.due_date_utc = None
+        self.date_string = None
         self.project = project
+        self.project_id = None
+        self.checked = None
+        self.priority = None
+        self.is_archived = None
+        self.indent = None
+        self.labels = None
+        self.sync_id = None
+        self.in_history = None
+        self.user_id = None
+        self.date_added = None
+        self.children = None
+        self.item_order = None
+        self.collapsed = None
+        self.has_notifications = None
+        self.is_deleted = None
+        self.assigned_by_uid = None
+        self.responsible_uid = None
         super(Task, self).__init__(task_json)
 
     def update(self):
@@ -1111,21 +1178,27 @@ class Task(TodoistObject):
 class Note(TodoistObject):
     """A Todoist note with the following attributes:
 
+    :ivar id: The note ID.
+    :ivar content: The note content.
+    :ivar item_id: The ID of the task it is attached to.
     :ivar task: The task it is attached to.
+    :ivar posted: The date/time the note was posted.
     :ivar is_deleted: Has the note been deleted?
     :ivar is_archived: Has the note been archived?
-    :ivar content: The note content.
     :ivar posted_uid: The ID of the user who attached the note.
-    :ivar item_id: The ID of the task it is attached to.
     :ivar uids_to_notify: List of user IDs to notify.
-    :ivar id: The note ID.
-    :ivar posted: The date/time the note was posted.
     """
 
     def __init__(self, note_json, task):
         self.id = None
         self.content = None
+        self.item_id = None
         self.task = task
+        self.posted = None
+        self.is_deleted = None
+        self.is_archived = None
+        self.posted_uid = None
+        self.uids_to_notify = None
         super(Note, self).__init__(note_json)
 
     def update(self):
@@ -1169,20 +1242,23 @@ class Note(TodoistObject):
 class Label(TodoistObject):
     """A Todoist label with the following attributes:
 
-    :ivar is_deleted: Has the label been deleted?
+    :ivar id: The ID of the label.
+    :ivar uid: The UID of the label.
     :ivar name: The label name.
     :ivar color: The color of the label.
     :ivar owner: The user who owns the label.
-    :ivar id: The ID of the label.
-    :ivar uid: The ID of user who owns the label.
+    :ivar is_deleted: Has the label been deleted?
     """
 
     def __init__(self, label_json, owner):
+        self.id = None
+        self.uid = None
         self.name = None
         self.color = None
         self.owner = owner
+        self.is_deleted = None
         super(Label, self).__init__(label_json)
-        self.id = self.name
+        self.name_id = self.name
 
     def update(self):
         """Update the label's details on Todoist.
@@ -1198,11 +1274,12 @@ class Label(TodoistObject):
         >>> label.update()
         ... # Now the name has been updated on Todoist.
         """
-        response = API.update_label_name(self.owner.token, self.id, self.name)
+        response = API.update_label_name(self.owner.token, self.name_id,
+                                         self.name)
         _fail_if_contains_errors(response)
-        self.id = self.name
+        self.name_id = self.name
         response = API.update_label_color(self.owner.token,
-                                          self.id, self.color)
+                                          self.name_id, self.color)
         _fail_if_contains_errors(response)
 
     def delete(self):
@@ -1213,7 +1290,7 @@ class Label(TodoistObject):
         >>> label = user.add_label('family')
         >>> label.delete()
         """
-        response = API.delete_label(self.owner.token, self.id)
+        response = API.delete_label(self.owner.token, self.name_id)
         _fail_if_contains_errors(response)
 
 

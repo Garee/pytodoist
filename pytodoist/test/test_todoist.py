@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+"""This module contains the unit tests for the pytodoist.todoist module."""
 import sys
 import unittest
 from pytodoist import todoist
@@ -15,6 +16,8 @@ _PROJECT_NAME = 'Project'
 _TASK = 'Task'
 _LABEL = 'Homework'
 _NOTE = 'Note'
+
+_INVALID_PROJECT_NAME = ''
 
 
 def _get_user():
@@ -116,7 +119,7 @@ class UserTest(unittest.TestCase):
         self.assertEqual(inbox.name, _INBOX_PROJECT_NAME)
 
     def test_get_project_failure(self):
-        project = self.user.get_project(None)
+        project = self.user.get_project(_INVALID_PROJECT_NAME)
         self.assertIsNone(project)
 
     def test_get_archived_projects(self):

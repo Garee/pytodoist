@@ -41,6 +41,7 @@ import requests
 _HTTP_OK = 200
 
 
+# noinspection PyDocstring
 class TodoistAPI(object):
     """A wrapper around the Todoist API.
 
@@ -315,7 +316,7 @@ class TodoistAPI(object):
         >>> response = api.login('john.doe@gmail.com', 'password')
         >>> user_info = response.json()
         >>> user_token = user_info['token']
-        >>> with open('/path/to/avatar.png', 'r') as image:
+        >>> with open('/path/to/avatar.png') as image:
         ...    api.update_avatar(user_token, image)
         """
         params = {
