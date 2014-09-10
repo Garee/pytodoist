@@ -25,7 +25,7 @@ Test
 ----
 This project uses Travis for continuous integration testing:
 
-     https://travis-ci.org/Garee/PyTodoist
+     https://travis-ci.org/Garee/pytodoist
 
 Run the unit tests locally:
 
