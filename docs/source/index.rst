@@ -9,12 +9,13 @@ Examples
 --------
 
 >>> from pytodoist import todoist
->>> user = todoist.register('John Doe', 'john.doe@gmail.com', 'passwd')
+>>> user = todoist.register('John Doe', 'john.doe@gmail.com', 'password')
 >>> user.is_logged_in()
 True
 >>> print user.full_name
 John Doe
->>> install_task = user.add_task('Install PyTodoist.')
+>>> inbox = user.get_project('Inbox')
+>>> install_task = inbox.add_task('Install PyTodoist')
 >>> uncompleted_tasks = user.get_uncompleted_tasks()
 >>> for task in uncompleted_tasks:
 ...     print task.content
