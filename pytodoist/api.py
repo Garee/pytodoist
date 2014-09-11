@@ -128,7 +128,8 @@ class TodoistAPI(object):
         >>> from pytodoist.api import TodoistAPI
         >>> api = TodoistAPI()
         >>> oauth2_token = 'oauth2_token'
-        >>> response = api.login_with_google('john.doe@gmail.com', oauth2_token)
+        >>> response = api.login_with_google('john.doe@gmail.com',
+        ...                                   oauth2_token)
         >>> user_info = response.json()
         >>> print(user_info['full_name'])
         John Doe
@@ -1605,5 +1606,3 @@ class TodoistAPI(object):
         if params and kwargs:
             params.update(kwargs)
         return req_func(url, params=params, files=files)
-
-
