@@ -13,8 +13,6 @@ setup(name='pytodoist',
       author_email='gary@garyblackwood.co.uk',
       url='http://www.github.com/Garee/pytodoist',
       packages=['pytodoist'],
-      install_requires=['requests'],
-      include_package_data=True,
       classifiers=(
           'Development Status :: 5 - Production/Stable',
           'Intended Audience :: Developers',
