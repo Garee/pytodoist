@@ -17,11 +17,11 @@ module.
 >>> api = TodoistAPI()
 >>> response = api.login('john.doe@gmail.com', 'password')
 >>> user_info = response.json()
->>> print user_info['full_name']
+>>> print((user_info['full_name']))
 John Doe
 >>> user_token = user_info['token']
 >>> response = api.ping(user_token)
->>> print response.status_code
+>>> print((response.status_code))
 200
 >>> response = api.add_task(user_token, 'Install PyTodoist')
 >>> install_task = response.json()
@@ -31,8 +31,8 @@ John Doe
 ...     response = api.get_uncompleted_tasks(user_token, project['id'])
 ...     uncompleted_tasks = response.json()
 ...     for task in uncompleted_tasks:
-...         print task['content']
-...
+...         print((task['content']))
+... 
 Install PyTodoist
 """
 import requests
@@ -41,14 +41,13 @@ import requests
 _HTTP_OK = 200
 
 
-# noinspection PyDocstring
 class TodoistAPI(object):
     """A wrapper around the Todoist API.
 
     >>> from pytodoist.api import TodoistAPI
     >>> api = TodoistAPI()
-    >>> api.URL
-    'https://todoist.com/API/'
+    >>> print((api.URL))
+    https://todoist.com/API/
     """
 
     URL = 'https://todoist.com/API/'
@@ -92,7 +91,7 @@ class TodoistAPI(object):
         >>> api = TodoistAPI()
         >>> response = api.login('john.doe@gmail.com', 'password')
         >>> user_info = response.json()
-        >>> print user_info['full_name']
+        >>> print((user_info['full_name']))
         John Doe
         """
         params = {
@@ -126,11 +125,10 @@ class TodoistAPI(object):
 
         >>> from pytodoist.api import TodoistAPI
         >>> api = TodoistAPI()
-        ... # Get the oauth2_token from Google.
-        >>> response = api.login_with_google('john.doe@gmail.com',
-                                              oauth2_token)
+        >>> oauth2_token = 'oauth2_token'
+        >>> response = api.login_with_google('john.doe@gmail.com', oauth2_token)
         >>> user_info = response.json()
-        >>> print user_info['full_name']
+        >>> print((user_info['full_name']))
         John Doe
         """
         params = {
@@ -155,7 +153,7 @@ class TodoistAPI(object):
         >>> user_info = response.json()
         >>> user_token = user_info['token']
         >>> response = api.ping(user_token)
-        >>> print response.text
+        >>> print((response.text))
         ok
         """
         params = {
@@ -173,7 +171,7 @@ class TodoistAPI(object):
         >>> from pytodoist.api import TodoistAPI
         >>> api = TodoistAPI()
         >>> response = api.get_timezones()
-        >>> print response.json()
+        >>> print((response.json()))
         [[u'US/Hawaii', u'(GMT-1000) Hawaii'], ...]
         """
         return self._get('getTimezones')
@@ -204,7 +202,7 @@ class TodoistAPI(object):
         >>> response = api.register('john.doe@gmail.com', 'John Doe',
         ...                         'password')
         >>> user_info = response.json()
-        >>> print user_info['full_name']
+        >>> print((user_info['full_name']))
         John Doe
         """
         params = {
@@ -236,7 +234,7 @@ class TodoistAPI(object):
         >>> user_info = response.json()
         >>> user_token = user_info['token']
         >>> response = api.delete_user(user_token, 'password')
-        >>> print response.text
+        >>> print((response.text))
         ok
         """
         params = {
@@ -283,7 +281,7 @@ class TodoistAPI(object):
         >>> api = TodoistAPI()
         >>> response = api.login('john.doe@gmail.com', 'password')
         >>> user_info = response.json()
-        >>> print user_info['full_name']
+        >>> print((user_info['full_name']))
         John Doe
         >>> user_token = user_info['token']
         >>> response = api.update_user(user_token, full_name='John Smith')
@@ -347,7 +345,7 @@ class TodoistAPI(object):
         >>> user_info = response.json()
         >>> user_token = user_info['token']
         >>> response = api.get_redirect_link(user_token)
-        >>> print response.json()['link']
+        >>> print((response.json()['link']))
         https://todoist.com/secureRedirect?path=adflk...
         """
         params = {
@@ -372,8 +370,8 @@ class TodoistAPI(object):
         >>> response = api.get_projects(user_token)
         >>> projects = response.json()
         >>> for project in projects:
-        ...     print project['name']
-        ...
+        ...     print((project['name']))
+        ... 
         Inbox
         """
         params = {
@@ -403,10 +401,10 @@ class TodoistAPI(object):
         >>> for project in projects:
         ...     if project['name'] == 'Inbox':
         ...         project_id = project['id']
-        ...
+        ... 
         >>> response = api.get_project(user_token, project_id)
         >>> project = response.json()
-        >>> print project['name']
+        >>> print((project['name']))
         Inbox
         """
         params = {
@@ -440,7 +438,7 @@ class TodoistAPI(object):
         >>> user_token = user_info['token']
         >>> response = api.add_project(user_token, 'PyTodoist')
         >>> project = response.json()
-        >>> print project['name']
+        >>> print((project['name']))
         PyTodoist
         """
         params = {
@@ -481,15 +479,15 @@ class TodoistAPI(object):
         >>> for project in projects:
         ...     if project['name'] == 'PyTodoist':
         ...         project_id = project['id']
-        ...
+        ... 
         >>> response = api.get_project(user_token, project_id)
         >>> project = response.json()
-        >>> print project['name']
+        >>> print((project['name']))
         PyTodoist
         >>> project_id = project['id']
         >>> response = api.update_project(user_token, project_id, name='Work')
         >>> project = response.json()
-        >>> print project['name']
+        >>> print((project['name']))
         Work
         """
         params = {
@@ -547,15 +545,15 @@ class TodoistAPI(object):
         >>> for project in projects:
         ...     if project['name'] == 'PyTodoist':
         ...         project_id = project['id']
-        ...
+        ... 
         >>> response = api.get_project(user_token, project_id)
         >>> project = response.json()
-        >>> print project['name']
+        >>> print((project['name']))
         PyTodoist
         >>> project_id = project['id']
         >>> api.delete_project(user_token, project_id)
         >>> response = api.get_project(user_token, project_id)
-        >>> print response.text
+        >>> print((response.text))
         "ERROR_PROJECT_NOT_FOUND"
         """
         params = {
@@ -589,7 +587,7 @@ class TodoistAPI(object):
         >>> for project in projects:
         ...     if project['name'] == 'PyTodoist':
         ...         project_id = project['id']
-        ...
+        ... 
         >>> response = api.archive_project(user_token, project_id)
         """
         params = {
@@ -645,7 +643,7 @@ class TodoistAPI(object):
         >>> for project in projects:
         ...     if project['name'] == 'PyTodoist':
         ...         project_id = project['id']
-        ...
+        ... 
         >>> response = api.unarchive_project(user_token, project_id)
         """
         params = {
@@ -673,10 +671,10 @@ class TodoistAPI(object):
         >>> user_token = user_info['token']
         >>> api.add_label(user_token, 'Python')
         >>> response = api.get_labels(user_token)
-        >>> labels = response.json().values()
+        >>> labels = list(response.json().values())
         >>> for label in labels:
-        ...     print label['name']
-        ...
+        ...     print((label['name']))
+        ... 
         Python
         """
         params = {
@@ -706,7 +704,7 @@ class TodoistAPI(object):
         >>> user_token = user_info['token']
         >>> response = api.add_label(user_token, 'Python')
         >>> label = response.json()
-        >>> print label['name']
+        >>> print((label['name']))
         Python
         """
         params = {
@@ -735,11 +733,11 @@ class TodoistAPI(object):
         >>> user_token = user_info['token']
         >>> response = api.add_label(user_token, 'Python')
         >>> label = response.json()
-        >>> print label['name']
+        >>> print((label['name']))
         Python
         >>> response = api.update_label_name(user_token, 'Python', 'Cobra')
         >>> label = response.json()
-        >>> print label['name']
+        >>> print((label['name']))
         Cobra
         """
         params = {
@@ -769,11 +767,11 @@ class TodoistAPI(object):
         >>> user_token = user_info['token']
         >>> response = api.add_label(user_token, 'Python')
         >>> label = response.json()
-        >>> print label['color']
+        >>> print((label['color']))
         0
         >>> response = api.update_label_name(user_token, 'football', color=1)
         >>> label = response.json()
-        >>> print label['color']
+        >>> print((label['color']))
         1
         """
         params = {
@@ -800,7 +798,7 @@ class TodoistAPI(object):
         >>> user_info = response.json()
         >>> user_token = user_info['token']
         >>> response = api.delete_label(user_token, 'Python')
-        >>> print response.text
+        >>> print((response.text))
         "ok"
         """
         params = {
@@ -835,7 +833,7 @@ class TodoistAPI(object):
         >>> for project in projects:
         ...     response = api.get_uncompleted_tasks(user_token, project['id'])
         ...     uncompleted_tasks.append(response.json())
-        ...
+        ... 
         """
         params = {
             'token': token,
@@ -855,11 +853,11 @@ class TodoistAPI(object):
         :param js_date: If ``1``: ``new Date("Sun Apr 29 2007 23:59:59")``,
             otherwise ``Sun Apr 2007 23:59:59``.
         :type js_date: int
-        :param label: Filter the tasks by label.
-        :type label: str
-        :param interval: Filter the tasks by time range.
-            Defaults to ``past 2 weeks``.
-        :type interval: str
+        :param limit: The maximum number of tasks to return (default ``30``).
+        :type limit: int
+        :param from_date: Return tasks with a completion date on or older than
+            from_date. Formatted as ``2007-4-29T10:13``.
+        :type from_date: str
         :return: The HTTP response to the request.
         :rtype: :class:`requests.Response`
         :on success: ``response.json()`` will contain a list of tasks. The list
@@ -905,7 +903,7 @@ class TodoistAPI(object):
         >>> for project in projects:
         ...     response = api.get_completed_tasks(user_token, project['id'])
         ...     completed_tasks.append(response.json())
-        ...
+        ... 
         """
         params = {
             'token': token,
@@ -937,14 +935,14 @@ class TodoistAPI(object):
         >>> for project in projects:
         ...     if project['name'] == 'PyTodoist':
         ...         project_id = project['id']
-        ...
+        ... 
         >>> task_ids = str([project_id])
         >>> response = api.get_tasks_by_id(user_token, task_ids)
         >>> tasks = response.json()
         >>> len(tasks)
         1
         >>> pytodoist_task = tasks[0]
-        >>> print pytodoist_task['name']
+        >>> print((pytodoist_task['name']))
         PyTodoist
         """
         params = {
@@ -1002,7 +1000,7 @@ class TodoistAPI(object):
         >>> user_token = user_info['token']
         >>> response = api.add_task(user_token, 'Install PyTodoist')
         >>> task = response.json()
-        >>> print task['content']
+        >>> print((task['content']))
         Install PyTodoist
         """
         params = {
@@ -1061,13 +1059,13 @@ class TodoistAPI(object):
         >>> user_token = user_info['token']
         >>> response = api.add_task(user_token, 'Install PyTodoist')
         >>> task = response.json()
-        >>> print task['content']
+        >>> print((task['content']))
         Install PyTodoist
         >>> task_id = task['id']
         >>> response = api.update_task(user_token, task_id,
-                                       content='Read Docs')
+        ...                            content='Read Docs')
         >>> task = response.json()
-        >>> print task['content']
+        >>> print((task['content']))
         Read Docs
         """
         params = {
@@ -1100,7 +1098,7 @@ class TodoistAPI(object):
         >>> for project in projects:
         ...     if project['name'] == 'Inbox':
         ...         project_id = project['id']
-        ...
+        ... 
         >>> response = api.get_uncompleted_tasks(user_token, project_id)
         >>> tasks = response.json()
         >>> task_ids = [task['id'] for task in tasks]
@@ -1134,10 +1132,10 @@ class TodoistAPI(object):
         >>> response = api.login('john.doe@gmail.com', 'password')
         >>> user_info = response.json()
         >>> user_token = user_info['token']
-        >>> task_locations = '{'1534': ['23453']}'
+        >>> task_locations = "{'1534': ['23453']}"
         >>> project_id = '1234'
         >>> response = api.move_tasks(user_token, task_locations, project_id)
-        >>> print response.json()
+        >>> print((response.json()))
         {"counts": {"1534": 0, "1245": 1}}
         """
         params = {
@@ -1172,7 +1170,7 @@ class TodoistAPI(object):
         >>> task_ids = '[1234, 5678]'
         >>> response = api.advance_recurring_dates(user_token, task_ids)
         >>> tasks = response.json()
-        >>> len(tasks)
+        >>> print((len(tasks)))
         1
         """
         params = {
@@ -1202,7 +1200,7 @@ class TodoistAPI(object):
         >>> task_id = task['id']
         >>> task_ids = str([task_id])
         >>> response = api.delete_tasks(user_token, task_ids)
-        >>> print response.text
+        >>> print((response.text))
         "ok"
         """
         params = {
@@ -1234,7 +1232,7 @@ class TodoistAPI(object):
         >>> task_id = task['id']
         >>> task_ids = str([task_id])
         >>> response = api.complete_tasks(user_token, task_ids)
-        >>> print response.text
+        >>> print((response.text))
         "ok"
         """
         params = {
@@ -1266,7 +1264,7 @@ class TodoistAPI(object):
         >>> task_id = task['id']
         >>> task_ids = str([task_id])
         >>> response = api.complete_tasks(user_token, task_ids)
-        >>> print response.text
+        >>> print((response.text))
         "ok"
         """
         params = {
@@ -1297,7 +1295,7 @@ class TodoistAPI(object):
         >>> task = response.json()
         >>> response = api.add_note(user_token, task['id'], 'Do it now!')
         >>> note = response.json()
-        >>> print note['content']
+        >>> print((note['content']))
         Do it now!
         """
         params = {
@@ -1329,12 +1327,12 @@ class TodoistAPI(object):
         >>> task = response.json()
         >>> response = api.add_note(user_token, task['id'], 'Do it now!')
         >>> note = response.json()
-        >>> print note['content']
+        >>> print((note['content']))
         Do it now!
         >>> note_id = note['id']
         >>> response = api.update_note(user_token, note_id, 'Hurry up!')
         >>> note = response.json()
-        >>> print note['content']
+        >>> print((note['content']))
         Hurry up!
         """
         params = {
@@ -1367,7 +1365,7 @@ class TodoistAPI(object):
         >>> response = api.add_note(user_token, task['id'], 'Do it now!')
         >>> note = response.json()
         >>> response = api.delete_note(user_token, task['id'], note['id'])
-        >>> print response.text
+        >>> print((response.text))
         "ok"
         """
         params = {
@@ -1435,7 +1433,7 @@ class TodoistAPI(object):
         >>> queries = str(['tomorrow'])
         >>> response = api.search_tasks(user_token, queries, as_count=1)
         >>> counts = response.json()
-        >>> print counts
+        >>> print(counts)
         [{"count": 0, "query": "tomorrow", "type": "date"}]
         """
         params = {
@@ -1467,7 +1465,7 @@ class TodoistAPI(object):
         >>> results = response.json()
         >>> task = results['item']
         >>> notes = results['notes']
-        >>> print len(notes)
+        >>> print((len(notes)))
         1
         """
         params = {
@@ -1491,7 +1489,7 @@ class TodoistAPI(object):
         >>> user_info = response.json()
         >>> user_token = user_info['token']
         >>> response = api.get_notification_settings(user_token)
-        >>> print response.json()
+        >>> print((response.json()))
         {u'user_left_project':
             {u'notify_push': True, u'notify_email': False},
             ...
@@ -1526,7 +1524,7 @@ class TodoistAPI(object):
         >>> response = api.update_notification_settings(user_token,
         ...                                             'user_left_project',
         ...                                             'email', 0)
-        ...
+        ... 
         """
         params = {
             'token': token,
@@ -1549,7 +1547,7 @@ class TodoistAPI(object):
         >>> api = TodoistAPI()
         >>> response = api.login('john.doe@gmail.com', 'password')
         >>> is_successful_request = api.is_response_success(response)
-        >>> print is_successful_request
+        >>> print(is_successful_request)
         True
         """
         return (response.status_code == _HTTP_OK and
@@ -1605,3 +1603,5 @@ class TodoistAPI(object):
         if params and kwargs:
             params.update(kwargs)
         return req_func(url, params=params, files=files)
+
+

@@ -54,13 +54,13 @@ class UserTest(unittest.TestCase):
         with self.assertRaises(todoist.RequestError):
             todoist.login('', '')
 
-    def test_login_with_token_success(self):
-        user = todoist.login_with_token(self.user.token)
+    def test_login_with_api_token_success(self):
+        user = todoist.login_with_api_token(self.user.api_token)
         self.assertTrue(user.is_logged_in())
 
-    def test_login_with_token_failure(self):
+    def test_login_with_api_token_failure(self):
         with self.assertRaises(todoist.RequestError):
-            todoist.login_with_token('')
+            todoist.login_with_api_token('')
 
     def test_is_logged_in(self):
         self.user.token = None
@@ -160,9 +160,9 @@ class UserTest(unittest.TestCase):
 
     def test_search_completed_tasks(self):
         inbox = self.user.get_project(_INBOX_PROJECT_NAME)
-        task = inbox.add_task(_TASK + ' @' + _LABEL)
+        task = inbox.add_task(_TASK)
         task.complete()
-        tasks = self.user.search_completed_tasks(label_name=_LABEL)
+        tasks = self.user.search_completed_tasks(limit=1)
         # self.assertEqual(len(tasks), 1)  # Requires premium.
         self.assertEqual(len(tasks), 0)
 

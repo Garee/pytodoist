@@ -8,10 +8,11 @@ you can interact with Todoist in a straightforward manner.
 >>> user = todoist.register('John Doe', 'john.doe@gmail.com', 'password')
 >>> user.is_logged_in()
 True
->>> install_task = user.add_task('Install PyTodoist.')
+>>> inbox = user.get_project('Inbox')
+>>> install_task = inbox.add_task('Install PyTodoist')
 >>> uncompleted_tasks = user.get_uncompleted_tasks()
 >>> for task in uncompleted_tasks:
-...     print task.content
+...     print(task.content)
 ...
 Install PyTodoist
 >>> install_task.complete()
@@ -35,8 +36,8 @@ def login(email, password):
 
     >>> from pytodoist import todoist
     >>> user = todoist.login('john.doe@gmail.com', 'password')
-    >>> print user.full_name
-    John Doe
+    >>> print(user.is_logged_in())
+    True
     """
     user = _login(API.login, email, password)
     user.password = password
@@ -46,7 +47,7 @@ def login(email, password):
 def login_with_google(email, oauth2_token):
     """Login to Todoist using Google oauth2 authentication.
 
-    :param email: A Todoist user's email address.
+    :param email: A Todoist user's Google email address.
     :type email: str
     :param oauth2_token: The oauth2 token associated with the email.
     :type oauth2_token: str
@@ -56,37 +57,36 @@ def login_with_google(email, oauth2_token):
     .. note:: It is up to you to obtain the valid oauth2 token.
 
     >>> from pytodoist import todoist
-    >>> oauth2_token = "mytoken" # Get the oauth2 token.
+    >>> oauth2_token = 'oauth2_token'
     >>> user = todoist.login_with_google('john.doe@gmail.com', oauth2_token)
-    >>> print user.full_name
-    John Doe
+    >>> print(user.is_logged_in())
+    True
     """
     return _login(API.login_with_google, email, oauth2_token)
 
 
-def login_with_token(token):
-    """Login to Todoist using a user's secret token.
+def login_with_api_token(api_token):
+    """Login to Todoist using a user's api token.
 
-    .. note:: It is up to you to obtain the secret token.
+    .. note:: It is up to you to obtain the api token.
 
-    :param token: A Todoist user's secret token.
-    :type token: str
+    :param api_token: A Todoist user's api token.
+    :type api_token: str
     :return: The Todoist user.
     :rtype: :class:`pytodoist.todoist.User`
 
     >>> from pytodoist import todoist
-    >>> token = 'mytoken' # Get the secret token.
-    >>> user = todoist.login_with_token(token)
-    >>> print user.full_name
-    John Doe
+    >>> api_token = 'api_token'
+    >>> user = todoist.login_with_api_token(api_token)
+    >>> print(user.is_logged_in())
+    True
     """
-    return _login(API.update_user, token)
+    return _login(API.update_user, api_token)
 
 
 def _login(login_func, *args):
-    """A helper function for logging in.
-
-    It's purpose is to avoid duplicate code in login and login_with_google.
+    """A helper function for logging in. It's purpose is to avoid duplicate
+    code in the login functions.
     """
     response = login_func(*args)
     _fail_if_contains_errors(response)
@@ -112,7 +112,7 @@ def register(full_name, email, password, lang=None, timezone=None):
 
     >>> from pytodoist import todoist
     >>> user = todoist.register('John Doe', 'john.doe@gmail.com', 'password')
-    >>> user.is_logged_in()
+    >>> print(user.is_logged_in())
     True
     """
     response = API.register(email, full_name, password,
@@ -144,10 +144,10 @@ def register_with_google(full_name, email, oauth2_token,
     .. note:: It is up to you to obtain the valid oauth2 token.
 
     >>> from pytodoist import todoist
-    >>> oauth2_token = 'mytoken' # Get the oauth2 token.
+    >>> oauth2_token = 'oauth2_token'
     >>> user = todoist.register_with_google('John Doe', 'john.doe@gmail.com',
     ...                                      oauth2_token)
-    >>> user.is_logged_in()
+    >>> print(user.is_logged_in())
     True
     """
     response = API.login_with_google(email, oauth2_token, auto_signup=1,
@@ -166,7 +166,7 @@ def get_timezones():
     :rtype: list of str
 
     >>> from pytodoist import todoist
-    >>> todoist.get_timezones()
+    >>> print(todoist.get_timezones())
     [u'US/Hawaii', u'US/Alaska', u'US/Pacific', u'US/Arizona, ...]
     """
     response = API.get_timezones()
@@ -282,10 +282,10 @@ class User(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> user.is_logged_in()
+        >>> print(user.is_logged_in())
         True
         >>> user.delete()
-        >>> user.is_logged_in()
+        >>> print(user.is_logged_in())
         False
         """
         if not self.token:
@@ -358,6 +358,11 @@ class User(TodoistObject):
 
         :return: The user's redirect link.
         :rtype: str
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> print(user.get_redirect_link())
+        https://todoist.com/secureRedirect?path=%2Fapp&token ...
         """
         response = API.get_redirect_link(self.token)
         _fail_if_contains_errors(response)
@@ -381,7 +386,7 @@ class User(TodoistObject):
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.add_project('PyTodoist')
-        >>> print project.name
+        >>> print(project.name)
         PyTodoist
         """
         response = API.add_project(self.token, name,
@@ -401,7 +406,7 @@ class User(TodoistObject):
         >>> user.add_project('PyTodoist')
         >>> projects = user.get_projects()
         >>> for project in projects:
-        ...    print project.name
+        ...    print(project.name)
         Inbox
         PyTodoist
         """
@@ -421,8 +426,8 @@ class User(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> inbox = user.get_project('Inbox')
-        >>> print inbox.name
+        >>> project = user.get_project('Inbox')
+        >>> print(project.name)
         Inbox
         """
         for project in self.get_projects():
@@ -441,7 +446,7 @@ class User(TodoistObject):
         >>> project.archive()
         >>> projects = user.get_archived_projects()
         >>> for project in projects:
-        ...    print project.name
+        ...    print(project.name)
         PyTodoist
         """
         response = API.get_archived_projects(self.token)
@@ -465,7 +470,7 @@ class User(TodoistObject):
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> inbox = user.get_project('Inbox')
         >>> project = user.get_project_with_id(inbox.id)
-        >>> print project.name
+        >>> print(project.name)
         Inbox
         """
         response = API.get_project(self.token, project_id)
@@ -483,14 +488,14 @@ class User(TodoistObject):
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> projects = user.get_projects()
         >>> for project in projects:
-        ...    print project.name
+        ...    print(project.name)
         PyTodoist
         Homework
         >>> rev_projects = projects[::-1]
         >>> user.update_project_orders(rev_projects)
         >>> projects = user.get_projects()
         >>> for project in projects:
-        ...    print project.name
+        ...    print(project.name)
         Homework
         PyTodoist
         """
@@ -528,27 +533,28 @@ class User(TodoistObject):
         tasks = (p.get_completed_tasks() for p in self.get_projects())
         return list(itertools.chain.from_iterable(tasks))
 
-    def search_completed_tasks(self, label_name=None, interval=None):
+    def search_completed_tasks(self, limit=None, from_date=None):
         """Return a filtered list of a user's completed tasks.
 
         .. warning:: Requires the user to have Todoist premium.
 
-        :param label_name: Only return tasks with this label.
-        :type label_name: str
-        :param interval: Only return tasks completed this time period.
-        :type interval: str
+        :param limit: The maximum number of tasks to return (default ``30``).
+        :type limit: int
+        :param from_date: Return tasks with a completion date on or older than
+            from_date. Formatted as ``2007-4-29T10:13``.
+        :type from_date: str
         :return: A list of tasks that meet the search criteria. If the user
             does not have Todoist premium an empty list is returned.
         :rtype: list of :class:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> completed_tasks = user.search_completed_tasks(label_name='family')
+        >>> completed_tasks = user.search_completed_tasks(limit=5)
         >>> for task in completed_tasks:
         ...     task.uncomplete()
         """
-        response = API.get_all_completed_tasks(self.token, label=label_name,
-                                               interval=interval)
+        response = API.get_all_completed_tasks(self.token, limit=limit,
+                                               from_date=from_date)
         _fail_if_contains_errors(response)
         tasks_json = response.json()['items']
         tasks = []
@@ -638,7 +644,7 @@ class User(TodoistObject):
         """
         response = API.get_labels(self.token)
         _fail_if_contains_errors(response)
-        labels_json = response.json().values()
+        labels_json = list(response.json().values())
         return [Label(label_json, self) for label_json in labels_json]
 
     def add_label(self, name, color=None):
@@ -696,7 +702,7 @@ class User(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> user.is_email_notified_when(todoist.Event.NOTE_ADDED)
+        >>> print(user.is_email_notified_when(todoist.Event.NOTE_ADDED))
         True
         """
         notification_settings = self._get_notification_settings()
@@ -714,7 +720,7 @@ class User(TodoistObject):
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> user.is_push_notified_when(todoist.Event.NOTE_ADDED)
+        >>> print(user.is_push_notified_when(todoist.Event.NOTE_ADDED))
         True
         """
         notification_settings = self._get_notification_settings()
@@ -887,9 +893,9 @@ class Project(TodoistObject):
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('PyTodoist')
-        >>> task = project.add_task('Install PyTodoist.')
-        >>> print task.content
-        Install PyTodoist.
+        >>> task = project.add_task('Install PyTodoist')
+        >>> print(task.content)
+        Install PyTodoist
         """
         response = API.add_task(self.owner.token, content, project_id=self.id,
                                 date_string=date, priority=priority)
@@ -906,12 +912,12 @@ class Project(TodoistObject):
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('PyTodoist')
-        >>> project.add_task('Install PyTodoist.')
+        >>> project.add_task('Install PyTodoist')
         >>> project.add_task('Have fun!')
         >>> tasks = project.get_tasks()
         >>> for task in tasks:
-        ...    print task.content
-        Install PyTodoist.
+        ...    print(task.content)
+        Install PyTodoist
         Have fun!
         """
         return self.get_uncompleted_tasks() + self.get_completed_tasks()
@@ -925,7 +931,7 @@ class Project(TodoistObject):
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('PyTodoist')
-        >>> project.add_task('Install PyTodoist.')
+        >>> project.add_task('Install PyTodoist')
         >>> uncompleted_tasks = project.get_uncompleted_tasks()
         >>> for task in uncompleted_tasks:
         ...    task.complete()
@@ -944,7 +950,7 @@ class Project(TodoistObject):
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('PyTodoist')
-        >>> task = project.add_task('Install PyTodoist.')
+        >>> task = project.add_task('Install PyTodoist')
         >>> task.complete()
         >>> completed_tasks = project.get_completed_tasks()
         >>> for task in completed_tasks:
@@ -1039,10 +1045,10 @@ class Task(TodoistObject):
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('PyTodoist')
-        >>> task = project.add_task('Install PyTodoist.')
-        >>> task.content = 'Install the latest version of PyTodoist.'
+        >>> task = project.add_task('Install PyTodoist')
+        >>> task.content = 'Install the latest version of PyTodoist'
         ... # At this point Todoist still thinks the content is
-        ... # 'Install PyTodoist.'
+        ... # 'Install PyTodoist'
         >>> task.update()
         ... # Now the content has been updated on Todoist.
         """
@@ -1056,7 +1062,7 @@ class Task(TodoistObject):
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('Homework')
-        >>> task = project.add_task('Read Chapter 4.')
+        >>> task = project.add_task('Read Chapter 4')
         >>> task.delete()
         """
         task_ids = '[{id}]'.format(id=self.id)
@@ -1069,7 +1075,7 @@ class Task(TodoistObject):
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('PyTodoist')
-        >>> task = project.add_task('Install PyTodoist.')
+        >>> task = project.add_task('Install PyTodoist')
         >>> task.complete()
         """
         task_ids = '[{id}]'.format(id=self.id)
@@ -1082,7 +1088,7 @@ class Task(TodoistObject):
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('PyTodoist')
-        >>> task = project.add_task('Install PyTodoist.')
+        >>> task = project.add_task('Install PyTodoist')
         >>> task.uncomplete()
         """
         task_ids = '[{id}]'.format(id=self.id)
@@ -1102,7 +1108,7 @@ class Task(TodoistObject):
         >>> project = user.get_project('PyTodoist')
         >>> task = project.add_task('Install Todoist.')
         >>> note = task.add_note('https://pypi.python.org/pypi')
-        >>> print note.content
+        >>> print(note.content)
         https://pypi.python.org/pypi
         """
         response = API.add_note(self.project.owner.token, self.id, content)
@@ -1122,7 +1128,7 @@ class Task(TodoistObject):
         >>> task = project.add_task('Install PyTodoist.')
         >>> task.add_note('https://pypi.python.org/pypi')
         >>> notes = task.get_notes()
-        >>> len(notes)
+        >>> print(len(notes))
         1
         """
         response = API.get_notes(self.project.owner.token, self.id)
@@ -1136,11 +1142,11 @@ class Task(TodoistObject):
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('PyTodoist')
-        >>> task = project.add_task('Install PyTodoist.', date='today')
-        >>> task.due_date
+        >>> task = project.add_task('Install PyTodoist', date='today')
+        >>> print(task.due_date)
         Sun 09 Mar 2014 19:54:01 +0000
         >>> task.advance_recurring_date()
-        >>> task.due_date
+        >>> print(task.due_date)
         Sun 10 Mar 2014 19:54:01 +0000
         """
         task_ids = '[{id}]'.format(id=self.id)
@@ -1159,12 +1165,12 @@ class Task(TodoistObject):
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('PyTodoist')
-        >>> task = project.add_task('Install PyTodoist.')
-        >>> print task.project.name
+        >>> task = project.add_task('Install PyTodoist')
+        >>> print(task.project.name)
         PyTodoist
         >>> inbox = user.get_project('Inbox')
         >>> task.move(inbox)
-        >>> print task.project.name
+        >>> print(task.project.name)
         Inbox
         """
         current_pos = '{{"{p_id}":["{t_id}"]}}'.format(p_id=self.project.id,
@@ -1212,7 +1218,7 @@ class Note(TodoistObject):
         >>> project = user.get_project('Homework')
         >>> task = project.add_task('Install PyTodoist.')
         >>> note = task.add_note('https://pypi.python.org/pypi')
-        >>> note.content = 'https://pypi.python.org/pypi/pytodoist/0.5'
+        >>> note.content = 'https://pypi.python.org/pypi/pytodoist'
         ... # At this point Todoist still thinks the content is the old URL.
         >>> note.update()
         ... # Now the content has been updated on Todoist.
@@ -1231,7 +1237,7 @@ class Note(TodoistObject):
         >>> note = task.add_note('https://pypi.python.org/pypi')
         >>> note.delete()
         >>> notes = task.get_notes()
-        >>> len(notes)
+        >>> print(len(notes))
         0
         """
         response = API.delete_note(self.task.project.owner.token,
@@ -1379,25 +1385,6 @@ class Event(object):
     SHARE_INVITATION_REJECTED = 'share_invitation_rejected'
     SHARE_NOTIFICATION_ACCEPTED = 'share_notification_accepted'
     NOTE_ADDED = 'note_added'
-
-
-class Interval(object):
-    """This class acts as an easy way to specify Todoist intervals.
-
-    >>> from pytodoist import todoist
-    >>> user = todoist.login('john.doe@gmail.com', 'password')
-    >>> tasks = user.search_completed_tasks(interval=todoist.Interval.ALL)
-
-    The supported intervals:
-        * PAST_2_WEEKS
-        * PAST_MONTH
-        * PAST_6_MONTHS
-        * ALL
-    """
-    PAST_2_WEEKS = 'past 2 weeks'
-    PAST_MONTH = 'past month'
-    PAST_6_MONTHS = 'past 6 months'
-    ALL = 'all'
 
 
 class Query(object):
