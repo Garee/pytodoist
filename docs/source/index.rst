@@ -35,7 +35,7 @@ To install a specific version:
 
 .. code-block:: bash
 
-   $ pip install pytodoist==0.5
+   $ pip install pytodoist==1.0.0
 
 To install from source:
 
