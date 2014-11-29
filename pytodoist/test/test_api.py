@@ -6,7 +6,7 @@ import unittest
 from pytodoist.api import TodoistAPI
 
 # No magic numbers
-_N_DEFAULT_PROJECTS = 8
+_N_DEFAULT_PROJECTS = 6
 _N_DEFAULT_LABELS = 0
 
 # Constants for testing invalid input

@@ -5,7 +5,7 @@ import sys
 import unittest
 from pytodoist import todoist
 
-N_DEFAULT_PROJECTS = 8
+N_DEFAULT_PROJECTS = 6
 
 _USER_NAME = "Py Todoist"
 _USER_EMAIL = "pytodoist.test.email@gmail.com"
