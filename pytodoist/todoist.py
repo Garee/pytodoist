@@ -907,7 +907,7 @@ class Project(TodoistObject):
         """Return all tasks in this project.
 
         :return: A list of all tasks in this project.class
-        :rtype: list of `:class:pytodoist.todoist.Task`
+        :rtype: list of :class:`pytodoist.todoist.Task`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
