@@ -14,14 +14,14 @@
 
 import sys
 import os
-import pytodoist
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
-sys.path.append('..')
-sys.path.append('/home/gary/.virtualenvs/pytodoist/lib/python2.7/site-packages/')
+sys.path.append('../..')
+
+import pytodoist
 
 # -- General configuration ------------------------------------------------
 

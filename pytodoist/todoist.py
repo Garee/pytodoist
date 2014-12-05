@@ -600,7 +600,7 @@ class User(TodoistObject):
         query_results = response.json()
         tasks = []
         for result in query_results:
-            if not 'data' in result:
+            if 'data' not in result:
                 continue
             all_tasks = result['data']
             if result['type'] == Query.ALL:
