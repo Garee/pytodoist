@@ -1,6 +1,8 @@
 PyTodoist
 =========
 
+**PyTodoist** is a Python package for interacting with `Todoist <http://www.todoist.com>`_. It hides the underlying API calls with higher-level abstractions that make it easy to use Todoist with Python.
+
 .. image:: https://pypip.in/py_versions/pytodoist/badge.svg
     :target: https://pypi.python.org/pypi/pytodoist
 
@@ -16,7 +18,7 @@ PyTodoist
 .. image:: https://pypip.in/status/pytodoist/badge.svg
     :target: https://pypi.python.org/pypi/pytodoist
 
-**PyTodoist** is a Python package for interacting with `Todoist <http://www.todoist.com>`_. It hides the underlying API calls with higher-level abstractions that make it easy to use Todoist with Python.
+|
 
 Quick Start
 -----------
