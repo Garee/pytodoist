@@ -4,7 +4,7 @@ PyTodoist |release| Documentation
 .. toctree::
    :maxdepth: 2
 
-   readme
+   pytodoist
    modules
    contribute
    credits
