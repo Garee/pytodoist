@@ -1,7 +1,13 @@
 language: python
+
 python:
   - "3.4"
+
+before_install:
+  - "curl -X POST http://readthedocs.org/build/pytodoist"
+
 install:
   - "pip install flake8 --use-mirrors"
   - "pip install -r requirements.txt --use-mirrors"
+
 script: make test
