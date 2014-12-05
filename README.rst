@@ -1,8 +1,6 @@
 PyTodoist
 =========
 
-**PyTodoist** is a Python package for interacting with `Todoist <http://www.todoist.com>`_. It hides the underlying API calls with higher-level abstractions that make it easy to use Todoist with Python.
-
 .. image:: https://pypip.in/py_versions/pytodoist/badge.svg
     :target: https://pypi.python.org/pypi/pytodoist
 
@@ -18,6 +16,8 @@ PyTodoist
 .. image:: https://pypip.in/status/pytodoist/badge.svg
     :target: https://pypi.python.org/pypi/pytodoist
 
+**PyTodoist** is a Python package for interacting with `Todoist <http://www.todoist.com>`_. It hides the underlying API calls with higher-level abstractions that make it easy to use Todoist with Python.
+
 Quick Start
 -----------
 
@@ -29,20 +29,22 @@ Install the latest version:
 
 Have fun:
 
->>> from pytodoist import todoist
->>> user = todoist.login('gary@garyblackwood.co.uk', 'pa$$w0rd')
->>> projects = user.get_projects()
->>> for project in projects:
-...     print(project.name)
-...
-Inbox
-Shopping
-Work
-Personal
->>> inbox = user.get_project('Inbox')
->>> task = inbox.add_task('Install PyTodoist',
-...                        priority=todoist.Priority.VERY_HIGH)
->>> task.complete()
+.. code-block:: python
+
+    >>> from pytodoist import todoist
+    >>> user = todoist.login('gary@garyblackwood.co.uk', 'pa$$w0rd')
+    >>> projects = user.get_projects()
+    >>> for project in projects:
+    ...     print(project.name)
+    ...
+    Inbox
+    Shopping
+    Work
+    Personal
+    >>> inbox = user.get_project('Inbox')
+    >>> task = inbox.add_task('Install PyTodoist',
+    ...                        priority=todoist.Priority.VERY_HIGH)
+    >>> task.complete()
 
 Documentation
 -------------
