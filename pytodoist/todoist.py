@@ -558,9 +558,14 @@ class User(TodoistObject):
         _fail_if_contains_errors(response)
         tasks_json = response.json()['items']
         tasks = []
+        projects_by_project_id = {}
         for task_json in tasks_json:
             project_id = task_json['project_id']
-            project = self.get_project_with_id(project_id)
+            if project_id in projects_by_project_id.keys():
+                project = projects_by_project_id[project_id]
+            else:
+                project = self.get_project_with_id(project_id)
+                projects_by_project_id[project_id] = project
             tasks.append(Task(task_json, project))
         return tasks
 
