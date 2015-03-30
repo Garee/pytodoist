@@ -561,7 +561,7 @@ class User(TodoistObject):
         projects_by_project_id = {}
         for task_json in tasks_json:
             project_id = task_json['project_id']
-            if project_id in projects_by_project_id.keys():
+            if project_id in projects_by_project_id:
                 project = projects_by_project_id[project_id]
             else:
                 project = self.get_project_with_id(project_id)
@@ -614,9 +614,14 @@ class User(TodoistObject):
                     uncompleted_tasks = project_json.get('uncompleted', [])
                     completed_tasks = project_json.get('completed', [])
                     all_tasks = uncompleted_tasks + completed_tasks
+            projects_by_project_id = {}
             for task_json in all_tasks:
                 project_id = task_json['project_id']
-                project = self.get_project_with_id(project_id)
+                if project_id in projects_by_project_id:
+                    project = projects_by_project_id[project_id]
+                else:
+                    project = self.get_project_with_id(project_id)
+                    projects_by_project_id[project_id] = project
                 task = Task(task_json, project)
                 tasks.append(task)
         return tasks

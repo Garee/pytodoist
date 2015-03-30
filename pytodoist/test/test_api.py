@@ -2,6 +2,8 @@
 
 """This module contains unit tests for the pytodoist.api module."""
 import sys
+import string
+import random
 import unittest
 from pytodoist.api import TodoistAPI
 
@@ -25,12 +27,18 @@ _TASK = 'Task'
 _NOTE = 'Note'
 
 
+def _id_gen(size=10):
+    """Generate a random string that can be used as an ID"""
+    chars = string.ascii_uppercase + string.digits
+    return ''.join(random.choice(chars) for _ in range(size))
+
+
 class TestUser(object):
     """A fake user to use in each unit test."""
 
     def __init__(self):
         self.full_name = "Py Todoist"
-        self.email = "pytodoist.test.email@gmail.com"
+        self.email = "pytodoist.test.email." + _id_gen() + "@gmail.com"
         self.password = "pytodoistpassword"
         self.token = None
 
