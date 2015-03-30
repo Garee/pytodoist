@@ -10,3 +10,4 @@ Contributors
 ------------
 
 * Elias Kuthe <elias.kuthe@web.de>
+* Ernie Hershey <github@ernie.org>
