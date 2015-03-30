@@ -2,14 +2,12 @@
 
 """This module contains the unit tests for the pytodoist.todoist module."""
 import sys
+import string
+import random
 import unittest
 from pytodoist import todoist
 
 N_DEFAULT_PROJECTS = 6
-
-_USER_NAME = "Py Todoist"
-_USER_EMAIL = "pytodoist.test.email@gmail.com"
-_USER_PASSWORD = "pytodoist.test.password"
 
 _INBOX_PROJECT_NAME = 'Inbox'
 _PROJECT_NAME = 'Project'
@@ -18,6 +16,17 @@ _LABEL = 'Homework'
 _NOTE = 'Note'
 
 _INVALID_PROJECT_NAME = ''
+
+
+def _id_gen(size=10):
+    """Generate a random string that can be used as an ID"""
+    chars = string.ascii_uppercase + string.digits
+    return ''.join(random.choice(chars) for _ in range(size))
+
+
+_USER_NAME = "Py Todoist"
+_USER_EMAIL = "pytodoist.test.email." + _id_gen() + "@gmail.com"
+_USER_PASSWORD = "pytodoist.test.password"
 
 
 def _get_user():
