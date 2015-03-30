@@ -33,7 +33,7 @@ def _get_user():
     try:
         user = todoist.register(_USER_NAME, email, _USER_PASSWORD)
     except todoist.RequestError:
-        user = todoist.login(_USER_EMAIL, _USER_PASSWORD)
+        user = todoist.login(email, _USER_PASSWORD)
         user.delete()
         user = todoist.register(_USER_NAME, email, _USER_PASSWORD)
     return user
