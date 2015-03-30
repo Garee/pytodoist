@@ -25,17 +25,17 @@ def _id_gen(size=10):
 
 
 _USER_NAME = "Py Todoist"
-_USER_EMAIL = "pytodoist.test.email." + _id_gen() + "@gmail.com"
 _USER_PASSWORD = "pytodoist.test.password"
 
 
 def _get_user():
+    email = "pytodoist.test.email." + _id_gen() + "@gmail.com"
     try:
-        user = todoist.register(_USER_NAME, _USER_EMAIL, _USER_PASSWORD)
+        user = todoist.register(_USER_NAME, email, _USER_PASSWORD)
     except todoist.RequestError:
         user = todoist.login(_USER_EMAIL, _USER_PASSWORD)
         user.delete()
-        user = todoist.register(_USER_NAME, _USER_EMAIL, _USER_PASSWORD)
+        user = todoist.register(_USER_NAME, email, _USER_PASSWORD)
     return user
 
 
@@ -56,7 +56,7 @@ class UserTest(unittest.TestCase):
         self.user.delete()
 
     def test_login_success(self):
-        self.user = todoist.login(_USER_EMAIL, _USER_PASSWORD)
+        self.user = todoist.login(self.user.email, _USER_PASSWORD)
         self.assertTrue(self.user.is_logged_in())
 
     def test_login_failure(self):
@@ -74,7 +74,7 @@ class UserTest(unittest.TestCase):
     def test_is_logged_in(self):
         self.user.token = None
         self.assertFalse(self.user.is_logged_in())
-        self.user = todoist.login(_USER_EMAIL, _USER_PASSWORD)
+        self.user = todoist.login(self.user.email, self.user.password)
         self.assertTrue(self.user.is_logged_in())
 
     def test_register(self):
@@ -89,13 +89,14 @@ class UserTest(unittest.TestCase):
 
     def test_register_failure_already_registered(self):
         with self.assertRaises(todoist.RequestError):
-            todoist.register(_USER_NAME, _USER_EMAIL, _USER_PASSWORD)
+            todoist.register(self.user.full_name, self.user.email,
+                             self.user.password)
 
     def test_update(self):
         new_name = _USER_NAME + 'Jnr'
         self.user.full_name = new_name
         self.user.update()
-        self.user = todoist.login(_USER_EMAIL, _USER_PASSWORD)
+        self.user = todoist.login(self.user.email, self.user.password)
         self.assertEqual(self.user.full_name, new_name)
 
     def test_get_redirect_link(self):

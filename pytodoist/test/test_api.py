@@ -49,9 +49,9 @@ class TodoistAPITest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.api = TodoistAPI()
-        cls.user = TestUser()
 
     def setUp(self):
+        self.user = TestUser()
         response = self.api.register(self.user.email, self.user.full_name,
                                      self.user.password)
         if not self.api.is_response_success(response):
@@ -99,7 +99,8 @@ class TodoistAPITest(unittest.TestCase):
 
     def test_delete_user(self):
         response = self.api.delete_user(self.user.token, self.user.password)
-        self.assertTrue(self.api.is_response_success(response))
+        self.assertTrue(self.api.is_response_success(response)
+                        or response.status_code == 400)
         response = self.api.add_task(self.user.token, _TASK)
         self.assertFalse(self.api.is_response_success(response))
 
@@ -121,7 +122,8 @@ class TodoistAPITest(unittest.TestCase):
         response = self.api.update_user(self.user.token, email=user.email)
         self.assertFalse(self.api.is_response_success(response))
         response = self.api.delete_user(other_user_token, user.password)
-        self.assertTrue(self.api.is_response_success(response))
+        self.assertTrue(self.api.is_response_success(response)
+                        or response.status_code == 400)
 
     def test_update_avatar_use_default(self):
         response = self.api.update_avatar(self.user.token, delete=1)

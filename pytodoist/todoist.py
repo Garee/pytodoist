@@ -308,7 +308,10 @@ class User(TodoistObject):
         """
         response = API.delete_user(self.token, self.password,
                                    reason=reason, in_background=0)
-        _fail_if_contains_errors(response)
+        # Work around a possible bug in the Todosit API. Even if the user
+        # is successfully deleted Todoist seems to be responding with 400.
+        if response.status_code != 400:
+            _fail_if_contains_errors(response)
 
     def update(self):
         """Update the user's details on Todoist.
