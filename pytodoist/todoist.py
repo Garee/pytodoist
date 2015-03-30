@@ -308,7 +308,10 @@ class User(TodoistObject):
         """
         response = API.delete_user(self.token, self.password,
                                    reason=reason, in_background=0)
-        _fail_if_contains_errors(response)
+        # Work around a possible bug in the Todosit API. Even if the user
+        # is successfully deleted Todoist seems to be responding with 400.
+        if response.status_code != 400:
+            _fail_if_contains_errors(response)
 
     def update(self):
         """Update the user's details on Todoist.
@@ -558,9 +561,14 @@ class User(TodoistObject):
         _fail_if_contains_errors(response)
         tasks_json = response.json()['items']
         tasks = []
+        projects_by_project_id = {}
         for task_json in tasks_json:
             project_id = task_json['project_id']
-            project = self.get_project_with_id(project_id)
+            if project_id in projects_by_project_id:
+                project = projects_by_project_id[project_id]
+            else:
+                project = self.get_project_with_id(project_id)
+                projects_by_project_id[project_id] = project
             tasks.append(Task(task_json, project))
         return tasks
 
@@ -609,9 +617,14 @@ class User(TodoistObject):
                     uncompleted_tasks = project_json.get('uncompleted', [])
                     completed_tasks = project_json.get('completed', [])
                     all_tasks = uncompleted_tasks + completed_tasks
+            projects_by_project_id = {}
             for task_json in all_tasks:
                 project_id = task_json['project_id']
-                project = self.get_project_with_id(project_id)
+                if project_id in projects_by_project_id:
+                    project = projects_by_project_id[project_id]
+                else:
+                    project = self.get_project_with_id(project_id)
+                    projects_by_project_id[project_id] = project
                 task = Task(task_json, project)
                 tasks.append(task)
         return tasks
