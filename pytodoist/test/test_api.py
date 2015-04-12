@@ -96,19 +96,6 @@ class TodoistAPITest(unittest.TestCase):
         self.assertEqual(response.status_code, _HTTP_OK)
         self.assertEqual(len(response.json()), len(queries))
 
-    def test_upload_file_success(self):
-        file_path = "D:/pictures/0001.jpg"  # Change me
-        response = self.api.upload_file(self.user.api_token, file_path)
-        self.assertNotEqual(response.status_code, _HTTP_OK)
-        self.assertIn('error', response.json())
-        error_message = response.json()['error']
-        self.assertEqual(error_message, "Premium only feature")
-
-    def test_upload_file_failure(self):
-        file_path = "C:/no/such/file"
-        with self.assertRaises(IOError):
-            self.api.upload_file(self.user.api_token, file_path)
-
     def test_get_productivity_stats(self):
         response = self.api.get_productivity_stats(self.user.api_token)
         self.assertEqual(response.status_code, _HTTP_OK)
