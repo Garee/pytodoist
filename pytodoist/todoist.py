@@ -708,6 +708,9 @@ class User(TodoistObject):
         args = {'weekly_goal': goal}
         self.api_seq_no = _perform_command(self, 'update_goals', args)
 
+    def clear_reminder_locations(self):
+        self.api_seq_no = _perform_command(self, 'clear_locations', {})
+
 
 class Project(TodoistObject):
     """A Todoist Project with the following attributes:

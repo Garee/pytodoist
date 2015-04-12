@@ -222,6 +222,10 @@ class UserTest(unittest.TestCase):
         self.user.update_daily_karma_goal(10)
         self.user.update_weekly_karma_goal(100)
 
+    def test_clear_reminder_locations(self):
+        # Just make sure we don't throw any exceptions.
+        self.user.clear_reminder_locations()
+
 
 class ProjectTest(unittest.TestCase):
 
