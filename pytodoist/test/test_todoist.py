@@ -1,107 +1,83 @@
 #!/usr/bin/env python
 
 """This module contains the unit tests for the pytodoist.todoist module."""
-import sys
-import string
-import random
 import unittest
 from pytodoist import todoist
+from pytodoist.test.util import create_user
 
+# Sometimes Todoist changes this which will cause tests to fail.
 N_DEFAULT_PROJECTS = 6
 
 _INBOX_PROJECT_NAME = 'Inbox'
-_PROJECT_NAME = 'Project'
-_TASK = 'Task'
-_LABEL = 'Homework'
-_NOTE = 'Note'
-
-_INVALID_PROJECT_NAME = ''
-
-
-def _id_gen(size=10):
-    """Generate a random string that can be used as an ID"""
-    chars = string.ascii_uppercase + string.digits
-    return ''.join(random.choice(chars) for _ in range(size))
-
-
-_USER_NAME = "Py Todoist"
-_USER_PASSWORD = "pytodoist.test.password"
-
-
-def _get_user():
-    email = "pytodoist.test.email." + _id_gen() + "@gmail.com"
-    try:
-        user = todoist.register(_USER_NAME, email, _USER_PASSWORD)
-    except todoist.RequestError:
-        user = todoist.login(email, _USER_PASSWORD)
-        user.delete()
-        user = todoist.register(_USER_NAME, email, _USER_PASSWORD)
-    return user
-
-
-class TodoistTest(unittest.TestCase):
-
-    def test_get_timezones(self):
-        timezones = todoist.get_timezones()
-        self.assertTrue(len(timezones) > 0)
-        self.assertTrue('GMT' in timezones)
+_PROJECT_NAME = 'Test Project'
+_TASK = 'Test Task'
+_LABEL = 'Test Label'
+_NOTE = 'Test Note'
+_FILTER = 'Test Filter'
 
 
 class UserTest(unittest.TestCase):
 
     def setUp(self):
-        self.user = _get_user()
+        self.user = create_user()
 
     def tearDown(self):
         self.user.delete()
 
     def test_login_success(self):
-        self.user = todoist.login(self.user.email, _USER_PASSWORD)
-        self.assertTrue(self.user.is_logged_in())
+        todoist.login(self.user.email, self.user.password)
 
     def test_login_failure(self):
         with self.assertRaises(todoist.RequestError):
-            todoist.login('', '')
+            todoist.login(self.user.email, '')
+
+    def test_login_with_google_success(self):
+        pass  # TODO
+
+    def test_login_with_google_failure(self):
+        with self.assertRaises(todoist.RequestError):
+            todoist.login_with_google(self.user.email, '')
 
     def test_login_with_api_token_success(self):
-        user = todoist.login_with_api_token(self.user.api_token)
-        self.assertTrue(user.is_logged_in())
+        todoist.login_with_api_token(self.user.api_token)
 
     def test_login_with_api_token_failure(self):
         with self.assertRaises(todoist.RequestError):
             todoist.login_with_api_token('')
 
-    def test_is_logged_in(self):
-        self.user.token = None
-        self.assertFalse(self.user.is_logged_in())
-        self.user = todoist.login(self.user.email, self.user.password)
-        self.assertTrue(self.user.is_logged_in())
-
-    def test_register(self):
-        email = 'unused.todoist.email@gmail.com'
-        user = todoist.register(_USER_NAME, email, _USER_PASSWORD)
-        self.assertTrue(user.is_logged_in())
-        user.delete()
+    def test_register_success(self):
+        try:
+            user = create_user()
+            user.delete()
+        except todoist.RequestError:
+            self.fail("register(...) raised an exception")
 
     def test_register_failure(self):
         with self.assertRaises(todoist.RequestError):
             todoist.register('', '', '')
 
-    def test_register_failure_already_registered(self):
+    def test_register_already_registered(self):
         with self.assertRaises(todoist.RequestError):
             todoist.register(self.user.full_name, self.user.email,
                              self.user.password)
 
-    def test_update(self):
-        new_name = _USER_NAME + 'Jnr'
-        self.user.full_name = new_name
-        self.user.update()
-        self.user = todoist.login(self.user.email, self.user.password)
-        self.assertEqual(self.user.full_name, new_name)
+    def test_register_with_google_success(self):
+        pass  # TODO
+
+    def test_register_with_google_failure(self):
+        with self.assertRaises(todoist.RequestError):
+            todoist.register_with_google('', '', '')
 
     def test_get_redirect_link(self):
         link = self.user.get_redirect_link()
         self.assertIsNotNone(link)
+
+    def test_update(self):
+        new_name = self.user.full_name + ' Jnr'
+        self.user.full_name = new_name
+        self.user.update()
+        self.user = todoist.login(self.user.email, self.user.password)
+        self.assertEqual(self.user.full_name, new_name)
 
     def test_add_project(self):
         self.user.add_project(_PROJECT_NAME)
@@ -110,10 +86,6 @@ class UserTest(unittest.TestCase):
         project = self.user.get_project(_PROJECT_NAME)
         self.assertIsNotNone(project)
         self.assertEqual(project.name, _PROJECT_NAME)
-
-    def test_add_project_failure(self):
-        with self.assertRaises(todoist.RequestError):
-            self.user.add_project('')
 
     def test_get_projects(self):
         for i in range(5):
@@ -129,7 +101,7 @@ class UserTest(unittest.TestCase):
         self.assertEqual(inbox.name, _INBOX_PROJECT_NAME)
 
     def test_get_project_failure(self):
-        project = self.user.get_project(_INVALID_PROJECT_NAME)
+        project = self.user.get_project('')
         self.assertIsNone(project)
 
     def test_get_archived_projects(self):
@@ -140,41 +112,20 @@ class UserTest(unittest.TestCase):
         n_arch_projects = len(self.user.get_archived_projects())
         self.assertEqual(n_arch_projects, 1)
 
-    def test_get_project_with_id(self):
-        inbox = self.user.get_project(_INBOX_PROJECT_NAME)
-        project = self.user.get_project_with_id(inbox.id)
-        self.assertEqual(project.name, inbox.name)
-
-    def test_update_project_orders(self):
-        for i in range(5):
-            self.user.add_project(_PROJECT_NAME + str(i))
-        projects = self.user.get_projects()
-        rev_projects = projects[::-1]
-        self.user.update_project_orders(rev_projects)
-        projects = self.user.get_projects()
-        for i, project in enumerate(projects):
-            self.assertEqual(project.name, rev_projects[i].name)
-
     def test_get_uncompleted_tasks(self):
         inbox = self.user.get_project(_INBOX_PROJECT_NAME)
         inbox.add_task(_TASK)
-        tasks = self.user.get_uncompleted_tasks()
-        self.assertEqual(len(tasks), 1)
+        with self.assertRaises(todoist.RequestError):  # Premium only.
+            tasks = self.user.get_uncompleted_tasks()
+            self.assertEqual(len(tasks), 1)
 
     def test_get_completed_tasks(self):
         inbox = self.user.get_project(_INBOX_PROJECT_NAME)
         task = inbox.add_task(_TASK)
         task.complete()
-        completed_tasks = self.user.get_completed_tasks()
-        self.assertEqual(len(completed_tasks), 1)
-
-    def test_search_completed_tasks(self):
-        inbox = self.user.get_project(_INBOX_PROJECT_NAME)
-        task = inbox.add_task(_TASK)
-        task.complete()
-        tasks = self.user.search_completed_tasks(limit=1)
-        # self.assertEqual(len(tasks), 1)  # Requires premium.
-        self.assertEqual(len(tasks), 0)
+        with self.assertRaises(todoist.RequestError):
+            completed_tasks = self.user.get_completed_tasks()  # Premium only.
+            self.assertEqual(len(completed_tasks), 1)
 
     def test_get_tasks(self):
         inbox = self.user.get_project(_INBOX_PROJECT_NAME)
@@ -186,26 +137,45 @@ class UserTest(unittest.TestCase):
             self.assertIsNotNone(task)
 
     def test_add_label(self):
-        self.user.add_label(_LABEL, color=todoist.Color.PINK)
-        labels = self.user.get_labels()
-        self.assertEqual(len(labels), 1)
-        label = labels[0]
-        self.assertEqual(label.name, _LABEL)
-        self.assertEqual(label.color, todoist.Color.PINK)
+        with self.assertRaises(todoist.RequestError):
+            self.user.add_label(_LABEL)  # Premium only.
+            labels = self.user.get_labels()
+            self.assertEqual(len(labels), 1)
+            label = labels[0]
+            self.assertEqual(label.name, _LABEL)
+            self.assertEqual(label.color, todoist.Color.PINK)
 
     def test_get_label(self):
-        self.user.add_label(_LABEL)
-        label = self.user.get_label(_LABEL)
-        self.assertIsNotNone(label)
-        self.assertEqual(label.name, _LABEL)
+        with self.assertRaises(todoist.RequestError):
+            self.user.add_label(_LABEL)  # Premium only.
+            label = self.user.get_label(_LABEL)
+            self.assertIsNotNone(label)
+            self.assertEqual(label.name, _LABEL)
 
     def test_get_labels(self):
-        for i in range(5):
-            self.user.add_label(_LABEL + str(i))
-        labels = self.user.get_labels()
-        self.assertEqual(len(labels), 5)
-        for label in labels:
-            self.assertIsNotNone(label)
+        with self.assertRaises(todoist.RequestError):
+            for i in range(5):
+                self.user.add_label(_LABEL + str(i))  # Premium only.
+            labels = self.user.get_labels()
+            self.assertEqual(len(labels), 5)
+            for label in labels:
+                self.assertIsNotNone(label)
+
+    def test_add_filter(self):
+        with self.assertRaises(todoist.RequestError):
+            self.user.add_filter(_FILTER, 'today')  # Premium only
+            flters = self.user.get_filters()
+            self.assertEqual(len(flters), 1)
+            flter = flters[0]
+            self.assertEqual(flter.name, _FILTER)
+            self.assertEqual(flter.query, 'today')
+
+    def test_get_filter(self):
+        with self.assertRaises(todoist.RequestError):
+            self.user.add_filter(_FILTER, 'today')  # Premium only.
+            flter = self.user.get_filter(_FILTER)
+            self.assertIsNotNone(flter)
+            self.assertEqual(flter.name, _FILTER)
 
     def test_search_tasks(self):
         inbox = self.user.get_project(_INBOX_PROJECT_NAME)
@@ -232,31 +202,11 @@ class UserTest(unittest.TestCase):
         tasks = self.user.search_tasks(todoist.Query.OVERDUE)
         self.assertEqual(len(tasks), 1)
 
-    def test_is_email_notified_when(self):
-        self.user.disable_email_notifications(todoist.Event.NOTE_ADDED)
-        is_recv = self.user.is_email_notified_when(todoist.Event.NOTE_ADDED)
-        self.assertFalse(is_recv)
-
-    def test_enable_email_notifications(self):
-        self.user.enable_email_notifications(todoist.Event.NOTE_ADDED)
-        is_recv = self.user.is_email_notified_when(todoist.Event.NOTE_ADDED)
-        self.assertTrue(is_recv)
-
-    def test_is_push_notified_when(self):
-        self.user.disable_push_notifications(todoist.Event.NOTE_ADDED)
-        is_recv = self.user.is_push_notified_when(todoist.Event.NOTE_ADDED)
-        self.assertFalse(is_recv)
-
-    def test_enable_push_notifications(self):
-        self.user.enable_push_notifications(todoist.Event.NOTE_ADDED)
-        is_recv = self.user.is_push_notified_when(todoist.Event.NOTE_ADDED)
-        self.assertTrue(is_recv)
-
 
 class ProjectTest(unittest.TestCase):
 
     def setUp(self):
-        self.user = _get_user()
+        self.user = create_user()
         self.project = self.user.add_project(_PROJECT_NAME)
 
     def tearDown(self):
@@ -264,7 +214,7 @@ class ProjectTest(unittest.TestCase):
 
     def test_delete(self):
         self.project.delete()
-        projects = self.user.get_projects()
+        projects = [p for p in self.user.get_projects() if not p.is_deleted]
         self.assertEqual(len(projects), N_DEFAULT_PROJECTS)
 
     def test_update(self):
@@ -297,7 +247,7 @@ class ProjectTest(unittest.TestCase):
 
     def test_add_task(self):
         self.project.add_task(_TASK)
-        tasks = self.project.get_uncompleted_tasks()
+        tasks = self.project.get_tasks()
         self.assertEqual(len(tasks), 1)
 
     def test_get_tasks(self):
@@ -309,31 +259,19 @@ class ProjectTest(unittest.TestCase):
     def test_get_uncompleted_tasks(self):
         for i in range(5):
             self.project.add_task(_TASK + str(i))
-        tasks = self.project.get_uncompleted_tasks()
-        self.assertEqual(len(tasks), 5)
+        with self.assertRaises(todoist.RequestError):
+            tasks = self.project.get_uncompleted_tasks()  # Premium only.
+            self.assertEqual(len(tasks), 5)
 
     def test_get_completed_tasks(self):
-        for i in range(5):
-            task = self.project.add_task(_TASK + str(i))
-            task.complete()
-        tasks = self.project.get_completed_tasks()
-        self.assertEqual(len(tasks), 5)
-
-    def test_update_task_orders(self):
-        for i in range(5):
-            self.project.add_task(_TASK + str(i))
-        tasks = self.project.get_tasks()
-        rev_tasks = tasks[::-1]
-        self.project.update_task_orders(rev_tasks)
-        tasks = self.project.get_tasks()
-        for i, task in enumerate(tasks):
-            self.assertEqual(task.id, rev_tasks[i].id)
+        with self.assertRaises(todoist.RequestError):
+            self.project.get_completed_tasks()  # Premium only.
 
 
 class TaskTest(unittest.TestCase):
 
     def setUp(self):
-        self.user = _get_user()
+        self.user = create_user()
         self.project = self.user.add_project(_PROJECT_NAME)
         self.task = self.project.add_task(_TASK, date='every day')
 
@@ -353,55 +291,50 @@ class TaskTest(unittest.TestCase):
         tasks = self.project.get_tasks()
         self.assertEqual(len(tasks), 1)
         self.task.delete()
-        tasks = self.project.get_tasks()
+        tasks = [t for t in self.project.get_tasks() if not t.is_deleted]
         self.assertEqual(len(tasks), 0)
 
     def test_complete(self):
         self.task.complete()
-        tasks = self.project.get_completed_tasks()
-        self.assertEqual(len(tasks), 1)
-        task = tasks[0]
-        self.assertEqual(task.id, self.task.id)
+        with self.assertRaises(todoist.RequestError):
+            tasks = self.project.get_completed_tasks()  # Premium only.
+            self.assertEqual(len(tasks), 1)
 
     def test_uncomplete(self):
         self.task.complete()
-        tasks = self.project.get_completed_tasks()
-        self.assertEqual(len(tasks), 1)
         self.task.uncomplete()
-        tasks = self.project.get_completed_tasks()
-        self.assertEqual(len(tasks), 0)
-        tasks = self.project.get_uncompleted_tasks()
-        self.assertEqual(len(tasks), 1)
+        with self.assertRaises(todoist.RequestError):
+            tasks = self.project.get_uncompleted_tasks()  # Premium only.
+            self.assertEqual(len(tasks), 1)
 
     def test_add_note(self):
-        self.task.add_note(_NOTE)
-        notes = self.task.get_notes()
-        self.assertEqual(len(notes), 1)
-        self.assertEqual(notes[0].content, _NOTE)
+        with self.assertRaises(todoist.RequestError):
+            self.task.add_note(_NOTE)    # Premium only.
+            notes = self.task.get_notes()
+            self.assertEqual(len(notes), 1)
+            self.assertEqual(notes[0].content, _NOTE)
 
     def test_get_notes(self):
-        for i in range(5):
-            self.task.add_note(_NOTE + str(i))
-        notes = self.task.get_notes()
-        self.assertEqual(len(notes), 5)
-
-    def test_advance_recurring_date(self):
-        date_before = self.task.due_date
-        self.task.advance_recurring_date()
-        date_after = self.task.due_date
-        self.assertNotEqual(date_before, date_after)
+        with self.assertRaises(todoist.RequestError):
+            for i in range(5):
+                self.task.add_note(_NOTE + str(i))  # Premium only.
+            notes = self.task.get_notes()
+            self.assertEqual(len(notes), 5)
 
     def test_move(self):
         inbox = self.user.get_project(_INBOX_PROJECT_NAME)
         self.task.move(inbox)
-        tasks = inbox.get_uncompleted_tasks()
+        tasks = inbox.get_tasks()
         self.assertEqual(len(tasks), 1)
 
+
+"""
+# As notes are a Todoist premium feature we can't unit test this functionality.
 
 class NoteTest(unittest.TestCase):
 
     def setUp(self):
-        self.user = _get_user()
+        self.user = create_user()
         self.project = self.user.add_project(_PROJECT_NAME)
         self.task = self.project.add_task(_TASK)
         self.note = self.task.add_note(_NOTE)
@@ -423,10 +356,12 @@ class NoteTest(unittest.TestCase):
         self.assertEqual(len(notes), 0)
 
 
+# Labels are a Todoist premium feature.
+
 class LabelTest(unittest.TestCase):
 
     def setUp(self):
-        self.user = _get_user()
+        self.user = create_user()
         self.label = self.user.add_label(_LABEL)
 
     def tearDown(self):
@@ -447,9 +382,30 @@ class LabelTest(unittest.TestCase):
         labels = self.user.get_labels()
         self.assertEqual(len(labels), 0)
 
+# Filters are a Todoist premium feature.
+
+class FilterTest(unittest.TestCase):
+
+    def setUp(self):
+        self.user = create_user()
+        self.flter = self.user.add_filter(_FILTER, 'today')
+
+    def tearDown(self):
+        self.user.delete()
+
+    def test_update(self):
+        new_name = _FILTER + '2'
+        self.flter.name = new_name
+        self.flter.update()
+        flter = self.user.get_filter(new_name)
+        self.assertEqual(flter.id, self.flter.id)
+
+    def test_delete(self):
+        self.flter.delete()
+        flters = self.user.get_filters()
+        self.assertEqual(len(flters), 0)
+"""
+
 
 if __name__ == '__main__':
-    if sys.version_info > (3, 0):
-        # Avoid the ResourceWarning spam bug.
-        unittest.main(warnings='ignore')
     unittest.main()
