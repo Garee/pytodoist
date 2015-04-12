@@ -43,9 +43,12 @@ Have fun:
     ...     print(project.name)
     ...
     Inbox
+    Books to read
+    Movies to watch
     Shopping
     Work
     Personal
+    Health
     >>> inbox = user.get_project('Inbox')
     >>> task = inbox.add_task('Install PyTodoist',
     ...                        priority=todoist.Priority.VERY_HIGH)

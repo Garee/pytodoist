@@ -202,6 +202,11 @@ class UserTest(unittest.TestCase):
         tasks = self.user.search_tasks(todoist.Query.OVERDUE)
         self.assertEqual(len(tasks), 1)
 
+    def test_get_productivity_stats(self):
+        stats = self.user.get_productivity_stats()
+        self.assertIsNotNone(stats)
+        self.assertIn('karma', stats)
+
 
 class ProjectTest(unittest.TestCase):
 

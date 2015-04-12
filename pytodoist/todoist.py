@@ -592,6 +592,10 @@ class User(TodoistObject):
         self.api_seq_no = _perform_command(self, 'label_register', args)
         return self.get_label(name)
 
+    def get_notes(self):
+        self.sync()
+        return list(self.notes.values())
+
     def add_filter(self, name, query, color=None, item_order=None):
         args = {
             'name': name,
@@ -673,6 +677,11 @@ class User(TodoistObject):
         >>> user.disable_email_notifications(todoist.Event.NOTE_ADDED)
         """
         self._update_notification_settings(event, 'email', 1)
+
+    def get_productivity_stats(self):
+        response = API.get_productivity_stats(self.api_token)
+        _fail_if_contains_errors(response)
+        return response.json()
 
 
 class Project(TodoistObject):
@@ -857,6 +866,18 @@ class Project(TodoistObject):
         tasks_json = response.json()['Items']
         return [self.owner.tasks[task['id']] for task in tasks_json]
 
+    def add_note(self, content):
+        args = {
+            'project_id': self.id,
+            'content': content
+        }
+        self.owner.api_seq_no = _perform_command(self.owner, 'note_add', args)
+
+    def get_notes(self):
+        self.owner.sync()
+        notes = self.owner.notes.values()
+        return [n for n in notes if n.project_id == self.id]
+
 
 class Task(TodoistObject):
     """A Todoist Task with the following attributes:
@@ -1023,8 +1044,9 @@ class Task(TodoistObject):
         >>> print(len(notes))
         1
         """
-        self.project.owner.sync()
-        return list(self.project.owner.notes.values())
+        owner = self.project.owner
+        owner.sync()
+        return [n for n in owner.notes.values() if n.item_id == self.id]
 
     def move(self, project):
         """Move this task to another project.
