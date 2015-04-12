@@ -207,6 +207,21 @@ class UserTest(unittest.TestCase):
         self.assertIsNotNone(stats)
         self.assertIn('karma', stats)
 
+    def test_enable_disable_karma(self):
+        # Just make sure we don't throw any exceptions.
+        self.user.disable_karma()
+        self.user.enable_karma()
+
+    def test_enable_disable_vacation(self):
+        # Just make sure we don't throw any exceptions.
+        self.user.disable_vacation()
+        self.user.enable_vacation()
+
+    def test_update_goals(self):
+        # Just make sure we don't throw any exceptions.
+        self.user.update_daily_karma_goal(10)
+        self.user.update_weekly_karma_goal(100)
+
 
 class ProjectTest(unittest.TestCase):
 

@@ -683,6 +683,30 @@ class User(TodoistObject):
         _fail_if_contains_errors(response)
         return response.json()
 
+    def enable_karma(self):
+        args = {'karma_disabled': 0}
+        self.api_seq_no = _perform_command(self, 'update_goals', args)
+
+    def disable_karma(self):
+        args = {'karma_disabled': 1}
+        self.api_seq_no = _perform_command(self, 'update_goals', args)
+
+    def enable_vacation(self):
+        args = {'vacation_mode': 1}
+        self.api_seq_no = _perform_command(self, 'update_goals', args)
+
+    def disable_vacation(self):
+        args = {'vacation_mode': 0}
+        self.api_seq_no = _perform_command(self, 'update_goals', args)
+
+    def update_daily_karma_goal(self, goal):
+        args = {'daily_goal': goal}
+        self.api_seq_no = _perform_command(self, 'update_goals', args)
+
+    def update_weekly_karma_goal(self, goal):
+        args = {'weekly_goal': goal}
+        self.api_seq_no = _perform_command(self, 'update_goals', args)
+
 
 class Project(TodoistObject):
     """A Todoist Project with the following attributes:
