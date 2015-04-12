@@ -878,6 +878,30 @@ class Project(TodoistObject):
         notes = self.owner.notes.values()
         return [n for n in notes if n.project_id == self.id]
 
+    def share(self, email, message=None):
+        args = {
+            'project_id': self.id,
+            'email': email,
+            'message': message
+        }
+        self.owner.api_seq_no = _perform_command(self.owner,
+                                                 'share_project', args)
+
+    def delete_collaborator(self, email):
+        args = {
+            'project_id': self.id,
+            'email': email,
+        }
+        self.owner.api_seq_no = _perform_command(self.owner,
+                                                 'delete_collaborator', args)
+
+    def take_ownership(self):
+        args = {
+            'project_id': self.id,
+        }
+        self.owner.api_seq_no = _perform_command(self.owner,
+                                                 'take_ownership', args)
+
 
 class Task(TodoistObject):
     """A Todoist Task with the following attributes:

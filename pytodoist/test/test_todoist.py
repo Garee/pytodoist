@@ -272,6 +272,17 @@ class ProjectTest(unittest.TestCase):
         with self.assertRaises(todoist.RequestError):
             self.project.get_completed_tasks()  # Premium only.
 
+    def test_share(self):
+        self.project.share('test@gmail.com')
+
+    def test_delete_collaborator(self):
+        self.project.share('test@gmail.com')
+        self.project.delete_collaborator('test@gmail.com')
+
+    def test_take_ownership(self):
+        self.project.share('test@gmail.com')
+        self.project.take_ownership()
+
 
 class TaskTest(unittest.TestCase):
 
