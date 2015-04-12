@@ -324,6 +324,8 @@ class TodoistAPI(object):
         :param limit: The maximum number of tasks to return
             (default ``30``, max ``50``).
         :type limit: int
+        :param offset: Used for pagination if there are more tasks than limit.
+        :type offset: int
         :param from_date: Return tasks with a completion date on or older than
             from_date. Formatted as ``2007-4-29T10:13``.
         :type from_date: str

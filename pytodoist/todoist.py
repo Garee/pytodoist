@@ -22,6 +22,7 @@ from pytodoist.api import TodoistAPI
 
 # No magic numbers
 _HTTP_OK = 200
+_PAGE_LIMIT = 50
 
 API = TodoistAPI()
 
@@ -884,11 +885,20 @@ class Project(TodoistObject):
         ...    task.uncomplete()
         """
         self.owner.sync()
-        response = API.get_all_completed_tasks(self.owner.api_token,
-                                               project_id=self.id)
-        _fail_if_contains_errors(response)
-        tasks_json = response.json()['Items']
-        return [self.owner.tasks[task['id']] for task in tasks_json]
+        tasks = []
+        offset = 0
+        while True:
+            response = API.get_all_completed_tasks(self.owner.api_token,
+                                                   limit=_PAGE_LIMIT,
+                                                   offset=offset,
+                                                   project_id=self.id)
+            _fail_if_contains_errors(response)
+            tasks_json = response.json()['Items']
+            if len(tasks_json) == 0:
+                break
+            tasks += [self.owner.tasks[task['id']] for task in tasks_json]
+            offset += _PAGE_LIMIT
+        return tasks
 
     def add_note(self, content):
         args = {
