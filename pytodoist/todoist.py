@@ -310,6 +310,7 @@ class User(TodoistObject):
         self.notes = {}
         self.labels = {}
         self.filters = {}
+        self.reminders = {}
         self.api_seq_no = 0
         self.sync()
         self.to_update = set()
@@ -343,6 +344,12 @@ class User(TodoistObject):
         for filter_json in filters_json:
             filter_id = filter_json['id']
             self.filters[filter_id] = Filter(filter_json, self)
+        reminders_json = response_json.get('Reminders', [])
+        for reminder_json in reminders_json:
+            reminder_id = reminder_json['id']
+            task_id = reminder_json['item_id']
+            task = self.tasks[task_id]
+            self.reminders[reminder_id] = Reminder(reminder_json, task)
 
     def update(self):
         args = {attr: getattr(self, attr) for attr in self.to_update}
@@ -710,6 +717,10 @@ class User(TodoistObject):
 
     def clear_reminder_locations(self):
         self.api_seq_no = _perform_command(self, 'clear_locations', {})
+
+    def get_reminders(self):
+        self.sync()
+        return list(self.reminders.values())
 
 
 class Project(TodoistObject):
@@ -1134,6 +1145,34 @@ class Task(TodoistObject):
                                                          'item_move', args)
         self.project = project
 
+    def add_date_reminder(self, service, due_date):
+        args = {
+            'item_id': self.id,
+            'service': service,
+            'type': 'absolute',
+            'due_date_utc': due_date
+        }
+        self.project.owner.api_seq_no = _perform_command(self.project.owner,
+                                                         'reminder_add', args)
+
+    def add_location_reminder(self, service, name, lat, long, trigger, radius):
+        args = {
+            'item_id': self.id,
+            'service': service,
+            'type': 'location',
+            'name': name,
+            'loc_lat': lat,
+            'loc_long': long,
+            'loc_trigger': trigger,
+            'radius': radius
+        }
+        self.project.owner.api_seq_no = _perform_command(self.project.owner,
+                                                         'reminder_add', args)
+
+    def get_reminders(self):
+        owner = self.project.owner
+        return [r for r in owner.get_reminders() if r.id == self.id]
+
 
 class Note(TodoistObject):
     """A Todoist note with the following attributes:
@@ -1288,6 +1327,31 @@ class Filter(TodoistObject):
         args = {'id': self.id}
         self.owner.api_seq_no = _perform_command(self.owner,
                                                  'filter_delete', args)
+
+
+class Reminder(TodoistObject):
+
+    _CUSTOM_ATTRS = [
+        'task'
+    ] + TodoistObject._CUSTOM_ATTRS
+
+    def __init__(self, reminder_json, task):
+        self.id = ''
+        self.item_id = ''
+        self.service = ''
+        self.type = ''
+        self.due_date_utc = ''
+        self.date_string = ''
+        self.date_lang = ''
+        self.notify_uid = ''
+        super(Reminder, self).__init__(reminder_json)
+        self.task = task
+        self.to_update = set()
+
+    def delete(self):
+        args = {'id': self.id}
+        owner = self.task.project.owner
+        owner.api_seq_no = _perform_command(owner, 'reminder_delete', args)
 
 
 class Color(object):
