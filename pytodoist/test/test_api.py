@@ -49,7 +49,6 @@ class TodoistAPITest(unittest.TestCase):
     def test_login_with_google_failure(self):
         response = self.api.login_with_google(self.user.email, '')
         self.assertNotEqual(response.status_code, _HTTP_OK)
-        self.assertIn('error', response.json())
 
     def test_register_success(self):
         self.api.delete_user(self.user.api_token, self.user.password)
