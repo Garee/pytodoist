@@ -31,7 +31,7 @@ class TodoistAPI(object):
     """
 
     VERSION = '6'
-    URL = 'https://api.todoist.com/API/v{v}/'.format(v=VERSION)
+    URL = 'https://api.todoist.com/API/v{0}/'.format(VERSION)
 
     def login(self, email, password):
         """Login to Todoist.
@@ -42,14 +42,6 @@ class TodoistAPI(object):
         :type password: str
         :return: The HTTP response to the request.
         :rtype: :class:`requests.Response`
-        :on success: ``response.json()`` will contain the user details.
-        :on failure: ``response.json()`` will contain an error code and
-            string in the following format:
-
-            ``{
-                  "error_code": 9,
-                  "error": "Wrong email or password"
-              }``
 
         >>> from pytodoist.api import TodoistAPI
         >>> api = TodoistAPI()
@@ -85,13 +77,12 @@ class TodoistAPI(object):
         :type lang: str
         :return: The HTTP response to the request.
         :rtype: :class:`requests.Response`
-        :on success: ``response.json()`` will contain the user details.
 
         >>> from pytodoist.api import TodoistAPI
         >>> api = TodoistAPI()
-        >>> oauth2_token = 'oauth2_token'
+        >>> oauth2_token = 'oauth2_token'  # Get this from Google.
         >>> response = api.login_with_google('john.doe@gmail.com',
-        ...                                   oauth2_token)
+        ...                                  oauth2_token)
         >>> user_info = response.json()
         >>> full_name = user_info['full_name']
         >>> print(full_name)
@@ -102,12 +93,12 @@ class TodoistAPI(object):
             'oauth2_token': oauth2_token
         }
         req_func = self._get
-        if kwargs.get('auto_signup', 0) == 1:
+        if kwargs.get('auto_signup', 0) == 1:  # POST if we're creating a user.
             req_func = self._post
         return req_func('login_with_google', params, **kwargs)
 
     def register(self, email, full_name, password, **kwargs):
-        """Register and return new Todoist user.
+        """Register a new Todoist user.
 
         :param email: The user's email.
         :type email: str
@@ -121,14 +112,6 @@ class TodoistAPI(object):
         :type timezone: str
         :return: The HTTP response to the request.
         :rtype: :class:`requests.Response`
-        :on success: ``response.json()`` will contain the user's details.
-        :on failure: ``response.json()`` will contain an error code and
-            string in the following format:
-
-            ``{
-                  "error_code": 4,
-                  "error": "Password is too short"
-              }``
 
         >>> from pytodoist.api import TodoistAPI
         >>> api = TodoistAPI()
@@ -145,62 +128,6 @@ class TodoistAPI(object):
             'password': password
         }
         return self._post('register', params, **kwargs)
-
-    def sync(self, api_token, seq_no, resource_types='["all"]', **kwargs):
-        """Update and retreive Todoist data.
-
-        :param api_token: The user's login api_token.
-        :type api_token: str
-        :param seq_no: The request sequence number. On initial request pass
-            ``0``. On all others pass the last seq_no you received.
-        :type seq_no: int
-        :param resource_types: Specifies which subset of data you want to
-           receive e.g. only projects. Defaults to all data.
-        :type resources_types: str
-        :param commands: A list of JSON commands to perform.
-        :type commands: A list of JSON str.
-        :return: The HTTP response to the request.
-        :rtype: :class:`requests.Response`
-        :on success: ``response.json()`` will contain the temporary/real id
-            mappings and the next seq_no to use in addition to the request
-            status.
-        :on failure: ``response.status_code`` will be ``400``.
-
-        >>> from pytodoist.api import TodoistAPI
-        >>> api = TodoistAPI()
-        >>> response = api.register('john.doe@gmail.com', 'John Doe',
-        ...                         'password')
-        >>> user_info = response.json()
-        >>> api_token = user_info['api_token']
-        >>> response = api.sync(api_token, 0, '["projects"]')
-        >>> print(response.json())
-        {'seq_no_global': 3848029654, 'seq_no': 3848029654, 'Projects': ...}
-        """
-        params = {
-            'token': api_token,
-            'seq_no': seq_no,
-        }
-        req_func = self._post
-        if 'commands' not in kwargs:
-            req_func = self._get
-            params['resource_types'] = resource_types
-        return req_func('sync', params, **kwargs)
-
-    def query(self, api_token, queries, **kwargs):
-        params = {
-            'token': api_token,
-            'queries': queries
-        }
-        return self._get('query', params, **kwargs)
-
-    def upload_file(self, api_token, file_path, **kwargs):
-        params = {
-            'token': api_token,
-            'file_name': os.path.basename(file_path)
-        }
-        with open(file_path, 'rb') as f:
-            files = {'file': f}
-            return self._post('upload_file', params, files, **kwargs)
 
     def delete_user(self, api_token, password, **kwargs):
         """Delete a registered Todoist user's account.
@@ -222,43 +149,60 @@ class TodoistAPI(object):
         }
         return self._post('delete_user', params, **kwargs)
 
-    def get_redirect_link(self, api_token, **kwargs):
-        """Return the absolute URL to redirect or to open in
-        a browser. The first time the link is used it logs in the user
-        automatically and performs a redirect to a given page. Once used,
-        the link keeps working as a plain redirect.
+    def sync(self, api_token, seq_no, resource_types='["all"]', **kwargs):
+        """Update and retrieve Todoist data.
 
         :param api_token: The user's login api_token.
         :type api_token: str
-        :param path: The path to redirect the user's browser. Default ``/app``.
-        :type path: str
-        :param hash: The has part of the path to redirect the user's browser.
-        :type hash: str
+        :param seq_no: The request sequence number. On initial request pass
+            ``0``. On all others pass the last seq_no you received.
+        :type seq_no: int
+        :param resource_types: Specifies which subset of data you want to
+           receive e.g. only projects. Defaults to all data.
+        :type resources_types: str
+        :param commands: A list of JSON commands to perform.
+        :type commands: list (str)
         :return: The HTTP response to the request.
         :rtype: :class:`requests.Response`
-        :on success: ``response.json()`` will contain the redirect link.
 
         >>> from pytodoist.api import TodoistAPI
         >>> api = TodoistAPI()
-        >>> response = api.login('john.doe@gmail.com', 'password')
+        >>> response = api.register('john.doe@gmail.com', 'John Doe',
+        ...                         'password')
         >>> user_info = response.json()
-        >>> user_api_token = user_info['api_token']
-        >>> response = api.get_redirect_link(user_api_token)
-        >>> link_info = response.json()
-        >>> redirect_link = link_info['link']
-        >>> print(redirect_link)
-        https://todoist.com/secureRedirect?path=adflk...
+        >>> api_token = user_info['api_token']
+        >>> response = api.sync(api_token, 0, '["projects"]')
+        >>> print(response.json())
+        {'seq_no_global': 3848029654, 'seq_no': 3848029654, 'Projects': ...}
         """
         params = {
-            'token': api_token
+            'token': api_token,
+            'seq_no': seq_no,
         }
-        return self._get('get_redirect_link', params, **kwargs)
+        req_func = self._post
+        if 'commands' not in kwargs:  # GET if we're not changing data.
+            req_func = self._get
+            params['resource_types'] = resource_types
+        return req_func('sync', params, **kwargs)
 
-    def get_productivity_stats(self, api_token, **kwargs):
+    def query(self, api_token, queries, **kwargs):
+        """Search all of a user's tasks using date, priority and label queries.
+
+        :param api_token: The user's login api_token.
+        :type api_token: str
+        :param queries: A JSON list of queries to search. See examples
+            `here <https://todoist.com/Help/timeQuery>`_.
+        :type queries: list (str)
+        :param as_count: If ``1`` then return the count of matching tasks.
+        :type as_count: int
+        :return: The HTTP response to the request.
+        :rtype: :class:`requests.Response`
+        """
         params = {
-            'token': api_token
+            'token': api_token,
+            'queries': queries
         }
-        return self._get('get_productivity_stats', params, **kwargs)
+        return self._get('query', params, **kwargs)
 
     def add_item(self, api_token, content, **kwargs):
         """Add a task to a project.
@@ -295,8 +239,6 @@ class TodoistAPI(object):
         :type note: str
         :return: The HTTP response to the request.
         :rtype: :class:`requests.Response`
-        :on success: ``response.json()`` will contain the task details.
-        :on failure: ``response.status_code`` will be ``400``.
 
         >>> from pytodoist.api import TodoistAPI
         >>> api = TodoistAPI()
@@ -317,6 +259,8 @@ class TodoistAPI(object):
     def get_all_completed_tasks(self, api_token, **kwargs):
         """Return a list of a user's completed tasks.
 
+        .. warning:: Requires Todoist premium.
+
         :param api_token: The user's login api_token.
         :type api_token: str
         :param project_id: Filter the tasks by project.
@@ -334,9 +278,6 @@ class TodoistAPI(object):
         :type from_date: str
         :return: The HTTP response to the request.
         :rtype: :class:`requests.Response`
-        :on success: ``response.json()`` will contain a list of tasks. The list
-            will be empty is the user does not have Todoist premium.
-        :on failure: ``response.status_code`` will be ``400``.
 
         >>> from pytodoist.api import TodoistAPI
         >>> api = TodoistAPI()
@@ -350,6 +291,37 @@ class TodoistAPI(object):
             'token': api_token
         }
         return self._get('get_all_completed_items', params, **kwargs)
+
+    def upload_file(self, api_token, file_path, **kwargs):
+        """Upload a file suitable to be passed as a file_attachment.
+
+        :param api_token: The user's login api_token.
+        :type api_token: str
+        :param file_path: The path of the file to be uploaded.
+        :type file_path: str
+        :return: The HTTP response to the request.
+        :rtype: :class:`requests.Response`
+        """
+        params = {
+            'token': api_token,
+            'file_name': os.path.basename(file_path)
+        }
+        with open(file_path, 'rb') as f:
+            files = {'file': f}
+            return self._post('upload_file', params, files, **kwargs)
+
+    def get_productivity_stats(self, api_token, **kwargs):
+        """Return a user's productivity stats.
+
+        :param api_token: The user's login api_token.
+        :type api_token: str
+        :return: The HTTP response to the request.
+        :rtype: :class:`requests.Response`
+        """
+        params = {
+            'token': api_token
+        }
+        return self._get('get_productivity_stats', params, **kwargs)
 
     def update_notification_settings(self, api_token, event,
                                      service, should_notify):
@@ -365,7 +337,6 @@ class TodoistAPI(object):
         :type should_notify: int
         :return: The HTTP response to the request.
         :rtype: :class:`requests.Response`
-        :on success: ``response.text`` will contain ``"ok"``
 
         >>> from pytodoist.api import TodoistAPI
         >>> api = TodoistAPI()
@@ -384,6 +355,37 @@ class TodoistAPI(object):
             'dont_notify': should_notify
         }
         return self._post('update_notification_setting', params)
+
+    def get_redirect_link(self, api_token, **kwargs):
+        """Return the absolute URL to redirect or to open in
+        a browser. The first time the link is used it logs in the user
+        automatically and performs a redirect to a given page. Once used,
+        the link keeps working as a plain redirect.
+
+        :param api_token: The user's login api_token.
+        :type api_token: str
+        :param path: The path to redirect the user's browser. Default ``/app``.
+        :type path: str
+        :param hash: The has part of the path to redirect the user's browser.
+        :type hash: str
+        :return: The HTTP response to the request.
+        :rtype: :class:`requests.Response`
+
+        >>> from pytodoist.api import TodoistAPI
+        >>> api = TodoistAPI()
+        >>> response = api.login('john.doe@gmail.com', 'password')
+        >>> user_info = response.json()
+        >>> user_api_token = user_info['api_token']
+        >>> response = api.get_redirect_link(user_api_token)
+        >>> link_info = response.json()
+        >>> redirect_link = link_info['link']
+        >>> print(redirect_link)
+        https://todoist.com/secureRedirect?path=adflk...
+        """
+        params = {
+            'token': api_token
+        }
+        return self._get('get_redirect_link', params, **kwargs)
 
     def _get(self, end_point, params=None, **kwargs):
         """Send a HTTP GET request to a Todoist API end-point.

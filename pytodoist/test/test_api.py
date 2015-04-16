@@ -20,8 +20,7 @@ class TodoistAPITest(unittest.TestCase):
         self.user = TestUser()
         response = self.api.register(self.user.email, self.user.full_name,
                                      self.user.password)
-        if response.status_code != _HTTP_OK:
-            # Assume already registered.
+        if response.status_code != _HTTP_OK:  # Assume already registered.
             response = self.api.login(self.user.email, self.user.password)
         user_json = response.json()
         self.user.api_token = user_json['api_token']
@@ -30,8 +29,8 @@ class TodoistAPITest(unittest.TestCase):
         self.api.delete_user(self.user.api_token, self.user.password)
 
     def test_class_variables(self):
-        self.assertEqual(self.api.VERSION, "6")
-        self.assertEqual(self.api.URL, "https://api.todoist.com/API/v6/")
+        self.assertEqual(self.api.VERSION, '6')
+        self.assertEqual(self.api.URL, 'https://api.todoist.com/API/v6/')
 
     def test_login_success(self):
         response = self.api.login(self.user.email, self.user.password)
@@ -42,9 +41,6 @@ class TodoistAPITest(unittest.TestCase):
         response = self.api.login(self.user.email, '')
         self.assertNotEqual(response.status_code, _HTTP_OK)
         self.assertIn('error', response.json())
-
-    def test_login_with_google_success(self):
-        pass  # TODO
 
     def test_login_with_google_failure(self):
         response = self.api.login_with_google(self.user.email, '')
@@ -67,7 +63,7 @@ class TodoistAPITest(unittest.TestCase):
         response = self.api.delete_user(self.user.api_token,
                                         self.user.password)
         # The Todoist API is returning HTTP 400 but is still deleting
-        # the user. Looks like a bug in the API.
+        # the user. Looks like a bug in the API. TODO - Update when fixed.
         self.assertEqual(response.status_code, 400)
         response = self.api.login(self.user.email, self.user.password)
         self.assertNotEqual(response.status_code, _HTTP_OK)
@@ -78,11 +74,6 @@ class TodoistAPITest(unittest.TestCase):
         response = self.api.login(self.user.email, self.user.password)
         self.assertEqual(response.status_code, _HTTP_OK)
         self.assertNotIn('error', response.json())
-
-    def test_get_redirect_link(self):
-        response = self.api.get_redirect_link(self.user.api_token)
-        self.assertEqual(response.status_code, _HTTP_OK)
-        self.assertIn('link', response.json())
 
     def test_sync_all(self):
         response = self.api.sync(self.user.api_token, self.user.api_seq_no)
@@ -95,22 +86,28 @@ class TodoistAPITest(unittest.TestCase):
         self.assertEqual(response.status_code, _HTTP_OK)
         self.assertEqual(len(response.json()), len(queries))
 
-    def test_get_productivity_stats(self):
-        response = self.api.get_productivity_stats(self.user.api_token)
-        self.assertEqual(response.status_code, _HTTP_OK)
-        self.assertNotEqual(len(response.json()), 0)
-
     def test_add_item_success(self):
         response = self.api.add_item(self.user.api_token, 'Task 1')
         self.assertEqual(response.status_code, _HTTP_OK)
-        self.assertEqual(response.json()['content'], 'Task 1')
+        task_info = response.json()
+        self.assertEqual(task_info['content'], 'Task 1')
 
     def test_get_all_completed_tasks_empty(self):
         response = self.api.get_all_completed_tasks(self.user.api_token)
         self.assertNotEqual(response.status_code, _HTTP_OK)
         self.assertIn('error', response.json())
-        error_message = response.json()['error']
-        self.assertEqual(error_message, "Premium only feature")
+        error_info = response.json()
+        self.assertEqual(error_info['error'], "Premium only feature")
+
+    def test_get_redirect_link(self):
+        response = self.api.get_redirect_link(self.user.api_token)
+        self.assertEqual(response.status_code, _HTTP_OK)
+        self.assertIn('link', response.json())
+
+    def test_get_productivity_stats(self):
+        response = self.api.get_productivity_stats(self.user.api_token)
+        self.assertEqual(response.status_code, _HTTP_OK)
+        self.assertIn('karma', response.json())
 
     def test_update_notification_settings_success(self):
         response = self.api.update_notification_settings(self.user.api_token,
