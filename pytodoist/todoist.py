@@ -6,8 +6,6 @@ you can interact with Todoist in a straightforward manner.
 
 >>> from pytodoist import todoist
 >>> user = todoist.register('John Doe', 'john.doe@gmail.com', 'password')
->>> user.is_logged_in()
-True
 >>> inbox = user.get_project('Inbox')
 >>> install_task = inbox.add_task('Install PyTodoist')
 >>> uncompleted_tasks = user.get_uncompleted_tasks()
@@ -18,8 +16,13 @@ Install PyTodoist
 >>> install_task.complete()
 """
 import json
+import uuid
 import itertools
 from pytodoist.api import TodoistAPI
+
+# No magic numbers
+_HTTP_OK = 200
+_PAGE_LIMIT = 50
 
 API = TodoistAPI()
 
@@ -36,12 +39,10 @@ def login(email, password):
 
     >>> from pytodoist import todoist
     >>> user = todoist.login('john.doe@gmail.com', 'password')
-    >>> print(user.is_logged_in())
-    True
+    >>> print(user.full_name)
+    John Doe
     """
-    user = _login(API.login, email, password)
-    user.password = password
-    return user
+    return _login(API.login, email, password)
 
 
 def login_with_google(email, oauth2_token):
@@ -59,8 +60,8 @@ def login_with_google(email, oauth2_token):
     >>> from pytodoist import todoist
     >>> oauth2_token = 'oauth2_token'
     >>> user = todoist.login_with_google('john.doe@gmail.com', oauth2_token)
-    >>> print(user.is_logged_in())
-    True
+    >>> print(user.full_name)
+    John Doe
     """
     return _login(API.login_with_google, email, oauth2_token)
 
@@ -78,10 +79,15 @@ def login_with_api_token(api_token):
     >>> from pytodoist import todoist
     >>> api_token = 'api_token'
     >>> user = todoist.login_with_api_token(api_token)
-    >>> print(user.is_logged_in())
-    True
+    >>> print(user.full_name)
+    John Doe
     """
-    return _login(API.update_user, api_token)
+    response = API.sync(api_token, 0, '["user"]')
+    _fail_if_contains_errors(response)
+    user_json = response.json()['User']
+    # Required as sync doesn't return the api_token.
+    user_json['api_token'] = user_json['token']
+    return User(user_json)
 
 
 def _login(login_func, *args):
@@ -112,8 +118,8 @@ def register(full_name, email, password, lang=None, timezone=None):
 
     >>> from pytodoist import todoist
     >>> user = todoist.register('John Doe', 'john.doe@gmail.com', 'password')
-    >>> print(user.is_logged_in())
-    True
+    >>> print(user.full_name)
+    John Doe
     """
     response = API.register(email, full_name, password,
                             lang=lang, timezone=timezone)
@@ -147,8 +153,8 @@ def register_with_google(full_name, email, oauth2_token,
     >>> oauth2_token = 'oauth2_token'
     >>> user = todoist.register_with_google('John Doe', 'john.doe@gmail.com',
     ...                                      oauth2_token)
-    >>> print(user.is_logged_in())
-    True
+    >>> print(user.full_name)
+    John Doe
     """
     response = API.login_with_google(email, oauth2_token, auto_signup=1,
                                      full_name=full_name, lang=lang,
@@ -159,36 +165,55 @@ def register_with_google(full_name, email, oauth2_token,
     return user
 
 
-def get_timezones():
-    """Return a list of Todoist supported timezones.
-
-    :return: A list of timezones
-    :rtype: list of str
-
-    >>> from pytodoist import todoist
-    >>> print(todoist.get_timezones())
-    [u'US/Hawaii', u'US/Alaska', u'US/Pacific', u'US/Arizona, ...]
-    """
-    response = API.get_timezones()
-    _fail_if_contains_errors(response)
-    timezones_json = response.json()
-    return [timezone_json[0] for timezone_json in timezones_json]
-
-
-def _fail_if_contains_errors(response):
+def _fail_if_contains_errors(response, sync_uuid=None):
     """Raise a RequestError Exception if a given response
     does not denote a successful request.
     """
-    if not API.is_response_success(response):
+    if response.status_code != _HTTP_OK:
         raise RequestError(response)
+    response_json = response.json()
+    if sync_uuid and 'SyncStatus' in response_json:
+        status = response_json['SyncStatus']
+        if sync_uuid in status and 'error' in status[sync_uuid]:
+            raise RequestError(response)
+
+
+def _gen_uuid():
+    """Return a randomly generated UUID string."""
+    return str(uuid.uuid4())
+
+
+def _perform_command(user, command_type, command_args):
+    """Perform an operation on Todoist using the API sync end-point."""
+    command_uuid = _gen_uuid()
+    command = {
+        'type': command_type,
+        'args': command_args,
+        'uuid': command_uuid,
+        'temp_id': _gen_uuid()
+    }
+    commands = json.dumps([command])
+    response = API.sync(user.api_token, user.api_seq_no, commands=commands)
+    _fail_if_contains_errors(response, command_uuid)
+    response_json = response.json()
+    return response_json['seq_no']
 
 
 class TodoistObject(object):
     """A helper class which 'converts' a JSON object into a python object."""
 
+    _CUSTOM_ATTRS = [
+        'to_update',  # Keeps track of the attributes which have changed.
+    ]
+
     def __init__(self, object_json):
         for attr in object_json:
             setattr(self, attr, object_json[attr])
+
+    def __setattr__(self, key, value):
+        if hasattr(self, 'to_update') and key not in self._CUSTOM_ATTRS:
+            self.to_update.add(key)  # Don't update on __init__.
+        super(TodoistObject, self).__setattr__(key, value)
 
 
 class User(TodoistObject):
@@ -225,7 +250,6 @@ class User(TodoistObject):
         turn off notifications. Only for premium users.
     :ivar inbox_project: The ID of the user's Inbox project.
     :ivar team_inbox: The ID of the user's team Inbox project.
-    :ivar token: The user's secret token.
     :ivar api_token: The user's API token.
     :ivar shard_id: The user's shard ID.
     :ivar seq_no: The user's sequence number.
@@ -234,155 +258,162 @@ class User(TodoistObject):
     :ivar is_biz_admin: Is the user a business administrator?
     :ivar last_used_ip: The IP address of the computer last used to login.
     :ivar is_dummy: Is this a real or a dummy user?
+    :ivar auto_reminder: The auto reminder of the user.
+    :ivar guide_mode: The guide mode of the user.
     """
 
+    # Don't try to update these attributes on Todoist.
+    _CUSTOM_ATTRS = [
+        'projects',
+        'tasks',
+        'notes',
+        'labels',
+        'filters',
+        'reminders',
+        'password',
+        'api_seq_no',
+    ] + TodoistObject._CUSTOM_ATTRS
+
     def __init__(self, user_json):
-        self.id = None
-        self.email = None
-        self.password = None
-        self.full_name = None
-        self.join_date = None
-        self.is_premium = None
-        self.premium_until = None
-        self.timezone = None
-        self.tz_offset = None
-        self.time_format = None
-        self.date_format = None
-        self.start_page = None
-        self.start_day = None
-        self.next_week = None
-        self.sort_order = None
-        self.mobile_number = None
-        self.mobile_host = None
-        self.business_account_id = None
-        self.karma = None
-        self.karma_trend = None
-        self.has_push_reminders = None
-        self.default_reminder = None
-        self.inbox_project = None
-        self.team_inbox = None
-        self.token = None
-        self.api_token = None
-        self.shard_id = None
-        self.seq_no = None
-        self.beta = None
-        self.image_id = None
-        self.is_biz_admin = None
-        self.last_used_ip = None
-        self.is_dummy = None
+        self.id = ''
+        self.email = ''
+        self.full_name = ''
+        self.join_date = ''
+        self.is_premium = ''
+        self.premium_until = ''
+        self.timezone = ''
+        self.tz_offset = ''
+        self.time_format = ''
+        self.date_format = ''
+        self.start_page = ''
+        self.start_day = ''
+        self.next_week = ''
+        self.sort_order = ''
+        self.mobile_number = ''
+        self.mobile_host = ''
+        self.business_account_id = ''
+        self.karma = ''
+        self.karma_trend = ''
+        self.has_push_reminders = ''
+        self.default_reminder = ''
+        self.inbox_project = ''
+        self.team_inbox = ''
+        self.api_token = ''
+        self.shard_id = ''
+        self.seq_no = ''
+        self.beta = ''
+        self.image_id = ''
+        self.is_biz_admin = ''
+        self.last_used_ip = ''
+        self.is_dummy = ''
+        self.auto_reminder = ''
+        self.guide_mode = ''
         super(User, self).__init__(user_json)
-
-    def is_logged_in(self):
-        """Return ``True`` if the user is logged in.
-
-        A user is logged in if it's token is valid.
-
-        :return: ``True`` if the user token is valid, ``False`` otherwise.
-        :rtype: bool
-
-        >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> print(user.is_logged_in())
-        True
-        >>> user.delete()
-        >>> print(user.is_logged_in())
-        False
-        """
-        if not self.token:
-            return False
-        response = API.ping(self.token)
-        return API.is_response_success(response)
-
-    def delete(self, reason=None):
-        """Delete the user's account from Todoist.
-
-        .. warning:: You cannot recover the user after deletion!
-
-        :param reason: The reason for deletion.
-        :type reason: str
-
-        >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> user.delete()
-        ... # The user token is now invalid and Todoist operations will fail.
-        """
-        response = API.delete_user(self.token, self.password,
-                                   reason=reason, in_background=0)
-        # Work around a possible bug in the Todosit API. Even if the user
-        # is successfully deleted Todoist seems to be responding with 400.
-        if response.status_code != 400:
-            _fail_if_contains_errors(response)
+        self.password = ''
+        self.projects = {}
+        self.tasks = {}
+        self.notes = {}
+        self.labels = {}
+        self.filters = {}
+        self.reminders = {}
+        self.api_seq_no = 0
+        self.sync()
+        self.to_update = set()
 
     def update(self):
         """Update the user's details on Todoist.
 
-        You must call this method to register any local attribute changes with
-        Todoist.
+        This method must be called to register any local attribute changes
+        with Todoist.
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> user.full_name = 'John Smith'
-        ... # At this point Todoist still thinks the name is 'John Doe'.
+        >>> # At this point Todoist still thinks the name is 'John Doe'.
         >>> user.update()
-        ... # Now the name has been updated on Todoist.
+        >>> # Now the name has been updated on Todoist.
         """
-        response = API.update_user(**self.__dict__)
+        args = {attr: getattr(self, attr) for attr in self.to_update}
+        self.api_seq_no = _perform_command(self, 'user_update', args)
+
+    def sync(self, resource_types='["all"]'):
+        """Synchronize the user's data with the Todoist server.
+
+        This function will pull data from the Todoist server and update the
+        state of the user object such that they match. It does not *push* data
+        to Todoist. If you want to do that use
+        :func:`pytodoist.todoist.User.update`.
+
+        :param resource_types: A JSON-encoded list of Todoist resources which
+            should be synced. By default this is everything, but you can
+            choose to sync only selected resources. See
+            `here <https://developer.todoist.com/#retrieve-data>`_ for a list
+            of resources.
+        """
+        response = API.sync(self.api_token, self.api_seq_no, resource_types)
         _fail_if_contains_errors(response)
+        response_json = response.json()
+        self.api_seq_no = response_json['seq_no']
+        if 'Projects' in response_json:
+            self._sync_projects(response_json['Projects'])
+        if 'Items' in response_json:
+            self._sync_tasks(response_json['Items'])
+        if 'Notes' in response_json:
+            self._sync_notes(response_json['Notes'])
+        if 'Labels' in response_json:
+            self._sync_labels(response_json['Labels'])
+        if 'Filters' in response_json:
+            self._sync_filters(response_json['Filters'])
+        if 'Reminders' in response_json:
+            self._sync_filters(response_json['Reminders'])
 
-    def change_avatar(self, image_file):
-        """Change the user's avatar.
+    def _sync_projects(self, projects_json):
+        """"Populate the user's projects from a JSON encoded list."""
+        for project_json in projects_json:
+            project_id = project_json['id']
+            self.projects[project_id] = Project(project_json, self)
 
-        :param image_file: The path to the image.
-        :type image_file: str
+    def _sync_tasks(self, tasks_json):
+        """"Populate the user's tasks from a JSON encoded list."""
+        for task_json in tasks_json:
+            task_id = task_json['id']
+            project_id = task_json['project_id']
+            project = self.projects[project_id]
+            self.tasks[task_id] = Task(task_json, project)
 
-        >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> user.change_avatar('/home/john/pictures/avatar.png')
-        """
-        with open(image_file) as image:
-            response = API.update_avatar(self.token, image)
-            _fail_if_contains_errors(response)
+    def _sync_notes(self, notes_json):
+        """"Populate the user's notes from a JSON encoded list."""
+        for note_json in notes_json:
+            note_id = note_json['id']
+            task_id = note_json['item_id']
+            task = self.tasks[task_id]
+            self.notes[note_id] = Note(note_json, task)
 
-    def use_default_avatar(self):
-        """Change the user's avatar to the Todoist default avatar.
+    def _sync_labels(self, labels_json):
+        """"Populate the user's labels from a JSON encoded list."""
+        for label_json in labels_json:
+            label_id = label_json['id']
+            self.labels[label_id] = Label(label_json, self)
 
-        >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> user.use_default_avatar()
-        """
-        response = API.update_avatar(self.token, delete=1)
-        _fail_if_contains_errors(response)
+    def _sync_filters(self, filters_json):
+        """"Populate the user's filters from a JSON encoded list."""
+        for filter_json in filters_json:
+            filter_id = filter_json['id']
+            self.filters[filter_id] = Filter(filter_json, self)
 
-    def get_redirect_link(self):
-        """Return the absolute URL to redirect or to open in
-        a browser. The first time the link is used it logs in the user
-        automatically and performs a redirect to a given page. Once used,
-        the link keeps working as a plain redirect.
-
-        :return: The user's redirect link.
-        :rtype: str
-
-        >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> print(user.get_redirect_link())
-        https://todoist.com/secureRedirect?path=%2Fapp&token ...
-        """
-        response = API.get_redirect_link(self.token)
-        _fail_if_contains_errors(response)
-        link_json = response.json()
-        return link_json['link']
+    def _sync_reminders(self, reminders_json):
+        """"Populate the user's reminders from a JSON encoded list."""
+        for reminder_json in reminders_json:
+            reminder_id = reminder_json['id']
+            task_id = reminder_json['item_id']
+            task = self.tasks[task_id]
+            self.reminders[reminder_id] = Reminder(reminder_json, task)
 
     def add_project(self, name, color=None, indent=None, order=None):
         """Add a project to the user's account.
 
         :param name: The project name.
         :type name: str
-        :param color: The project color.
-        :type color: int
-        :param indent: The project indentation.
-        :type indent: int
-        :param order: The project ordering.
-        :type order: int
         :return: The project that was added.
         :rtype: :class:`pytodoist.todoist.Project`
 
@@ -392,31 +423,15 @@ class User(TodoistObject):
         >>> print(project.name)
         PyTodoist
         """
-        response = API.add_project(self.token, name,
-                                   color=color, indent=indent, order=order)
-        _fail_if_contains_errors(response)
-        project_json = response.json()
-        return Project(project_json, self)
-
-    def get_projects(self):
-        """Return a list of a user's projects.
-
-        :return: The user's projects.
-        :rtype: list of :class:`pytodoist.todoist.Project`
-
-        >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> user.add_project('PyTodoist')
-        >>> projects = user.get_projects()
-        >>> for project in projects:
-        ...    print(project.name)
-        Inbox
-        PyTodoist
-        """
-        response = API.get_projects(self.token)
-        _fail_if_contains_errors(response)
-        projects_json = response.json()
-        return [Project(project_json, self) for project_json in projects_json]
+        args = {
+            'name': name,
+            'color': color,
+            'indent': indent,
+            'order': order
+        }
+        args = {k: args[k] for k in args if args[k] is not None}
+        self.api_seq_no = _perform_command(self, 'project_add', args)
+        return self.get_project(name)
 
     def get_project(self, project_name):
         """Return the project with a given name.
@@ -437,6 +452,24 @@ class User(TodoistObject):
             if project.name == project_name:
                 return project
 
+    def get_projects(self):
+        """Return a list of a user's projects.
+
+        :return: The user's projects.
+        :rtype: list of :class:`pytodoist.todoist.Project`
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> user.add_project('PyTodoist')
+        >>> projects = user.get_projects()
+        >>> for project in projects:
+        ...    print(project.name)
+        Inbox
+        PyTodoist
+        """
+        self.sync()
+        return list(self.projects.values())
+
     def get_archived_projects(self):
         """Return a list of a user's archived projects.
 
@@ -452,62 +485,12 @@ class User(TodoistObject):
         ...    print(project.name)
         PyTodoist
         """
-        response = API.get_archived_projects(self.token)
-        archived_project_info = response.json()
-        archived_project_ids = (info['id'] for info in archived_project_info)
-        archived_projects = []
-        for project_id in archived_project_ids:
-            project = self.get_project_with_id(project_id)
-            archived_projects.append(project)
-        return archived_projects
-
-    def get_project_with_id(self, project_id):
-        """Return the project with a given ID.
-
-        :param project_id: The ID to search for.
-        :type project_id: str
-        :return: The project that has the ID ``project_id``.
-        :rtype: :class:`pytodoist.todoist.Project`
-
-        >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> inbox = user.get_project('Inbox')
-        >>> project = user.get_project_with_id(inbox.id)
-        >>> print(project.name)
-        Inbox
-        """
-        response = API.get_project(self.token, project_id)
-        _fail_if_contains_errors(response)
-        project_json = response.json()
-        return Project(project_json, self)
-
-    def update_project_orders(self, projects):
-        """Update the order in which projects are displayed on Todoist.
-
-        :param projects: A list of projects in the order to be displayed.
-        :type projects: list :class:`pytodoist.todoist.Project`
-
-        >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> projects = user.get_projects()
-        >>> for project in projects:
-        ...    print(project.name)
-        PyTodoist
-        Homework
-        >>> rev_projects = projects[::-1]
-        >>> user.update_project_orders(rev_projects)
-        >>> projects = user.get_projects()
-        >>> for project in projects:
-        ...    print(project.name)
-        Homework
-        PyTodoist
-        """
-        project_ids = str([project.id for project in projects])
-        response = API.update_project_orders(self.token, project_ids)
-        _fail_if_contains_errors(response)
+        return [p for p in self.get_projects() if p.is_archived]
 
     def get_uncompleted_tasks(self):
         """Return all of a user's uncompleted tasks.
+
+        .. warning:: Requires Todoist premium.
 
         :return: A list of uncompleted tasks.
         :rtype: list of :class:`pytodoist.todoist.Task`
@@ -524,6 +507,8 @@ class User(TodoistObject):
     def get_completed_tasks(self):
         """Return all of a user's completed tasks.
 
+        .. warning:: Requires Todoist premium.
+
         :return: A list of completed tasks.
         :rtype: list of :class:`pytodoist.todoist.Task`
 
@@ -536,42 +521,6 @@ class User(TodoistObject):
         tasks = (p.get_completed_tasks() for p in self.get_projects())
         return list(itertools.chain.from_iterable(tasks))
 
-    def search_completed_tasks(self, limit=None, from_date=None):
-        """Return a filtered list of a user's completed tasks.
-
-        .. warning:: Requires the user to have Todoist premium.
-
-        :param limit: The maximum number of tasks to return (default ``30``).
-        :type limit: int
-        :param from_date: Return tasks with a completion date on or older than
-            from_date. Formatted as ``2007-4-29T10:13``.
-        :type from_date: str
-        :return: A list of tasks that meet the search criteria. If the user
-            does not have Todoist premium an empty list is returned.
-        :rtype: list of :class:`pytodoist.todoist.Task`
-
-        >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> completed_tasks = user.search_completed_tasks(limit=5)
-        >>> for task in completed_tasks:
-        ...     task.uncomplete()
-        """
-        response = API.get_all_completed_tasks(self.token, limit=limit,
-                                               from_date=from_date)
-        _fail_if_contains_errors(response)
-        tasks_json = response.json()['items']
-        tasks = []
-        projects_by_project_id = {}
-        for task_json in tasks_json:
-            project_id = task_json['project_id']
-            if project_id in projects_by_project_id:
-                project = projects_by_project_id[project_id]
-            else:
-                project = self.get_project_with_id(project_id)
-                projects_by_project_id[project_id] = project
-            tasks.append(Task(task_json, project))
-        return tasks
-
     def get_tasks(self):
         """Return all of a user's tasks, regardless of completion state.
 
@@ -582,7 +531,8 @@ class User(TodoistObject):
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> tasks = user.get_tasks()
         """
-        return self.get_uncompleted_tasks() + self.get_completed_tasks()
+        self.sync()
+        return list(self.tasks.values())
 
     def search_tasks(self, *queries):
         """Return a list of tasks that match some search criteria.
@@ -603,7 +553,7 @@ class User(TodoistObject):
         >>> tasks = user.search_tasks(todoist.Query.TOMORROW, '18 Sep')
         """
         queries = json.dumps(queries)
-        response = API.search_tasks(self.token, queries)
+        response = API.query(self.api_token, queries)
         _fail_if_contains_errors(response)
         query_results = response.json()
         tasks = []
@@ -617,17 +567,35 @@ class User(TodoistObject):
                     uncompleted_tasks = project_json.get('uncompleted', [])
                     completed_tasks = project_json.get('completed', [])
                     all_tasks = uncompleted_tasks + completed_tasks
-            projects_by_project_id = {}
             for task_json in all_tasks:
                 project_id = task_json['project_id']
-                if project_id in projects_by_project_id:
-                    project = projects_by_project_id[project_id]
-                else:
-                    project = self.get_project_with_id(project_id)
-                    projects_by_project_id[project_id] = project
+                project = self.projects[project_id]
                 task = Task(task_json, project)
                 tasks.append(task)
         return tasks
+
+    def add_label(self, name, color=None):
+        """Create a new label.
+
+        .. warning:: Requires Todoist premium.
+
+        :param name: The name of the label.
+        :type name: str
+        :param color: The color of the label.
+        :type color: str
+        :return: The newly created label.
+        :rtype: :class:`pytodoist.todoist.Label`
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> label = user.add_label('family')
+        """
+        args = {
+            'name': name,
+            'color': color
+        }
+        self.api_seq_no = _perform_command(self, 'label_register', args)
+        return self.get_label(name)
 
     def get_label(self, label_name):
         """Return the user's label that has a given name.
@@ -655,38 +623,97 @@ class User(TodoistObject):
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> labels = user.get_labels()
         """
-        response = API.get_labels(self.token)
-        _fail_if_contains_errors(response)
-        labels_json = list(response.json().values())
-        return [Label(label_json, self) for label_json in labels_json]
+        self.sync()
+        return list(self.labels.values())
 
-    def add_label(self, name, color=None):
-        """Create a new label.
+    def get_notes(self):
+        """Return a list of all of a user's notes.
 
-        :param name: The name of the label.
-        :type name: str
-        :param color: The color of the label.
-        :type color: str
-        :rtype: :class:`pytodoist.todoist.Label`
+        :return: A list of notes.
+        :rtype: list of :class:`pytodoist.todoist.Note`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> label = user.add_label('family')
+        >>> notes = user.get_notes()
         """
-        response = API.add_label(self.token, name, color=color)
-        _fail_if_contains_errors(response)
-        label_json = response.json()
-        return Label(label_json, self)
+        self.sync()
+        return list(self.notes.values())
 
-    def _get_notification_settings(self):
-        """Return a list of all notification settings.
+    def add_filter(self, name, query, color=None, item_order=None):
+        """Create a new filter.
 
-        :return: A JSON representation of the settings.
-        :rtype: dict
+        .. warning:: Requires Todoist premium.
+
+        :param name: The name of the filter.
+        :param query: The query to search for.
+        :param color: The color of the filter.
+        :param item_order: The filter's order in the filter list.
+        :return: The newly created filter.
+        :rtype: :class:`pytodoist.todoist.Filter`
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> overdue_filter = user.add_filter('Overdue', todoist.Query.OVERDUE)
         """
-        response = API.get_notification_settings(self.token)
-        _fail_if_contains_errors(response)
-        return response.json()
+        args = {
+            'name': name,
+            'query': query,
+            'color': color,
+            'item_order': item_order
+        }
+        self.api_seq_no = _perform_command(self, 'filter_add', args)
+        return self.get_filter(name)
+
+    def get_filter(self, name):
+        """Return the filter that has the given filter name.
+
+        :param name: The name to search for.
+        :return: The filter with the given name.
+        :rtype: :class:`pytodoist.todoist.Filter`
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> user.add_filter('Overdue', todoist.Query.OVERDUE)
+        >>> overdue_filter = user.get_filter('Overdue')
+        """
+        for flter in self.get_filters():
+            if flter.name == name:
+                return flter
+
+    def get_filters(self):
+        """Return a list of all a user's filters.
+
+        :return: A list of filters.
+        :rtype: list of :class:`pytodoist.todoist.Filter`
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> filters = user.get_filters()
+        """
+        self.sync()
+        return list(self.filters.values())
+
+    def clear_reminder_locations(self):
+        """Clear all reminder locations set for the user.
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> user.clear_reminder_locations()
+        """
+        self.api_seq_no = _perform_command(self, 'clear_locations', {})
+
+    def get_reminders(self):
+        """Return a list of the user's reminders.
+
+        :return: A list of reminders.
+        :rtype: list of :class:`pytodoist.todoist.Reminder`
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> reminders = user.get_reminders()
+        """
+        self.sync()
+        return list(self.reminders.values())
 
     def _update_notification_settings(self, event, service,
                                       should_notify):
@@ -699,45 +726,9 @@ class User(TodoistObject):
         :param should_notify: Notify if this is ``1``.
         :type should_notify: int
         """
-        response = API.update_notification_settings(self.token, event,
+        response = API.update_notification_settings(self.api_token, event,
                                                     service, should_notify)
         _fail_if_contains_errors(response)
-
-    def is_email_notified_when(self, event):
-        """Find out if a user is receiving emails for a given
-        event.
-
-        :param event: The type of the notification.
-        :type event: str
-        :return: ``True`` if the user's settings allow for emails,
-            ``False`` otherwise.
-        :rtype: bool
-
-        >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> print(user.is_email_notified_when(todoist.Event.NOTE_ADDED))
-        True
-        """
-        notification_settings = self._get_notification_settings()
-        return notification_settings[event]['notify_email']
-
-    def is_push_notified_when(self, event):
-        """Find out if a user is receiving push notifications for
-        a given event.
-
-        :param event: The type of the notification.
-        :type event: str
-        :return: ``True`` if the user's settings allow for push
-            notifications, ``False`` otherwise.
-        :rtype: bool
-
-        >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> print(user.is_push_notified_when(todoist.Event.NOTE_ADDED))
-        True
-        """
-        notification_settings = self._get_notification_settings()
-        return notification_settings[event]['notify_push']
 
     def enable_push_notifications(self, event):
         """Enable push notifications for a given event.
@@ -787,6 +778,128 @@ class User(TodoistObject):
         """
         self._update_notification_settings(event, 'email', 1)
 
+    def get_productivity_stats(self):
+        """Return the user's productivity stats.
+
+        :return: A JSON-encoded representation of the user's productivity
+            stats.
+        :rtype: A JSON-encoded object.
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> stats = user.get_productivity_stats()
+        >>> print(stats)
+        {"karma_last_update": 50.0, "karma_trend": "up", ... }
+        """
+        response = API.get_productivity_stats(self.api_token)
+        _fail_if_contains_errors(response)
+        return response.json()
+
+    def enable_karma(self):
+        """Enable karma for the user.
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> user.enable_karma()
+        """
+        args = {'karma_disabled': 0}
+        self.api_seq_no = _perform_command(self, 'update_goals', args)
+
+    def disable_karma(self):
+        """Disable karma for the user.
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> user.disable_karma()
+        """
+        args = {'karma_disabled': 1}
+        self.api_seq_no = _perform_command(self, 'update_goals', args)
+
+    def enable_vacation(self):
+        """Enable vacation for the user.
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> user.enable_vacation()
+        """
+        args = {'vacation_mode': 1}
+        self.api_seq_no = _perform_command(self, 'update_goals', args)
+
+    def disable_vacation(self):
+        """Disable vacation for the user.
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> user.disable_vacation()
+        """
+        args = {'vacation_mode': 0}
+        self.api_seq_no = _perform_command(self, 'update_goals', args)
+
+    def update_daily_karma_goal(self, goal):
+        """Update the user's daily karma goal.
+
+        :param goal: The daily karma goal.
+        :type goal: int
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> user.update_daily_karma_goal(100)
+        """
+        args = {'daily_goal': goal}
+        self.api_seq_no = _perform_command(self, 'update_goals', args)
+
+    def update_weekly_karma_goal(self, goal):
+        """Set the user's weekly karma goal.
+
+        :param goal: The weekly karma goal.
+        :type goal: int
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> user.update_weekly_karma_goal(700)
+        """
+        args = {'weekly_goal': goal}
+        self.api_seq_no = _perform_command(self, 'update_goals', args)
+
+    def get_redirect_link(self):
+        """Return the absolute URL to redirect or to open in
+        a browser. The first time the link is used it logs in the user
+        automatically and performs a redirect to a given page. Once used,
+        the link keeps working as a plain redirect.
+
+        :return: The user's redirect link.
+        :rtype: str
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> print(user.get_redirect_link())
+        https://todoist.com/secureRedirect?path=%2Fapp&token ...
+        """
+        response = API.get_redirect_link(self.api_token)
+        _fail_if_contains_errors(response)
+        link_json = response.json()
+        return link_json['link']
+
+    def delete(self, reason=None):
+        """Delete the user's account from Todoist.
+
+        .. warning:: You cannot recover the user after deletion!
+
+        :param reason: The reason for deletion.
+        :type reason: str
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> user.delete()
+        ... # The user token is now invalid and Todoist operations will fail.
+        """
+        response = API.delete_user(self.api_token, self.password,
+                                   reason=reason, in_background=0)
+        # Possible bug in Todoist API returns a status code of 400 even
+        # if the user is deleted successfully. Likely to be changed.
+        if response.status_code != 400:
+            _fail_if_contains_errors(response)
+
 
 class Project(TodoistObject):
     """A Todoist Project with the following attributes:
@@ -808,34 +921,26 @@ class Project(TodoistObject):
     :ivar inbox_project: Is this project the Inbox?
     """
 
+    _CUSTOM_ATTRS = [
+        'owner',
+    ] + TodoistObject._CUSTOM_ATTRS
+
     def __init__(self, project_json, owner):
-        self.id = None
-        self.name = None
-        self.color = None
-        self.collapsed = None
-        self.owner = owner
-        self.last_updated = None
-        self.user_id = None
-        self.cache_count = None
-        self.item_order = None
-        self.indent = None
-        self.is_deleted = None
-        self.is_archived = None
-        self.archived_date = None
-        self.archived_timestamp = None
-        self.inbox_project = None
+        self.id = ''
+        self.name = ''
+        self.color = ''
+        self.collapsed = ''
+        self.user_id = ''
+        self.shared = ''
+        self.item_order = ''
+        self.indent = ''
+        self.is_deleted = ''
+        self.is_archived = ''
+        self.archived_date = ''
+        self.archived_timestamp = ''
         super(Project, self).__init__(project_json)
-
-    def delete(self):
-        """Delete the project.
-
-        >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> project = user.get_project('PyTodoist')
-        >>> project.delete()
-        """
-        response = API.delete_project(self.owner.token, self.id)
-        _fail_if_contains_errors(response)
+        self.owner = owner
+        self.to_update = set()
 
     def update(self):
         """Update the project's details on Todoist.
@@ -851,9 +956,10 @@ class Project(TodoistObject):
         >>> project.update()
         ... # Now the name has been updated on Todoist.
         """
-        response = API.update_project(self.owner.token, self.id,
-                                      **self.__dict__)
-        _fail_if_contains_errors(response)
+        args = {attr: getattr(self, attr) for attr in self.to_update}
+        args['id'] = self.id
+        self.owner.api_seq_no = _perform_command(self.owner,
+                                                 'project_update', args)
 
     def archive(self):
         """Archive the project.
@@ -863,8 +969,9 @@ class Project(TodoistObject):
         >>> project = user.get_project('PyTodoist')
         >>> project.archive()
         """
-        response = API.archive_project(self.owner.token, self.id)
-        _fail_if_contains_errors(response)
+        args = {'id': self.id}
+        self.owner.api_seq_no = _perform_command(self.owner,
+                                                 'project_archive', args)
 
     def unarchive(self):
         """Unarchive the project.
@@ -874,8 +981,9 @@ class Project(TodoistObject):
         >>> project = user.get_project('PyTodoist')
         >>> project.unarchive()
         """
-        response = API.unarchive_project(self.owner.token, self.id)
-        _fail_if_contains_errors(response)
+        args = {'id': self.id}
+        self.owner.api_seq_no = _perform_command(self.owner,
+                                                 'project_unarchive', args)
 
     def collapse(self):
         """Collapse the project on Todoist.
@@ -885,8 +993,8 @@ class Project(TodoistObject):
         >>> project = user.get_project('PyTodoist')
         >>> project.collapse()
         """
-        response = API.update_project(self.owner.token, self.id, collapsed=1)
-        _fail_if_contains_errors(response)
+        self.collapsed = True
+        self.update()
 
     def add_task(self, content, date=None, priority=None):
         """Add a task to the project
@@ -910,11 +1018,63 @@ class Project(TodoistObject):
         >>> print(task.content)
         Install PyTodoist
         """
-        response = API.add_task(self.owner.token, content, project_id=self.id,
+        response = API.add_item(self.owner.token, content, project_id=self.id,
                                 date_string=date, priority=priority)
         _fail_if_contains_errors(response)
         task_json = response.json()
         return Task(task_json, self)
+
+    def get_uncompleted_tasks(self):
+        """Return a list of all uncompleted tasks in this project.
+
+        .. warning:: Requires Todoist premium.
+
+        :return: A list of all uncompleted tasks in this project.
+        :rtype: list of :class:`pytodoist.todoist.Task`
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> project = user.get_project('PyTodoist')
+        >>> project.add_task('Install PyTodoist')
+        >>> uncompleted_tasks = project.get_uncompleted_tasks()
+        >>> for task in uncompleted_tasks:
+        ...    task.complete()
+        """
+        all_tasks = self.get_tasks()
+        completed_tasks = self.get_completed_tasks()
+        return [t for t in all_tasks if t not in completed_tasks]
+
+    def get_completed_tasks(self):
+        """Return a list of all completed tasks in this project.
+
+        :return: A list of all completed tasks in this project.
+        :rtype: list of :class:`pytodoist.todoist.Task`
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> project = user.get_project('PyTodoist')
+        >>> task = project.add_task('Install PyTodoist')
+        >>> task.complete()
+        >>> completed_tasks = project.get_completed_tasks()
+        >>> for task in completed_tasks:
+        ...    task.uncomplete()
+        """
+        self.owner.sync()
+        tasks = []
+        offset = 0
+        while True:
+            response = API.get_all_completed_tasks(self.owner.api_token,
+                                                   limit=_PAGE_LIMIT,
+                                                   offset=offset,
+                                                   project_id=self.id)
+            _fail_if_contains_errors(response)
+            response_json = response.json()
+            tasks_json = response_json['Items']
+            if len(tasks_json) == 0:
+                break  # There are no more completed tasks to retreive.
+            tasks += [self.owner.tasks[task['id']] for task in tasks_json]
+            offset += _PAGE_LIMIT
+        return tasks
 
     def get_tasks(self):
         """Return all tasks in this project.
@@ -933,64 +1093,107 @@ class Project(TodoistObject):
         Install PyTodoist
         Have fun!
         """
-        return self.get_uncompleted_tasks() + self.get_completed_tasks()
+        self.owner.sync()
+        return list(self.owner.tasks.values())
 
-    def get_uncompleted_tasks(self):
-        """Return a list of all uncompleted tasks in this project.
+    def add_note(self, content):
+        """Add a note to the project.
 
-        :return: A list of all uncompleted tasks in this project.
-        :rtype: list of :class:`pytodoist.todoist.Task`
+        .. warning:: Requires Todoist premium.
 
-        >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> project = user.get_project('PyTodoist')
-        >>> project.add_task('Install PyTodoist')
-        >>> uncompleted_tasks = project.get_uncompleted_tasks()
-        >>> for task in uncompleted_tasks:
-        ...    task.complete()
-        """
-        response = API.get_uncompleted_tasks(self.owner.token, self.id)
-        _fail_if_contains_errors(response)
-        tasks_json = response.json()
-        return [Task(task_json, self) for task_json in tasks_json]
-
-    def get_completed_tasks(self):
-        """Return a list of all completed tasks in this project.
-
-        :return: A list of all completed tasks in this project.
-        :rtype: list of :class:`pytodoist.todoist.Task`
+        :param content: The note content.
+        :type content: str
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('PyTodoist')
-        >>> task = project.add_task('Install PyTodoist')
-        >>> task.complete()
-        >>> completed_tasks = project.get_completed_tasks()
-        >>> for task in completed_tasks:
-        ...    task.uncomplete()
+        >>> project.add_note('Remember to update to the latest version.')
         """
-        response = API.get_completed_tasks(self.owner.token, self.id)
-        _fail_if_contains_errors(response)
-        tasks_json = response.json()
-        return [Task(task_json, self) for task_json in tasks_json]
+        args = {
+            'project_id': self.id,
+            'content': content
+        }
+        self.owner.api_seq_no = _perform_command(self.owner, 'note_add', args)
 
-    def update_task_orders(self, tasks):
-        """Update the order in which tasks are displayed on Todoist.
+    def get_notes(self):
+        """Return a list of all of the project's notes.
 
-        :param tasks: A list of tasks in the order to be displayed.
-        :type tasks: list :class:`pytodoist.todoist.Task`
+        :return: A list of notes.
+        :rtype: list of :class:`pytodoist.todoist.Note`
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('PyTodoist')
-        >>> tasks = project.get_tasks()
-        >>> rev_tasks = tasks[::-1]
-        >>> project.update_task_orders(rev_tasks)
+        >>> notes = project.get_notes()
         """
-        task_ids = str([task.id for task in tasks])
-        response = API.update_task_ordering(self.owner.token,
-                                            self.id, task_ids)
-        _fail_if_contains_errors(response)
+        self.owner.sync()
+        notes = self.owner.notes.values()
+        return [n for n in notes if n.project_id == self.id]
+
+    def share(self, email, message=None):
+        """Share the project with another Todoist user.
+
+        :param email: The other user's email address.
+        :type email: str
+        :param message: Optional message to send with the invitation.
+        :type message: str
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> project = user.get_project('PyTodoist')
+        >>> project.share('jane.doe@gmail.com')
+        """
+        args = {
+            'project_id': self.id,
+            'email': email,
+            'message': message
+        }
+        self.owner.api_seq_no = _perform_command(self.owner,
+                                                 'share_project', args)
+
+    def delete_collaborator(self, email):
+        """Remove a collaborating user from the shared project.
+
+        :param email: The collaborator's email address.
+        :type email: str
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> project = user.get_project('PyTodoist')
+        >>> project.delete_collaborator('jane.doe@gmail.com')
+        """
+        args = {
+            'project_id': self.id,
+            'email': email,
+        }
+        self.owner.api_seq_no = _perform_command(self.owner,
+                                                 'delete_collaborator', args)
+
+    def take_ownership(self):
+        """Take ownership of the shared project.
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> project = user.get_project('PyTodoist')
+        >>> project.take_ownership()
+        """
+        args = {
+            'project_id': self.id,
+        }
+        self.owner.api_seq_no = _perform_command(self.owner,
+                                                 'take_ownership', args)
+
+    def delete(self):
+        """Delete the project.
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> project = user.get_project('PyTodoist')
+        >>> project.delete()
+        """
+        args = {'ids': [self.id]}
+        self.owner.api_seq_no = _perform_command(self.owner,
+                                                 'project_delete', args)
 
 
 class Task(TodoistObject):
@@ -1023,31 +1226,36 @@ class Task(TodoistObject):
     :ivar responsible_uid: ID of the user who responsible for the task.
     """
 
+    _CUSTOM_ATTRS = [
+        'project'
+    ] + TodoistObject._CUSTOM_ATTRS
+
     def __init__(self, task_json, project):
-        self.id = None
-        self.content = None
-        self.due_date = None
-        self.due_date_utc = None
-        self.date_string = None
-        self.project = project
-        self.project_id = None
-        self.checked = None
-        self.priority = None
-        self.is_archived = None
-        self.indent = None
-        self.labels = None
-        self.sync_id = None
-        self.in_history = None
-        self.user_id = None
-        self.date_added = None
-        self.children = None
-        self.item_order = None
-        self.collapsed = None
-        self.has_notifications = None
-        self.is_deleted = None
-        self.assigned_by_uid = None
-        self.responsible_uid = None
+        self.id = ''
+        self.content = ''
+        self.due_date = ''
+        self.due_date_utc = ''
+        self.date_string = ''
+        self.project_id = ''
+        self.checked = ''
+        self.priority = ''
+        self.is_archived = ''
+        self.indent = ''
+        self.labels = ''
+        self.sync_id = ''
+        self.in_history = ''
+        self.user_id = ''
+        self.date_added = ''
+        self.children = ''
+        self.item_order = ''
+        self.collapsed = ''
+        self.has_notifications = ''
+        self.is_deleted = ''
+        self.assigned_by_uid = ''
+        self.responsible_uid = ''
         super(Task, self).__init__(task_json)
+        self.project = project
+        self.to_update = set()
 
     def update(self):
         """Update the task's details on Todoist.
@@ -1065,22 +1273,10 @@ class Task(TodoistObject):
         >>> task.update()
         ... # Now the content has been updated on Todoist.
         """
-        response = API.update_task(self.project.owner.token, self.id,
-                                   **self.__dict__)
-        _fail_if_contains_errors(response)
-
-    def delete(self):
-        """Delete the task.
-
-        >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> project = user.get_project('Homework')
-        >>> task = project.add_task('Read Chapter 4')
-        >>> task.delete()
-        """
-        task_ids = '[{id}]'.format(id=self.id)
-        response = API.delete_tasks(self.project.owner.token, task_ids)
-        _fail_if_contains_errors(response)
+        args = {attr: getattr(self, attr) for attr in self.to_update}
+        args['id'] = self.id
+        self.project.owner.api_seq_no = _perform_command(self.project.owner,
+                                                         'item_update', args)
 
     def complete(self):
         """Mark the task complete.
@@ -1091,9 +1287,12 @@ class Task(TodoistObject):
         >>> task = project.add_task('Install PyTodoist')
         >>> task.complete()
         """
-        task_ids = '[{id}]'.format(id=self.id)
-        response = API.complete_tasks(self.project.owner.token, task_ids)
-        _fail_if_contains_errors(response)
+        args = {
+            'project_id': self.project.id,
+            'ids': [self.id]
+        }
+        self.project.owner.api_seq_no = _perform_command(self.project.owner,
+                                                         'item_complete', args)
 
     def uncomplete(self):
         """Mark the task uncomplete.
@@ -1104,12 +1303,17 @@ class Task(TodoistObject):
         >>> task = project.add_task('Install PyTodoist')
         >>> task.uncomplete()
         """
-        task_ids = '[{id}]'.format(id=self.id)
-        response = API.uncomplete_tasks(self.project.owner.token, task_ids)
-        _fail_if_contains_errors(response)
+        args = {
+            'project_id': self.project.id,
+            'ids': [self.id]
+        }
+        owner = self.project.owner
+        owner.api_seq_no = _perform_command(owner, 'item_uncomplete', args)
 
     def add_note(self, content):
         """Add a note to the Task.
+
+        .. warning:: Requires Todoist premium.
 
         :param content: The content of the note.
         :type content: str
@@ -1124,10 +1328,12 @@ class Task(TodoistObject):
         >>> print(note.content)
         https://pypi.python.org/pypi
         """
-        response = API.add_note(self.project.owner.token, self.id, content)
-        _fail_if_contains_errors(response)
-        note_json = response.json()
-        return Note(note_json, self)
+        args = {
+            'item_id': self.id,
+            'content': content
+        }
+        self.project.owner.api_seq_no = _perform_command(self.project.owner,
+                                                         'note_add', args)
 
     def get_notes(self):
         """Return all notes attached to this Task.
@@ -1144,30 +1350,9 @@ class Task(TodoistObject):
         >>> print(len(notes))
         1
         """
-        response = API.get_notes(self.project.owner.token, self.id)
-        _fail_if_contains_errors(response)
-        notes_json = response.json()
-        return [Note(note_json, self) for note_json in notes_json]
-
-    def advance_recurring_date(self):
-        """Advance the recurring date of this task.
-
-        >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> project = user.get_project('PyTodoist')
-        >>> task = project.add_task('Install PyTodoist', date='today')
-        >>> print(task.due_date)
-        Sun 09 Mar 2014 19:54:01 +0000
-        >>> task.advance_recurring_date()
-        >>> print(task.due_date)
-        Sun 10 Mar 2014 19:54:01 +0000
-        """
-        task_ids = '[{id}]'.format(id=self.id)
-        response = API.advance_recurring_dates(self.project.owner.token,
-                                               task_ids)
-        _fail_if_contains_errors(response)
-        task_json = response.json()[0]
-        self.__init__(task_json, self.project)
+        owner = self.project.owner
+        owner.sync()
+        return [n for n in owner.notes.values() if n.item_id == self.id]
 
     def move(self, project):
         """Move this task to another project.
@@ -1186,12 +1371,104 @@ class Task(TodoistObject):
         >>> print(task.project.name)
         Inbox
         """
-        current_pos = '{{"{p_id}":["{t_id}"]}}'.format(p_id=self.project.id,
-                                                       t_id=self.id)
-        response = API.move_tasks(self.project.owner.token, current_pos,
-                                  project.id)
-        _fail_if_contains_errors(response)
+        args = {
+            'project_items': {self.project.id: [self.id]},
+            'to_project': project.id
+        }
+        self.project.owner.api_seq_no = _perform_command(self.project.owner,
+                                                         'item_move', args)
         self.project = project
+
+    def add_date_reminder(self, service, due_date):
+        """Add a reminder to the task which activates on a given date.
+
+        .. warning:: Requires Todoist premium.
+
+        :param service: ```email```, ```sms``` or ```push``` for mobile.
+        :type service: str
+        :param due_date: The due date in UTC, formatted as
+            ```YYYY-MM-DDTHH:MM```
+        :type due_date: str
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> project = user.get_project('PyTodoist')
+        >>> task = project.add_task('Install PyTodoist')
+        >>> task.add_date_reminder('email', '2015-12-01T09:00')
+        """
+        args = {
+            'item_id': self.id,
+            'service': service,
+            'type': 'absolute',
+            'due_date_utc': due_date
+        }
+        self.project.owner.api_seq_no = _perform_command(self.project.owner,
+                                                         'reminder_add', args)
+
+    def add_location_reminder(self, service, name, lat, long, trigger, radius):
+        """Add a reminder to the task which activates on at a given location.
+
+        .. warning:: Requires Todoist premium.
+
+        :param service: ```email```, ```sms``` or ```push``` for mobile.
+        :type service: str
+        :param name: An alias for the location.
+        :type name: str
+        :param lat: The location latitude.
+        :type lat: float
+        :param long: The location longitude.
+        :type long: float
+        :param trigger: ```on_enter``` or ```on_leave```.
+        :type trigger: str
+        :param radius: The radius around the location that is still considered
+            the location.
+        :type radius: float
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> project = user.get_project('PyTodoist')
+        >>> task = project.add_task('Install PyTodoist')
+        >>> task.add_location_reminder('email', 'Leave Glasgow',
+        ...                            55.8580, 4.2590, 'on_leave', 100)
+        """
+        args = {
+            'item_id': self.id,
+            'service': service,
+            'type': 'location',
+            'name': name,
+            'loc_lat': lat,
+            'loc_long': long,
+            'loc_trigger': trigger,
+            'radius': radius
+        }
+        self.project.owner.api_seq_no = _perform_command(self.project.owner,
+                                                         'reminder_add', args)
+
+    def get_reminders(self):
+        """Return a list of the task's reminders.
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> project = user.get_project('PyTodoist')
+        >>> task = project.add_task('Install PyTodoist')
+        >>> task.add_date_reminder('email', '2015-12-01T09:00')
+        >>> reminders = task.get_reminders()
+        """
+        owner = self.project.owner
+        return [r for r in owner.get_reminders() if r.id == self.id]
+
+    def delete(self):
+        """Delete the task.
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> project = user.get_project('Homework')
+        >>> task = project.add_task('Read Chapter 4')
+        >>> task.delete()
+        """
+        args = {'ids': [self.id]}
+        self.project.owner.api_seq_no = _perform_command(self.project.owner,
+                                                         'item_delete', args)
 
 
 class Note(TodoistObject):
@@ -1208,17 +1485,22 @@ class Note(TodoistObject):
     :ivar uids_to_notify: List of user IDs to notify.
     """
 
+    _CUSTOM_ATTRS = [
+        'task'
+    ] + TodoistObject._CUSTOM_ATTRS
+
     def __init__(self, note_json, task):
-        self.id = None
-        self.content = None
-        self.item_id = None
-        self.task = task
-        self.posted = None
-        self.is_deleted = None
-        self.is_archived = None
-        self.posted_uid = None
-        self.uids_to_notify = None
+        self.id = ''
+        self.content = ''
+        self.item_id = ''
+        self.posted = ''
+        self.is_deleted = ''
+        self.is_archived = ''
+        self.posted_uid = ''
+        self.uids_to_notify = ''
         super(Note, self).__init__(note_json)
+        self.task = task
+        self.to_update = set()
 
     def update(self):
         """Update the note's details on Todoist.
@@ -1236,9 +1518,10 @@ class Note(TodoistObject):
         >>> note.update()
         ... # Now the content has been updated on Todoist.
         """
-        response = API.update_note(self.task.project.owner.token, self.id,
-                                   self.content)
-        _fail_if_contains_errors(response)
+        args = {attr: getattr(self, attr) for attr in self.to_update}
+        args['id'] = self.id
+        owner = self.task.project.owner
+        owner.api_seq_no = _perform_command(owner, 'note_update', args)
 
     def delete(self):
         """Delete the note, removing it from it's task.
@@ -1253,9 +1536,9 @@ class Note(TodoistObject):
         >>> print(len(notes))
         0
         """
-        response = API.delete_note(self.task.project.owner.token,
-                                   self.task.id, self.id)
-        _fail_if_contains_errors(response)
+        args = {'id': self.id}
+        owner = self.task.project.owner
+        owner.api_seq_no = _perform_command(owner, 'note_delete', args)
 
 
 class Label(TodoistObject):
@@ -1267,17 +1550,23 @@ class Label(TodoistObject):
     :ivar color: The color of the label.
     :ivar owner: The user who owns the label.
     :ivar is_deleted: Has the label been deleted?
+
+    .. warning:: Requires Todoist premium.
     """
 
+    _CUSTOM_ATTRS = [
+        'owner'
+    ] + TodoistObject._CUSTOM_ATTRS
+
     def __init__(self, label_json, owner):
-        self.id = None
-        self.uid = None
-        self.name = None
-        self.color = None
-        self.owner = owner
-        self.is_deleted = None
+        self.id = ''
+        self.uid = ''
+        self.name = ''
+        self.color = ''
+        self.is_deleted = ''
         super(Label, self).__init__(label_json)
-        self.name_id = self.name
+        self.owner = owner
+        self.to_update = set()
 
     def update(self):
         """Update the label's details on Todoist.
@@ -1293,13 +1582,10 @@ class Label(TodoistObject):
         >>> label.update()
         ... # Now the name has been updated on Todoist.
         """
-        response = API.update_label_name(self.owner.token, self.name_id,
-                                         self.name)
-        _fail_if_contains_errors(response)
-        self.name_id = self.name
-        response = API.update_label_color(self.owner.token,
-                                          self.name_id, self.color)
-        _fail_if_contains_errors(response)
+        args = {attr: getattr(self, attr) for attr in self.to_update}
+        args['id'] = self.id
+        self.owner.api_seq_no = _perform_command(self.owner,
+                                                 'label_update', args)
 
     def delete(self):
         """Delete the label.
@@ -1309,8 +1595,112 @@ class Label(TodoistObject):
         >>> label = user.add_label('family')
         >>> label.delete()
         """
-        response = API.delete_label(self.owner.token, self.name_id)
-        _fail_if_contains_errors(response)
+        args = {'id': self.id}
+        self.owner.api_seq_no = _perform_command(self.owner,
+                                                 'label_update', args)
+
+
+class Filter(TodoistObject):
+    """A Todoist filter with the following attributes:
+
+    :ivar id: The ID of the filter.
+    :ivar name: The filter name.
+    :ivar query: The filter query.
+    :ivar color: The color of the filter.
+    :ivar item_order: The order of the filter in the filters list.
+    :ivar owner: The user who owns the label.
+    """
+
+    _CUSTOM_ATTRS = [
+        'owner'
+    ] + TodoistObject._CUSTOM_ATTRS
+
+    def __init__(self, filter_json, owner):
+        self.id = ''
+        self.name = ''
+        self.query = ''
+        self.color = ''
+        self.item_order = ''
+        super(Filter, self).__init__(filter_json)
+        self.owner = owner
+        self.to_update = set()
+
+    def update(self):
+        """Update the filter's details on Todoist.
+
+        You must call this method to register any local attribute changes with
+        Todoist.
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> overdue_filter = user.add_filter('Overdue', todoist.Query.OVERDUE)
+        >>> overdue_filter.name = 'OVERDUE!'
+        ... # At this point Todoist still thinks the name is 'Overdue'.
+        >>> overdue_filter.update()
+        ... # Now the name has been updated on Todoist.
+        """
+        args = {attr: getattr(self, attr) for attr in self.to_update}
+        args['id'] = self.id
+        self.owner.api_seq_no = _perform_command(self.owner,
+                                                 'filter_update', args)
+
+    def delete(self):
+        """Delete the filter.
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> overdue_filter = user.add_filter('Overdue', todoist.Query.OVERDUE)
+        >>> overdue_filter.delete()
+        """
+        args = {'id': self.id}
+        self.owner.api_seq_no = _perform_command(self.owner,
+                                                 'filter_delete', args)
+
+
+class Reminder(TodoistObject):
+    """A Todoist reminder with the following attributes:
+
+    :ivar id: The ID of the filter.
+    :ivar item_id: The ID of the associated task.
+    :ivar service: ```email```, ```sms``` or ```push``` for mobile.
+    :ivar due_date_utc: The due date in UTC.
+    :ivar date_string: The due date in free form text e.g. ```every day @ 10```
+    :ivar date_lang: The language of the date_string.
+    :ivar notify_uid: The ID of the user who should be notified.
+    :ivar task: The task associated with the reminder.
+    """
+
+    _CUSTOM_ATTRS = [
+        'task'
+    ] + TodoistObject._CUSTOM_ATTRS
+
+    def __init__(self, reminder_json, task):
+        self.id = ''
+        self.item_id = ''
+        self.service = ''
+        self.type = ''
+        self.due_date_utc = ''
+        self.date_string = ''
+        self.date_lang = ''
+        self.notify_uid = ''
+        super(Reminder, self).__init__(reminder_json)
+        self.task = task
+        self.to_update = set()
+
+    def delete(self):
+        """Delete the reminder.
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> project = user.get_project('PyTodoist')
+        >>> task = project.add_task('Install PyTodoist')
+        >>> task.add_date_reminder('email', '2015-12-01T09:00')
+        >>> for reminder in task.get_reminders():
+        ...     reminder.delete()
+        """
+        args = {'id': self.id}
+        owner = self.task.project.owner
+        owner.api_seq_no = _perform_command(owner, 'reminder_delete', args)
 
 
 class Color(object):
@@ -1389,6 +1779,12 @@ class Event(object):
         * SHARE_INVITATION_REJECTED
         * SHARE NOTIFICATION_ACCEPTED
         * NOTE_ADDED
+        * BIZ_TRIAL_WILL_END
+        * BIZ_TRIAL_ENTER_CC
+        * BIZ_ACCOUNT_DISABLED
+        * BIZ_INVITATION_REJECTED
+        * BIZ_INVITATION_ACCEPTED
+        * BIZ_PAYMENT_FAILED
     """
     USER_LEFT_PROJECT = 'user_left_project'
     USER_REMOVED_FROM_PROJECT = 'user_removed_from_project'
@@ -1398,6 +1794,12 @@ class Event(object):
     SHARE_INVITATION_REJECTED = 'share_invitation_rejected'
     SHARE_NOTIFICATION_ACCEPTED = 'share_notification_accepted'
     NOTE_ADDED = 'note_added'
+    BIZ_TRIAL_WILL_END = 'biz_trial_will_end'
+    BIZ_TRIAL_ENTER_CC = 'biz_trial_enter_cc'
+    BIZ_ACCOUNT_DISABLED = 'biz_account_disabled'
+    BIZ_INVITATION_REJECTED = 'biz_invitation_rejected'
+    BIZ_INVITATION_ACCEPTED = 'biz_invitation_accepted'
+    BIZ_PAYMENT_FAILED = 'biz_payment_failed'
 
 
 class Query(object):
@@ -1436,7 +1838,7 @@ class Query(object):
     SATURDAY = 'sat'
     SUNDAY = 'sun'
     NO_DUE_DATE = 'no due date'
-    OVERDUE = 'over due'
+    OVERDUE = 'overdue'
     PRIORITY_1 = 'p1'
     PRIORITY_2 = 'p2'
     PRIORITY_3 = 'p3'

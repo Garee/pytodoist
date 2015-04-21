@@ -1,5 +1,5 @@
 include README.rst
 include LICENCE.txt
 include setup.py
+include setup.cfg
 include pytodoist/*.py
-include pytodoist/test/*.py

@@ -9,6 +9,9 @@ PyTodoist
 .. image:: https://pypip.in/license/pytodoist/badge.svg?style=flat
     :target: https://pypi.python.org/pypi/pytodoist
 
+.. image:: https://pypip.in/wheel/pytodoist/badge.svg?style=flat
+    :target: https://pypi.python.org/pypi/pytodoist
+
 .. image:: https://pypip.in/download/pytodoist/badge.svg?style=flat
     :target: https://pypi.python.org/pypi/pytodoist
 
@@ -40,9 +43,12 @@ Have fun:
     ...     print(project.name)
     ...
     Inbox
+    Books to read
+    Movies to watch
     Shopping
     Work
     Personal
+    Health
     >>> inbox = user.get_project('Inbox')
     >>> task = inbox.add_task('Install PyTodoist',
     ...                        priority=todoist.Priority.VERY_HIGH)
