@@ -354,16 +354,18 @@ class User(TodoistObject):
         _fail_if_contains_errors(response)
         response_json = response.json()
         self.api_seq_no = response_json['seq_no']
-        resource_sync_funcs = {
-            'Projects': self._sync_projects,
-            'Items': self._sync_tasks,
-            'Notes': self._sync_notes,
-            'Labels': self._sync_labels,
-            'Filters': self._sync_filters,
-            'Reminders': self._sync_reminders
-        }
-        for resource, sync_func in resource_sync_funcs.items():
-            sync_func(response_json[resource])
+        if 'Projects' in response_json:
+            self._sync_projects(response_json['Projects'])
+        if 'Items' in response_json:
+            self._sync_tasks(response_json['Items'])
+        if 'Notes' in response_json:
+            self._sync_notes(response_json['Notes'])
+        if 'Labels' in response_json:
+            self._sync_labels(response_json['Labels'])
+        if 'Filters' in response_json:
+            self._sync_filters(response_json['Filters'])
+        if 'Reminders' in response_json:
+            self._sync_filters(response_json['Reminders'])
 
     def _sync_projects(self, projects_json):
         """"Populate the user's projects from a JSON encoded list."""
@@ -407,7 +409,7 @@ class User(TodoistObject):
             task = self.tasks[task_id]
             self.reminders[reminder_id] = Reminder(reminder_json, task)
 
-    def add_project(self, name):
+    def add_project(self, name, color=None, indent=None, order=None):
         """Add a project to the user's account.
 
         :param name: The project name.
@@ -422,8 +424,12 @@ class User(TodoistObject):
         PyTodoist
         """
         args = {
-            'name': name
+            'name': name,
+            'color': color,
+            'indent': indent,
+            'order': order
         }
+        args = {k: args[k] for k in args if args[k] is not None}
         self.api_seq_no = _perform_command(self, 'project_add', args)
         return self.get_project(name)
 
@@ -594,8 +600,6 @@ class User(TodoistObject):
     def get_label(self, label_name):
         """Return the user's label that has a given name.
 
-        .. warning:: Requires Todoist premium.
-
         :param label_name: The name to search for.
         :type label_name: str
         :return: A label that has a matching name or ``None`` if not found.
@@ -612,8 +616,6 @@ class User(TodoistObject):
     def get_labels(self):
         """Return a list of all of a user's labels.
 
-        .. warning:: Requires Todoist premium.
-
         :return: A list of labels.
         :rtype: list of :class:`pytodoist.todoist.Label`
 
@@ -626,8 +628,6 @@ class User(TodoistObject):
 
     def get_notes(self):
         """Return a list of all of a user's notes.
-
-        .. warning:: Requires Todoist premium.
 
         :return: A list of notes.
         :rtype: list of :class:`pytodoist.todoist.Note`
@@ -667,8 +667,6 @@ class User(TodoistObject):
     def get_filter(self, name):
         """Return the filter that has the given filter name.
 
-        .. warning:: Requires Todoist premium.
-
         :param name: The name to search for.
         :return: The filter with the given name.
         :rtype: :class:`pytodoist.todoist.Filter`
@@ -685,8 +683,6 @@ class User(TodoistObject):
     def get_filters(self):
         """Return a list of all a user's filters.
 
-        .. warning:: Requires Todoist premium.
-
         :return: A list of filters.
         :rtype: list of :class:`pytodoist.todoist.Filter`
 
@@ -700,8 +696,6 @@ class User(TodoistObject):
     def clear_reminder_locations(self):
         """Clear all reminder locations set for the user.
 
-        .. warning:: Requires Todoist premium.
-
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> user.clear_reminder_locations()
@@ -710,8 +704,6 @@ class User(TodoistObject):
 
     def get_reminders(self):
         """Return a list of the user's reminders.
-
-        .. warning:: Requires Todoist premium.
 
         :return: A list of reminders.
         :rtype: list of :class:`pytodoist.todoist.Reminder`
@@ -1126,8 +1118,6 @@ class Project(TodoistObject):
     def get_notes(self):
         """Return a list of all of the project's notes.
 
-        .. warning:: Requires Todoist premium.
-
         :return: A list of notes.
         :rtype: list of :class:`pytodoist.todoist.Note`
 
@@ -1348,9 +1338,6 @@ class Task(TodoistObject):
     def get_notes(self):
         """Return all notes attached to this Task.
 
-        .. warning:: Requires Todoist premium.
-
-
         :return: A list of all notes attached to this Task.
         :rtype: list of :class:`pytodoist.todoist.Note`
 
@@ -1460,8 +1447,6 @@ class Task(TodoistObject):
     def get_reminders(self):
         """Return a list of the task's reminders.
 
-        .. warning:: Requires Todoist premium.
-
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> project = user.get_project('PyTodoist')
@@ -1488,8 +1473,6 @@ class Task(TodoistObject):
 
 class Note(TodoistObject):
     """A Todoist note with the following attributes:
-
-    .. warning:: Requires Todoist premium.
 
     :ivar id: The note ID.
     :ivar content: The note content.
@@ -1626,8 +1609,6 @@ class Filter(TodoistObject):
     :ivar color: The color of the filter.
     :ivar item_order: The order of the filter in the filters list.
     :ivar owner: The user who owns the label.
-
-    .. warning:: Requires Todoist premium.
     """
 
     _CUSTOM_ATTRS = [
@@ -1687,8 +1668,6 @@ class Reminder(TodoistObject):
     :ivar date_lang: The language of the date_string.
     :ivar notify_uid: The ID of the user who should be notified.
     :ivar task: The task associated with the reminder.
-
-    .. warning:: Requires Todoist premium.
     """
 
     _CUSTOM_ATTRS = [
