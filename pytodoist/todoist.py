@@ -320,6 +320,22 @@ class User(TodoistObject):
         self.sync()
         self.to_update = set()
 
+    def update(self):
+        """Update the user's details on Todoist.
+
+        This method must be called to register any local attribute changes
+        with Todoist.
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> user.full_name = 'John Smith'
+        >>> # At this point Todoist still thinks the name is 'John Doe'.
+        >>> user.update()
+        >>> # Now the name has been updated on Todoist.
+        """
+        args = {attr: getattr(self, attr) for attr in self.to_update}
+        self.api_seq_no = _perform_command(self, 'user_update', args)
+
     def sync(self, resource_types='["all"]'):
         """Synchronize the user's data with the Todoist server.
 
@@ -391,61 +407,6 @@ class User(TodoistObject):
             task = self.tasks[task_id]
             self.reminders[reminder_id] = Reminder(reminder_json, task)
 
-    def update(self):
-        """Update the user's details on Todoist.
-
-        This method must be called to register any local attribute changes
-        with Todoist.
-
-        >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> user.full_name = 'John Smith'
-        >>> # At this point Todoist still thinks the name is 'John Doe'.
-        >>> user.update()
-        >>> # Now the name has been updated on Todoist.
-        """
-        args = {attr: getattr(self, attr) for attr in self.to_update}
-        self.api_seq_no = _perform_command(self, 'user_update', args)
-
-    def delete(self, reason=None):
-        """Delete the user's account from Todoist.
-
-        .. warning:: You cannot recover the user after deletion!
-
-        :param reason: The reason for deletion.
-        :type reason: str
-
-        >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> user.delete()
-        ... # The user token is now invalid and Todoist operations will fail.
-        """
-        response = API.delete_user(self.api_token, self.password,
-                                   reason=reason, in_background=0)
-        # Possible bug in Todoist API returns a status code of 400 even
-        # if the user is deleted successfully. Likely to be changed.
-        if response.status_code != 400:
-            _fail_if_contains_errors(response)
-
-    def get_redirect_link(self):
-        """Return the absolute URL to redirect or to open in
-        a browser. The first time the link is used it logs in the user
-        automatically and performs a redirect to a given page. Once used,
-        the link keeps working as a plain redirect.
-
-        :return: The user's redirect link.
-        :rtype: str
-
-        >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> print(user.get_redirect_link())
-        https://todoist.com/secureRedirect?path=%2Fapp&token ...
-        """
-        response = API.get_redirect_link(self.api_token)
-        _fail_if_contains_errors(response)
-        link_json = response.json()
-        return link_json['link']
-
     def add_project(self, name):
         """Add a project to the user's account.
 
@@ -466,24 +427,6 @@ class User(TodoistObject):
         self.api_seq_no = _perform_command(self, 'project_add', args)
         return self.get_project(name)
 
-    def get_projects(self):
-        """Return a list of a user's projects.
-
-        :return: The user's projects.
-        :rtype: list of :class:`pytodoist.todoist.Project`
-
-        >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> user.add_project('PyTodoist')
-        >>> projects = user.get_projects()
-        >>> for project in projects:
-        ...    print(project.name)
-        Inbox
-        PyTodoist
-        """
-        self.sync()
-        return list(self.projects.values())
-
     def get_project(self, project_name):
         """Return the project with a given name.
 
@@ -502,6 +445,24 @@ class User(TodoistObject):
         for project in self.get_projects():
             if project.name == project_name:
                 return project
+
+    def get_projects(self):
+        """Return a list of a user's projects.
+
+        :return: The user's projects.
+        :rtype: list of :class:`pytodoist.todoist.Project`
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> user.add_project('PyTodoist')
+        >>> projects = user.get_projects()
+        >>> for project in projects:
+        ...    print(project.name)
+        Inbox
+        PyTodoist
+        """
+        self.sync()
+        return list(self.projects.values())
 
     def get_archived_projects(self):
         """Return a list of a user's archived projects.
@@ -607,6 +568,29 @@ class User(TodoistObject):
                 tasks.append(task)
         return tasks
 
+    def add_label(self, name, color=None):
+        """Create a new label.
+
+        .. warning:: Requires Todoist premium.
+
+        :param name: The name of the label.
+        :type name: str
+        :param color: The color of the label.
+        :type color: str
+        :return: The newly created label.
+        :rtype: :class:`pytodoist.todoist.Label`
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> label = user.add_label('family')
+        """
+        args = {
+            'name': name,
+            'color': color
+        }
+        self.api_seq_no = _perform_command(self, 'label_register', args)
+        return self.get_label(name)
+
     def get_label(self, label_name):
         """Return the user's label that has a given name.
 
@@ -639,29 +623,6 @@ class User(TodoistObject):
         """
         self.sync()
         return list(self.labels.values())
-
-    def add_label(self, name, color=None):
-        """Create a new label.
-
-        .. warning:: Requires Todoist premium.
-
-        :param name: The name of the label.
-        :type name: str
-        :param color: The color of the label.
-        :type color: str
-        :return: The newly created label.
-        :rtype: :class:`pytodoist.todoist.Label`
-
-        >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> label = user.add_label('family')
-        """
-        args = {
-            'name': name,
-            'color': color
-        }
-        self.api_seq_no = _perform_command(self, 'label_register', args)
-        return self.get_label(name)
 
     def get_notes(self):
         """Return a list of all of a user's notes.
@@ -735,6 +696,32 @@ class User(TodoistObject):
         """
         self.sync()
         return list(self.filters.values())
+
+    def clear_reminder_locations(self):
+        """Clear all reminder locations set for the user.
+
+        .. warning:: Requires Todoist premium.
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> user.clear_reminder_locations()
+        """
+        self.api_seq_no = _perform_command(self, 'clear_locations', {})
+
+    def get_reminders(self):
+        """Return a list of the user's reminders.
+
+        .. warning:: Requires Todoist premium.
+
+        :return: A list of reminders.
+        :rtype: list of :class:`pytodoist.todoist.Reminder`
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> reminders = user.get_reminders()
+        """
+        self.sync()
+        return list(self.reminders.values())
 
     def _update_notification_settings(self, event, service,
                                       should_notify):
@@ -882,31 +869,44 @@ class User(TodoistObject):
         args = {'weekly_goal': goal}
         self.api_seq_no = _perform_command(self, 'update_goals', args)
 
-    def clear_reminder_locations(self):
-        """Clear all reminder locations set for the user.
+    def get_redirect_link(self):
+        """Return the absolute URL to redirect or to open in
+        a browser. The first time the link is used it logs in the user
+        automatically and performs a redirect to a given page. Once used,
+        the link keeps working as a plain redirect.
 
-        .. warning:: Requires Todoist premium.
-
-        >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> user.clear_reminder_locations()
-        """
-        self.api_seq_no = _perform_command(self, 'clear_locations', {})
-
-    def get_reminders(self):
-        """Return a list of the user's reminders.
-
-        .. warning:: Requires Todoist premium.
-
-        :return: A list of reminders.
-        :rtype: list of :class:`pytodoist.todoist.Reminder`
+        :return: The user's redirect link.
+        :rtype: str
 
         >>> from pytodoist import todoist
         >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> reminders = user.get_reminders()
+        >>> print(user.get_redirect_link())
+        https://todoist.com/secureRedirect?path=%2Fapp&token ...
         """
-        self.sync()
-        return list(self.reminders.values())
+        response = API.get_redirect_link(self.api_token)
+        _fail_if_contains_errors(response)
+        link_json = response.json()
+        return link_json['link']
+
+    def delete(self, reason=None):
+        """Delete the user's account from Todoist.
+
+        .. warning:: You cannot recover the user after deletion!
+
+        :param reason: The reason for deletion.
+        :type reason: str
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> user.delete()
+        ... # The user token is now invalid and Todoist operations will fail.
+        """
+        response = API.delete_user(self.api_token, self.password,
+                                   reason=reason, in_background=0)
+        # Possible bug in Todoist API returns a status code of 400 even
+        # if the user is deleted successfully. Likely to be changed.
+        if response.status_code != 400:
+            _fail_if_contains_errors(response)
 
 
 class Project(TodoistObject):
@@ -993,18 +993,6 @@ class Project(TodoistObject):
         self.owner.api_seq_no = _perform_command(self.owner,
                                                  'project_unarchive', args)
 
-    def delete(self):
-        """Delete the project.
-
-        >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> project = user.get_project('PyTodoist')
-        >>> project.delete()
-        """
-        args = {'ids': [self.id]}
-        self.owner.api_seq_no = _perform_command(self.owner,
-                                                 'project_delete', args)
-
     def collapse(self):
         """Collapse the project on Todoist.
 
@@ -1043,26 +1031,6 @@ class Project(TodoistObject):
         _fail_if_contains_errors(response)
         task_json = response.json()
         return Task(task_json, self)
-
-    def get_tasks(self):
-        """Return all tasks in this project.
-
-        :return: A list of all tasks in this project.class
-        :rtype: list of :class:`pytodoist.todoist.Task`
-
-        >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> project = user.get_project('PyTodoist')
-        >>> project.add_task('Install PyTodoist')
-        >>> project.add_task('Have fun!')
-        >>> tasks = project.get_tasks()
-        >>> for task in tasks:
-        ...    print(task.content)
-        Install PyTodoist
-        Have fun!
-        """
-        self.owner.sync()
-        return list(self.owner.tasks.values())
 
     def get_uncompleted_tasks(self):
         """Return a list of all uncompleted tasks in this project.
@@ -1115,6 +1083,26 @@ class Project(TodoistObject):
             tasks += [self.owner.tasks[task['id']] for task in tasks_json]
             offset += _PAGE_LIMIT
         return tasks
+
+    def get_tasks(self):
+        """Return all tasks in this project.
+
+        :return: A list of all tasks in this project.class
+        :rtype: list of :class:`pytodoist.todoist.Task`
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> project = user.get_project('PyTodoist')
+        >>> project.add_task('Install PyTodoist')
+        >>> project.add_task('Have fun!')
+        >>> tasks = project.get_tasks()
+        >>> for task in tasks:
+        ...    print(task.content)
+        Install PyTodoist
+        Have fun!
+        """
+        self.owner.sync()
+        return list(self.owner.tasks.values())
 
     def add_note(self, content):
         """Add a note to the project.
@@ -1205,6 +1193,18 @@ class Project(TodoistObject):
         self.owner.api_seq_no = _perform_command(self.owner,
                                                  'take_ownership', args)
 
+    def delete(self):
+        """Delete the project.
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> project = user.get_project('PyTodoist')
+        >>> project.delete()
+        """
+        args = {'ids': [self.id]}
+        self.owner.api_seq_no = _perform_command(self.owner,
+                                                 'project_delete', args)
+
 
 class Task(TodoistObject):
     """A Todoist Task with the following attributes:
@@ -1287,19 +1287,6 @@ class Task(TodoistObject):
         args['id'] = self.id
         self.project.owner.api_seq_no = _perform_command(self.project.owner,
                                                          'item_update', args)
-
-    def delete(self):
-        """Delete the task.
-
-        >>> from pytodoist import todoist
-        >>> user = todoist.login('john.doe@gmail.com', 'password')
-        >>> project = user.get_project('Homework')
-        >>> task = project.add_task('Read Chapter 4')
-        >>> task.delete()
-        """
-        args = {'ids': [self.id]}
-        self.project.owner.api_seq_no = _perform_command(self.project.owner,
-                                                         'item_delete', args)
 
     def complete(self):
         """Mark the task complete.
@@ -1485,6 +1472,19 @@ class Task(TodoistObject):
         owner = self.project.owner
         return [r for r in owner.get_reminders() if r.id == self.id]
 
+    def delete(self):
+        """Delete the task.
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> project = user.get_project('Homework')
+        >>> task = project.add_task('Read Chapter 4')
+        >>> task.delete()
+        """
+        args = {'ids': [self.id]}
+        self.project.owner.api_seq_no = _perform_command(self.project.owner,
+                                                         'item_delete', args)
+
 
 class Note(TodoistObject):
     """A Todoist note with the following attributes:
@@ -1511,8 +1511,8 @@ class Note(TodoistObject):
         self.content = ''
         self.item_id = ''
         self.posted = ''
-        self.is_deleted = False
-        self.is_archived = False
+        self.is_deleted = ''
+        self.is_archived = ''
         self.posted_uid = ''
         self.uids_to_notify = ''
         super(Note, self).__init__(note_json)
@@ -1580,7 +1580,7 @@ class Label(TodoistObject):
         self.uid = ''
         self.name = ''
         self.color = ''
-        self.is_deleted = True
+        self.is_deleted = ''
         super(Label, self).__init__(label_json)
         self.owner = owner
         self.to_update = set()
