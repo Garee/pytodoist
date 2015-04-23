@@ -84,7 +84,7 @@ def login_with_api_token(api_token):
     >>> print(user.full_name)
     John Doe
     """
-    response = API.sync(api_token, 0, '["user"]')
+    response = API.sync(api_token, 0, 0, '["user"]')
     _fail_if_contains_errors(response)
     user_json = response.json()['User']
     # Required as sync doesn't return the api_token.
@@ -355,7 +355,8 @@ class User(TodoistObject):
             `here <https://developer.todoist.com/#retrieve-data>`_ for a list
             of resources.
         """
-        response = API.sync(self.api_token, self.api_seq_no, resource_types)
+        response = API.sync(self.api_token, self.api_seq_no,
+                            self.api_seq_no_global, resource_types)
         _fail_if_contains_errors(response)
         response_json = response.json()
         self.api_seq_no = response_json['seq_no']
@@ -1685,7 +1686,7 @@ class Reminder(TodoistObject):
         """
         args = {'id': self.id}
         owner = self.task.project.owner
-        owner.api_seq_no = _perform_command(owner, 'reminder_delete', args)
+        _perform_command(owner, 'reminder_delete', args)
 
 
 class Color(object):
