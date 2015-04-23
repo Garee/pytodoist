@@ -62,9 +62,7 @@ class TodoistAPITest(unittest.TestCase):
     def test_delete_user_success(self):
         response = self.api.delete_user(self.user.api_token,
                                         self.user.password)
-        # The Todoist API is returning HTTP 400 but is still deleting
-        # the user. Looks like a bug in the API. TODO - Update when fixed.
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, _HTTP_OK)
         response = self.api.login(self.user.email, self.user.password)
         self.assertNotEqual(response.status_code, _HTTP_OK)
         self.assertIn('error', response.json())

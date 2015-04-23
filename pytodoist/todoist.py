@@ -42,7 +42,9 @@ def login(email, password):
     >>> print(user.full_name)
     John Doe
     """
-    return _login(API.login, email, password)
+    user = _login(API.login, email, password)
+    user.password = password
+    return user
 
 
 def login_with_google(email, oauth2_token):
@@ -895,10 +897,7 @@ class User(TodoistObject):
         """
         response = API.delete_user(self.api_token, self.password,
                                    reason=reason, in_background=0)
-        # Possible bug in Todoist API returns a status code of 400 even
-        # if the user is deleted successfully. Likely to be changed.
-        if response.status_code != 400:
-            _fail_if_contains_errors(response)
+        _fail_if_contains_errors(response)
 
 
 class Project(TodoistObject):
