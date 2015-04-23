@@ -74,9 +74,11 @@ class TodoistAPITest(unittest.TestCase):
         self.assertNotIn('error', response.json())
 
     def test_sync_all(self):
-        response = self.api.sync(self.user.api_token, self.user.api_seq_no)
+        response = self.api.sync(self.user.api_token, self.user.api_seq_no,
+                                 self.user.api_seq_no_global)
         self.assertEqual(response.status_code, _HTTP_OK)
         self.assertIn('seq_no', response.json())
+        self.assertIn('seq_no_global', response.json())
 
     def test_query(self):
         queries = ['tomorrow', 'p1']

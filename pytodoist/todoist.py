@@ -195,10 +195,12 @@ def _perform_command(user, command_type, command_args):
         'temp_id': _gen_uuid()
     }
     commands = json.dumps([command])
-    response = API.sync(user.api_token, user.api_seq_no, commands=commands)
+    response = API.sync(user.api_token, user.api_seq_no,
+                        user.api_seq_no_global, commands=commands)
     _fail_if_contains_errors(response, command_uuid)
     response_json = response.json()
-    return response_json['seq_no']
+    user.api_seq_no = response_json['seq_no']
+    user.api_seq_no_global = response_json['seq_no_global']
 
 
 class TodoistObject(object):
@@ -319,6 +321,7 @@ class User(TodoistObject):
         self.filters = {}
         self.reminders = {}
         self.api_seq_no = 0
+        self.api_seq_no_global = 0
         self.sync()
         self.to_update = set()
 
@@ -336,7 +339,7 @@ class User(TodoistObject):
         >>> # Now the name has been updated on Todoist.
         """
         args = {attr: getattr(self, attr) for attr in self.to_update}
-        self.api_seq_no = _perform_command(self, 'user_update', args)
+        _perform_command(self, 'user_update', args)
 
     def sync(self, resource_types='["all"]'):
         """Synchronize the user's data with the Todoist server.
@@ -356,6 +359,7 @@ class User(TodoistObject):
         _fail_if_contains_errors(response)
         response_json = response.json()
         self.api_seq_no = response_json['seq_no']
+        self.api_seq_no_global = response_json['seq_no_global']
         if 'Projects' in response_json:
             self._sync_projects(response_json['Projects'])
         if 'Items' in response_json:
@@ -432,7 +436,7 @@ class User(TodoistObject):
             'order': order
         }
         args = {k: args[k] for k in args if args[k] is not None}
-        self.api_seq_no = _perform_command(self, 'project_add', args)
+        _perform_command(self, 'project_add', args)
         return self.get_project(name)
 
     def get_project(self, project_name):
@@ -596,7 +600,7 @@ class User(TodoistObject):
             'name': name,
             'color': color
         }
-        self.api_seq_no = _perform_command(self, 'label_register', args)
+        _perform_command(self, 'label_register', args)
         return self.get_label(name)
 
     def get_label(self, label_name):
@@ -663,7 +667,7 @@ class User(TodoistObject):
             'color': color,
             'item_order': item_order
         }
-        self.api_seq_no = _perform_command(self, 'filter_add', args)
+        _perform_command(self, 'filter_add', args)
         return self.get_filter(name)
 
     def get_filter(self, name):
@@ -702,7 +706,7 @@ class User(TodoistObject):
         >>> user = todoist.login('john.doe@gmail.com', 'password')
         >>> user.clear_reminder_locations()
         """
-        self.api_seq_no = _perform_command(self, 'clear_locations', {})
+        _perform_command(self, 'clear_locations', {})
 
     def get_reminders(self):
         """Return a list of the user's reminders.
@@ -805,7 +809,7 @@ class User(TodoistObject):
         >>> user.enable_karma()
         """
         args = {'karma_disabled': 0}
-        self.api_seq_no = _perform_command(self, 'update_goals', args)
+        _perform_command(self, 'update_goals', args)
 
     def disable_karma(self):
         """Disable karma for the user.
@@ -815,7 +819,7 @@ class User(TodoistObject):
         >>> user.disable_karma()
         """
         args = {'karma_disabled': 1}
-        self.api_seq_no = _perform_command(self, 'update_goals', args)
+        _perform_command(self, 'update_goals', args)
 
     def enable_vacation(self):
         """Enable vacation for the user.
@@ -825,7 +829,7 @@ class User(TodoistObject):
         >>> user.enable_vacation()
         """
         args = {'vacation_mode': 1}
-        self.api_seq_no = _perform_command(self, 'update_goals', args)
+        _perform_command(self, 'update_goals', args)
 
     def disable_vacation(self):
         """Disable vacation for the user.
@@ -835,7 +839,7 @@ class User(TodoistObject):
         >>> user.disable_vacation()
         """
         args = {'vacation_mode': 0}
-        self.api_seq_no = _perform_command(self, 'update_goals', args)
+        _perform_command(self, 'update_goals', args)
 
     def update_daily_karma_goal(self, goal):
         """Update the user's daily karma goal.
@@ -848,7 +852,7 @@ class User(TodoistObject):
         >>> user.update_daily_karma_goal(100)
         """
         args = {'daily_goal': goal}
-        self.api_seq_no = _perform_command(self, 'update_goals', args)
+        _perform_command(self, 'update_goals', args)
 
     def update_weekly_karma_goal(self, goal):
         """Set the user's weekly karma goal.
@@ -861,7 +865,7 @@ class User(TodoistObject):
         >>> user.update_weekly_karma_goal(700)
         """
         args = {'weekly_goal': goal}
-        self.api_seq_no = _perform_command(self, 'update_goals', args)
+        _perform_command(self, 'update_goals', args)
 
     def get_redirect_link(self):
         """Return the absolute URL to redirect or to open in
@@ -957,8 +961,7 @@ class Project(TodoistObject):
         """
         args = {attr: getattr(self, attr) for attr in self.to_update}
         args['id'] = self.id
-        self.owner.api_seq_no = _perform_command(self.owner,
-                                                 'project_update', args)
+        _perform_command(self.owner, 'project_update', args)
 
     def archive(self):
         """Archive the project.
@@ -969,8 +972,7 @@ class Project(TodoistObject):
         >>> project.archive()
         """
         args = {'id': self.id}
-        self.owner.api_seq_no = _perform_command(self.owner,
-                                                 'project_archive', args)
+        _perform_command(self.owner, 'project_archive', args)
 
     def unarchive(self):
         """Unarchive the project.
@@ -981,8 +983,7 @@ class Project(TodoistObject):
         >>> project.unarchive()
         """
         args = {'id': self.id}
-        self.owner.api_seq_no = _perform_command(self.owner,
-                                                 'project_unarchive', args)
+        _perform_command(self.owner, 'project_unarchive', args)
 
     def collapse(self):
         """Collapse the project on Todoist.
@@ -1112,7 +1113,7 @@ class Project(TodoistObject):
             'project_id': self.id,
             'content': content
         }
-        self.owner.api_seq_no = _perform_command(self.owner, 'note_add', args)
+        _perform_command(self.owner, 'note_add', args)
 
     def get_notes(self):
         """Return a list of all of the project's notes.
@@ -1147,8 +1148,7 @@ class Project(TodoistObject):
             'email': email,
             'message': message
         }
-        self.owner.api_seq_no = _perform_command(self.owner,
-                                                 'share_project', args)
+        _perform_command(self.owner, 'share_project', args)
 
     def delete_collaborator(self, email):
         """Remove a collaborating user from the shared project.
@@ -1165,8 +1165,7 @@ class Project(TodoistObject):
             'project_id': self.id,
             'email': email,
         }
-        self.owner.api_seq_no = _perform_command(self.owner,
-                                                 'delete_collaborator', args)
+        _perform_command(self.owner, 'delete_collaborator', args)
 
     def take_ownership(self):
         """Take ownership of the shared project.
@@ -1179,8 +1178,7 @@ class Project(TodoistObject):
         args = {
             'project_id': self.id,
         }
-        self.owner.api_seq_no = _perform_command(self.owner,
-                                                 'take_ownership', args)
+        _perform_command(self.owner, 'take_ownership', args)
 
     def delete(self):
         """Delete the project.
@@ -1191,8 +1189,7 @@ class Project(TodoistObject):
         >>> project.delete()
         """
         args = {'ids': [self.id]}
-        self.owner.api_seq_no = _perform_command(self.owner,
-                                                 'project_delete', args)
+        _perform_command(self.owner, 'project_delete', args)
 
 
 class Task(TodoistObject):
@@ -1274,8 +1271,7 @@ class Task(TodoistObject):
         """
         args = {attr: getattr(self, attr) for attr in self.to_update}
         args['id'] = self.id
-        self.project.owner.api_seq_no = _perform_command(self.project.owner,
-                                                         'item_update', args)
+        _perform_command(self.project.owner, 'item_update', args)
 
     def complete(self):
         """Mark the task complete.
@@ -1290,8 +1286,7 @@ class Task(TodoistObject):
             'project_id': self.project.id,
             'ids': [self.id]
         }
-        self.project.owner.api_seq_no = _perform_command(self.project.owner,
-                                                         'item_complete', args)
+        _perform_command(self.project.owner, 'item_complete', args)
 
     def uncomplete(self):
         """Mark the task uncomplete.
@@ -1307,7 +1302,7 @@ class Task(TodoistObject):
             'ids': [self.id]
         }
         owner = self.project.owner
-        owner.api_seq_no = _perform_command(owner, 'item_uncomplete', args)
+        _perform_command(owner, 'item_uncomplete', args)
 
     def add_note(self, content):
         """Add a note to the Task.
@@ -1331,8 +1326,7 @@ class Task(TodoistObject):
             'item_id': self.id,
             'content': content
         }
-        self.project.owner.api_seq_no = _perform_command(self.project.owner,
-                                                         'note_add', args)
+        _perform_command(self.project.owner, 'note_add', args)
 
     def get_notes(self):
         """Return all notes attached to this Task.
@@ -1374,8 +1368,7 @@ class Task(TodoistObject):
             'project_items': {self.project.id: [self.id]},
             'to_project': project.id
         }
-        self.project.owner.api_seq_no = _perform_command(self.project.owner,
-                                                         'item_move', args)
+        _perform_command(self.project.owner, 'item_move', args)
         self.project = project
 
     def add_date_reminder(self, service, due_date):
@@ -1401,8 +1394,7 @@ class Task(TodoistObject):
             'type': 'absolute',
             'due_date_utc': due_date
         }
-        self.project.owner.api_seq_no = _perform_command(self.project.owner,
-                                                         'reminder_add', args)
+        _perform_command(self.project.owner, 'reminder_add', args)
 
     def add_location_reminder(self, service, name, lat, long, trigger, radius):
         """Add a reminder to the task which activates on at a given location.
@@ -1440,8 +1432,7 @@ class Task(TodoistObject):
             'loc_trigger': trigger,
             'radius': radius
         }
-        self.project.owner.api_seq_no = _perform_command(self.project.owner,
-                                                         'reminder_add', args)
+        _perform_command(self.project.owner, 'reminder_add', args)
 
     def get_reminders(self):
         """Return a list of the task's reminders.
@@ -1466,8 +1457,7 @@ class Task(TodoistObject):
         >>> task.delete()
         """
         args = {'ids': [self.id]}
-        self.project.owner.api_seq_no = _perform_command(self.project.owner,
-                                                         'item_delete', args)
+        _perform_command(self.project.owner, 'item_delete', args)
 
 
 class Note(TodoistObject):
@@ -1520,7 +1510,7 @@ class Note(TodoistObject):
         args = {attr: getattr(self, attr) for attr in self.to_update}
         args['id'] = self.id
         owner = self.task.project.owner
-        owner.api_seq_no = _perform_command(owner, 'note_update', args)
+        _perform_command(owner, 'note_update', args)
 
     def delete(self):
         """Delete the note, removing it from it's task.
@@ -1537,7 +1527,7 @@ class Note(TodoistObject):
         """
         args = {'id': self.id}
         owner = self.task.project.owner
-        owner.api_seq_no = _perform_command(owner, 'note_delete', args)
+        _perform_command(owner, 'note_delete', args)
 
 
 class Label(TodoistObject):
@@ -1583,8 +1573,7 @@ class Label(TodoistObject):
         """
         args = {attr: getattr(self, attr) for attr in self.to_update}
         args['id'] = self.id
-        self.owner.api_seq_no = _perform_command(self.owner,
-                                                 'label_update', args)
+        _perform_command(self.owner, 'label_update', args)
 
     def delete(self):
         """Delete the label.
@@ -1595,8 +1584,7 @@ class Label(TodoistObject):
         >>> label.delete()
         """
         args = {'id': self.id}
-        self.owner.api_seq_no = _perform_command(self.owner,
-                                                 'label_update', args)
+        _perform_command(self.owner, 'label_update', args)
 
 
 class Filter(TodoistObject):
@@ -1640,8 +1628,7 @@ class Filter(TodoistObject):
         """
         args = {attr: getattr(self, attr) for attr in self.to_update}
         args['id'] = self.id
-        self.owner.api_seq_no = _perform_command(self.owner,
-                                                 'filter_update', args)
+        _perform_command(self.owner, 'filter_update', args)
 
     def delete(self):
         """Delete the filter.
@@ -1652,8 +1639,7 @@ class Filter(TodoistObject):
         >>> overdue_filter.delete()
         """
         args = {'id': self.id}
-        self.owner.api_seq_no = _perform_command(self.owner,
-                                                 'filter_delete', args)
+        _perform_command(self.owner, 'filter_delete', args)
 
 
 class Reminder(TodoistObject):

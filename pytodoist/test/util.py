@@ -20,6 +20,7 @@ class TestUser(object):
         self.password = "password"
         self.api_token = None
         self.api_seq_no = '0'
+        self.api_seq_no_global = '0'
 
 
 def create_user():

@@ -149,7 +149,8 @@ class TodoistAPI(object):
         }
         return self._post('delete_user', params, **kwargs)
 
-    def sync(self, api_token, seq_no, resource_types='["all"]', **kwargs):
+    def sync(self, api_token, seq_no, seq_no_global,
+             resource_types='["all"]', **kwargs):
         """Update and retrieve Todoist data.
 
         :param api_token: The user's login api_token.
@@ -157,6 +158,9 @@ class TodoistAPI(object):
         :param seq_no: The request sequence number. On initial request pass
             ``0``. On all others pass the last seq_no you received.
         :type seq_no: int
+        :param seq_no_global: The request sequence number. On initial request
+            pass ``0``. On all others pass the last seq_no you received.
+        :type seq_no_global: int
         :param resource_types: Specifies which subset of data you want to
            receive e.g. only projects. Defaults to all data.
         :type resources_types: str
@@ -171,13 +175,14 @@ class TodoistAPI(object):
         ...                         'password')
         >>> user_info = response.json()
         >>> api_token = user_info['api_token']
-        >>> response = api.sync(api_token, 0, '["projects"]')
+        >>> response = api.sync(api_token, 0, 0, '["projects"]')
         >>> print(response.json())
         {'seq_no_global': 3848029654, 'seq_no': 3848029654, 'Projects': ...}
         """
         params = {
             'token': api_token,
             'seq_no': seq_no,
+            'seq_no_global': seq_no_global
         }
         req_func = self._post
         if 'commands' not in kwargs:  # GET if we're not changing data.
