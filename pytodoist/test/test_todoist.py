@@ -137,29 +137,26 @@ class UserTest(unittest.TestCase):
             self.assertIsNotNone(task)
 
     def test_add_label(self):
-        with self.assertRaises(todoist.RequestError):
-            self.user.add_label(_LABEL)  # Premium only.
-            labels = self.user.get_labels()
-            self.assertEqual(len(labels), 1)
-            label = labels[0]
-            self.assertEqual(label.name, _LABEL)
-            self.assertEqual(label.color, todoist.Color.PINK)
+        self.user.add_label(_LABEL)
+        labels = self.user.get_labels()
+        self.assertEqual(len(labels), 1)
+        label = labels[0]
+        self.assertEqual(label.name, _LABEL)
+        self.assertEqual(label.color, todoist.Color.GRAY)
 
     def test_get_label(self):
-        with self.assertRaises(todoist.RequestError):
-            self.user.add_label(_LABEL)  # Premium only.
-            label = self.user.get_label(_LABEL)
-            self.assertIsNotNone(label)
-            self.assertEqual(label.name, _LABEL)
+        self.user.add_label(_LABEL)
+        label = self.user.get_label(_LABEL)
+        self.assertIsNotNone(label)
+        self.assertEqual(label.name, _LABEL)
 
     def test_get_labels(self):
-        with self.assertRaises(todoist.RequestError):
-            for i in range(5):
-                self.user.add_label(_LABEL + str(i))  # Premium only.
-            labels = self.user.get_labels()
-            self.assertEqual(len(labels), 5)
-            for label in labels:
-                self.assertIsNotNone(label)
+        for i in range(5):
+            self.user.add_label(_LABEL + str(i))
+        labels = self.user.get_labels()
+        self.assertEqual(len(labels), 5)
+        for label in labels:
+            self.assertIsNotNone(label)
 
     def test_add_filter(self):
         with self.assertRaises(todoist.RequestError):
