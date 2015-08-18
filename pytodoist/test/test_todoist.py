@@ -360,8 +360,7 @@ class TaskTest(unittest.TestCase):
         self.assertEqual(len(tasks), 1)
 
     def test_add_date_reminder(self):
-        with self.assertRaises(todoist.RequestError):  # Premium only.
-            self.task.add_date_reminder('email', '2050-3-24T23:59')
+        self.task.add_date_reminder('email', '2050-3-24T23:59')
 
     def test_add_location_reminder(self):
         with self.assertRaises(todoist.RequestError):  # Premium only.
