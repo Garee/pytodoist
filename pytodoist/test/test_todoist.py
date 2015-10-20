@@ -11,7 +11,7 @@ N_DEFAULT_PROJECTS = 6
 _INBOX_PROJECT_NAME = 'Inbox'
 _PROJECT_NAME = 'Test Project'
 _TASK = 'Test Task'
-_LABEL = 'Test Label'
+_LABEL = 'test_label'
 _NOTE = 'Test Note'
 _FILTER = 'Test Filter'
 
