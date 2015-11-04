@@ -6,3 +6,4 @@ MANIFEST
 dist/
 docs/build/
 htmlcov/
+.DS_Store
