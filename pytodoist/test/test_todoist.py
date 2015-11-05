@@ -228,7 +228,8 @@ class ProjectTest(unittest.TestCase):
 
     def setUp(self):
         self.user = create_user()
-        self.project = self.user.add_project(_PROJECT_NAME)
+        self.user.add_project(_PROJECT_NAME)
+        self.project = self.user.get_project(_PROJECT_NAME)
 
     def tearDown(self):
         self.user.delete()

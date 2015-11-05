@@ -355,8 +355,7 @@ class User(TodoistObject):
             `here <https://developer.todoist.com/#retrieve-data>`_ for a list
             of resources.
         """
-        response = API.sync(self.api_token, self.api_seq_no,
-                            self.api_seq_no_global, resource_types)
+        response = API.sync(self.api_token, 0, 0, resource_types)
         _fail_if_contains_errors(response)
         response_json = response.json()
         self.api_seq_no = response_json['seq_no']
@@ -974,6 +973,7 @@ class Project(TodoistObject):
         """
         args = {'id': self.id}
         _perform_command(self.owner, 'project_archive', args)
+        self.is_archived = '1'
 
     def unarchive(self):
         """Unarchive the project.
@@ -1070,10 +1070,12 @@ class Project(TodoistObject):
                                                    project_id=self.id)
             _fail_if_contains_errors(response)
             response_json = response.json()
-            tasks_json = response_json['Items']
+            tasks_json = response_json['items']
             if len(tasks_json) == 0:
                 break  # There are no more completed tasks to retreive.
-            tasks += [self.owner.tasks[task['id']] for task in tasks_json]
+            for task_json in tasks_json:
+                project = self.owner.projects[task_json['project_id']]
+                tasks.append(Task(task_json, project))
             offset += _PAGE_LIMIT
         return tasks
 
@@ -1191,6 +1193,7 @@ class Project(TodoistObject):
         """
         args = {'ids': [self.id]}
         _perform_command(self.owner, 'project_delete', args)
+        del self.owner.projects[self.id]
 
 
 class Task(TodoistObject):
@@ -1459,6 +1462,7 @@ class Task(TodoistObject):
         """
         args = {'ids': [self.id]}
         _perform_command(self.project.owner, 'item_delete', args)
+        del self.project.owner.tasks[self.id]
 
 
 class Note(TodoistObject):

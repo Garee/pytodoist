@@ -1,6 +1,11 @@
 History
 =======
 
+2.0.3 (05/11/2015)
+------------------
+
+* Compatibility fixes due to official sync API changes.
+
 2.0.2 (23/04/2015)
 ------------------
 
