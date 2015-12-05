@@ -384,8 +384,11 @@ class User(TodoistObject):
         for task_json in tasks_json:
             task_id = task_json['id']
             project_id = task_json['project_id']
-            project = self.projects[project_id]
-            self.tasks[task_id] = Task(task_json, project)
+            try:
+                project = self.projects[project_id]
+                self.tasks[task_id] = Task(task_json, project)
+            except KeyError:
+                continue
 
     def _sync_notes(self, notes_json):
         """"Populate the user's notes from a JSON encoded list."""
