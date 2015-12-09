@@ -1100,7 +1100,6 @@ class Project(TodoistObject):
         return [t for t in self.owner.tasks.values()
                 if t.project_id == self.id]
 
-
     def add_note(self, content):
         """Add a note to the project.
 
