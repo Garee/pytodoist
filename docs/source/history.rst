@@ -1,6 +1,11 @@
 History
 =======
 
+2.0.4 (09/12/2015)
+------------------
+
+* Fixed a bug in Project.get_tasks which was causing all tasks to be returned.
+
 2.0.3 (05/11/2015)
 ------------------
 
