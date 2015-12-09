@@ -1097,7 +1097,9 @@ class Project(TodoistObject):
         Have fun!
         """
         self.owner.sync()
-        return list(self.owner.tasks.values())
+        return [t for t in self.owner.tasks.values()
+                if t.project_id == self.id]
+
 
     def add_note(self, content):
         """Add a note to the project.

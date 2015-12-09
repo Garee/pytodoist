@@ -275,6 +275,8 @@ class ProjectTest(unittest.TestCase):
     def test_get_tasks(self):
         for i in range(5):
             self.project.add_task(_TASK + str(i))
+        inbox = self.user.get_project('Inbox')
+        inbox.add_task(_TASK)
         tasks = self.project.get_tasks()
         self.assertEqual(len(tasks), 5)
 
