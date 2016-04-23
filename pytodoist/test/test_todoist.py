@@ -367,9 +367,10 @@ class TaskTest(unittest.TestCase):
             self.task.add_date_reminder('email', '2050-3-24T23:59')
 
     def test_add_location_reminder(self):
-        self.task.add_location_reminder('email', 'Leave Glasgow',
-                                        55.8580, 4.2590, 'on_leave',
-                                        100)
+        with self.assertRaises(todoist.RequestError):  # Premium only.
+            self.task.add_location_reminder('email', 'Leave Glasgow',
+                                            55.8580, 4.2590, 'on_leave',
+                                            100)
 
 
 if __name__ == '__main__':
