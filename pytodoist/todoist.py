@@ -1288,10 +1288,9 @@ class Task(TodoistObject):
         >>> task.complete()
         """
         args = {
-            'project_id': self.project.id,
-            'ids': [self.id]
+            'id': self.id
         }
-        _perform_command(self.project.owner, 'item_complete', args)
+        _perform_command(self.project.owner, 'item_close', args)
 
     def uncomplete(self):
         """Mark the task uncomplete.
