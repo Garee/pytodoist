@@ -298,10 +298,6 @@ class ProjectTest(unittest.TestCase):
         self.project.share('test@gmail.com')
         self.project.delete_collaborator('test@gmail.com')
 
-    def test_take_ownership(self):
-        self.project.share('test@gmail.com')
-        self.project.take_ownership()
-
 
 class TaskTest(unittest.TestCase):
 
