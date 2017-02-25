@@ -1,6 +1,10 @@
 History
 =======
 
+2.1.0 (25/02/2017)
+------------------
+* Migrated from version 6 to version 7 of the sync API.
+
 2.0.4 (09/12/2015)
 ------------------
 

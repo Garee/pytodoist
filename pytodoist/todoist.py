@@ -84,9 +84,9 @@ def login_with_api_token(api_token):
     >>> print(user.full_name)
     John Doe
     """
-    response = API.sync(api_token, 0, 0, '["user"]')
+    response = API.sync(api_token, '*', '["user"]')
     _fail_if_contains_errors(response)
-    user_json = response.json()['User']
+    user_json = response.json()['user']
     # Required as sync doesn't return the api_token.
     user_json['api_token'] = user_json['token']
     return User(user_json)
@@ -174,8 +174,8 @@ def _fail_if_contains_errors(response, sync_uuid=None):
     if response.status_code != _HTTP_OK:
         raise RequestError(response)
     response_json = response.json()
-    if sync_uuid and 'SyncStatus' in response_json:
-        status = response_json['SyncStatus']
+    if sync_uuid and 'sync_status' in response_json:
+        status = response_json['sync_status']
         if sync_uuid in status and 'error' in status[sync_uuid]:
             raise RequestError(response)
 
@@ -195,12 +195,10 @@ def _perform_command(user, command_type, command_args):
         'temp_id': _gen_uuid()
     }
     commands = json.dumps([command])
-    response = API.sync(user.api_token, user.api_seq_no,
-                        user.api_seq_no_global, commands=commands)
+    response = API.sync(user.api_token, user.sync_token, commands=commands)
     _fail_if_contains_errors(response, command_uuid)
     response_json = response.json()
-    user.api_seq_no = response_json['seq_no']
-    user.api_seq_no_global = response_json['seq_no_global']
+    user.sync_token = response_json['sync_token']
 
 
 class TodoistObject(object):
@@ -230,8 +228,7 @@ class User(TodoistObject):
     :ivar join_date: The date the user joined Todoist.
     :ivar is_premium: Does the user have Todoist premium?
     :ivar premium_until: The date on which the premium status is revoked.
-    :ivar timezone: The user's chosen timezone.
-    :ivar tz_offset: The user's timezone offset.
+    :ivar tz_info: The user's timezone information.
     :ivar time_format: The user's selected time_format. If ``0`` then show
         time as ``13:00`` otherwise ``1pm``.
     :ivar date_format: The user's selected date format. If ``0`` show
@@ -248,7 +245,6 @@ class User(TodoistObject):
     :ivar business_account_id: The ID of the user's business account.
     :ivar karma: The user's karma.
     :ivar karma_trend: The user's karma trend.
-    :ivar has_push_reminders: Does the user have a push reminder enabled?
     :ivar default_reminder: ``email`` for email, ``mobile`` for SMS,
         ``push`` for smart device notifications or ``no_default`` to
         turn off notifications. Only for premium users.
@@ -256,14 +252,10 @@ class User(TodoistObject):
     :ivar team_inbox: The ID of the user's team Inbox project.
     :ivar api_token: The user's API token.
     :ivar shard_id: The user's shard ID.
-    :ivar seq_no: The user's sequence number.
-    :ivar beta: The user's beta status.
     :ivar image_id: The ID of the user's avatar.
     :ivar is_biz_admin: Is the user a business administrator?
     :ivar last_used_ip: The IP address of the computer last used to login.
-    :ivar is_dummy: Is this a real or a dummy user?
     :ivar auto_reminder: The auto reminder of the user.
-    :ivar guide_mode: The guide mode of the user.
     """
 
     # Don't try to update these attributes on Todoist.
@@ -275,7 +267,7 @@ class User(TodoistObject):
         'filters',
         'reminders',
         'password',
-        'api_seq_no',
+        'sync_token',
     ] + TodoistObject._CUSTOM_ATTRS
 
     def __init__(self, user_json):
@@ -285,8 +277,7 @@ class User(TodoistObject):
         self.join_date = ''
         self.is_premium = ''
         self.premium_until = ''
-        self.timezone = ''
-        self.tz_offset = ''
+        self.tz_info = ''
         self.time_format = ''
         self.date_format = ''
         self.start_page = ''
@@ -298,20 +289,15 @@ class User(TodoistObject):
         self.business_account_id = ''
         self.karma = ''
         self.karma_trend = ''
-        self.has_push_reminders = ''
         self.default_reminder = ''
         self.inbox_project = ''
         self.team_inbox = ''
         self.api_token = ''
         self.shard_id = ''
-        self.seq_no = ''
-        self.beta = ''
         self.image_id = ''
         self.is_biz_admin = ''
         self.last_used_ip = ''
-        self.is_dummy = ''
         self.auto_reminder = ''
-        self.guide_mode = ''
         super(User, self).__init__(user_json)
         self.password = ''
         self.projects = {}
@@ -320,8 +306,7 @@ class User(TodoistObject):
         self.labels = {}
         self.filters = {}
         self.reminders = {}
-        self.api_seq_no = 0
-        self.api_seq_no_global = 0
+        self.sync_token = '*'
         self.sync()
         self.to_update = set()
 
@@ -355,23 +340,22 @@ class User(TodoistObject):
             `here <https://developer.todoist.com/#retrieve-data>`_ for a list
             of resources.
         """
-        response = API.sync(self.api_token, 0, 0, resource_types)
+        response = API.sync(self.api_token, '*', resource_types)
         _fail_if_contains_errors(response)
         response_json = response.json()
-        self.api_seq_no = response_json['seq_no']
-        self.api_seq_no_global = response_json['seq_no_global']
-        if 'Projects' in response_json:
-            self._sync_projects(response_json['Projects'])
-        if 'Items' in response_json:
-            self._sync_tasks(response_json['Items'])
-        if 'Notes' in response_json:
-            self._sync_notes(response_json['Notes'])
-        if 'Labels' in response_json:
-            self._sync_labels(response_json['Labels'])
-        if 'Filters' in response_json:
-            self._sync_filters(response_json['Filters'])
-        if 'Reminders' in response_json:
-            self._sync_filters(response_json['Reminders'])
+        self.sync_token = response_json['sync_token']
+        if 'projects' in response_json:
+            self._sync_projects(response_json['projects'])
+        if 'items' in response_json:
+            self._sync_tasks(response_json['items'])
+        if 'notes' in response_json:
+            self._sync_notes(response_json['notes'])
+        if 'labels' in response_json:
+            self._sync_labels(response_json['labels'])
+        if 'filters' in response_json:
+            self._sync_filters(response_json['filters'])
+        if 'reminders' in response_json:
+            self._sync_filters(response_json['reminders'])
 
     def _sync_projects(self, projects_json):
         """"Populate the user's projects from a JSON encoded list."""
@@ -913,14 +897,11 @@ class Project(TodoistObject):
     :ivar collapsed: Is this project collapsed?
     :ivar owner: The owner of the project.
     :ivar last_updated: When the project was last updated.
-    :ivar user_id: The user ID of the owner.
     :ivar cache_count: The cache count of the project.
     :ivar item_order: The task ordering.
     :ivar indent: The indentation level of the project.
     :ivar is_deleted: Has this project been deleted?
     :ivar is_archived: Is this project archived?
-    :ivar archived_date: The date on which the project was archived.
-    :ivar archived_timestamp: The timestamp of the project archiving.
     :ivar inbox_project: Is this project the Inbox?
     """
 
@@ -1202,7 +1183,6 @@ class Task(TodoistObject):
 
     :ivar id: The task ID.
     :ivar content: The task content.
-    :ivar due_date: When is the task due?
     :ivar due_date_utc: When is the task due (in UTC).
     :ivar date_string: How did the user enter the task? Could be every day
         or every day @ 10. The time should be shown when formating the date if
@@ -1539,7 +1519,6 @@ class Label(TodoistObject):
     """A Todoist label with the following attributes:
 
     :ivar id: The ID of the label.
-    :ivar uid: The UID of the label.
     :ivar name: The label name.
     :ivar color: The color of the label.
     :ivar owner: The user who owns the label.

@@ -22,15 +22,15 @@ _HTTP_OK = 200
 
 
 class TodoistAPI(object):
-    """A wrapper around version 6 of the Todoist API.
+    """A wrapper around version 7 of the Todoist API.
 
     >>> from pytodoist.api import TodoistAPI
     >>> api = TodoistAPI()
     >>> print(api.URL)
-    https://api.todoist.com/API/v6/
+    https://api.todoist.com/API/v7/
     """
 
-    VERSION = '6'
+    VERSION = '7'
     URL = 'https://api.todoist.com/API/v{0}/'.format(VERSION)
 
     def login(self, email, password):
@@ -149,8 +149,7 @@ class TodoistAPI(object):
         }
         return self._post('delete_user', params, **kwargs)
 
-    def sync(self, api_token, seq_no, seq_no_global,
-             resource_types='["all"]', **kwargs):
+    def sync(self, api_token, sync_token, resource_types='["all"]', **kwargs):
         """Update and retrieve Todoist data.
 
         :param api_token: The user's login api_token.
@@ -181,8 +180,7 @@ class TodoistAPI(object):
         """
         params = {
             'token': api_token,
-            'seq_no': seq_no,
-            'seq_no_global': seq_no_global
+            'sync_token': sync_token,
         }
         req_func = self._post
         if 'commands' not in kwargs:  # GET if we're not changing data.

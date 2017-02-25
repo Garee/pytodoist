@@ -19,8 +19,7 @@ class TestUser(object):
         self.email = "pytodoist_" + generate_id() + "@gmail.com"
         self.password = "password"
         self.api_token = None
-        self.api_seq_no = '0'
-        self.api_seq_no_global = '0'
+        self.sync_token = '*'
 
 
 def create_user():

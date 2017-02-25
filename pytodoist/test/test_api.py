@@ -29,8 +29,8 @@ class TodoistAPITest(unittest.TestCase):
         self.api.delete_user(self.user.api_token, self.user.password)
 
     def test_class_variables(self):
-        self.assertEqual(self.api.VERSION, '6')
-        self.assertEqual(self.api.URL, 'https://api.todoist.com/API/v6/')
+        self.assertEqual(self.api.VERSION, '7')
+        self.assertEqual(self.api.URL, 'https://api.todoist.com/API/v7/')
 
     def test_login_success(self):
         response = self.api.login(self.user.email, self.user.password)
@@ -74,11 +74,9 @@ class TodoistAPITest(unittest.TestCase):
         self.assertNotIn('error', response.json())
 
     def test_sync_all(self):
-        response = self.api.sync(self.user.api_token, self.user.api_seq_no,
-                                 self.user.api_seq_no_global)
+        response = self.api.sync(self.user.api_token, self.user.sync_token)
         self.assertEqual(response.status_code, _HTTP_OK)
-        self.assertIn('seq_no', response.json())
-        self.assertIn('seq_no_global', response.json())
+        self.assertIn('sync_token', response.json())
 
     def test_query(self):
         queries = ['tomorrow', 'p1']

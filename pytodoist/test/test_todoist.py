@@ -7,6 +7,7 @@ from pytodoist.test.util import create_user
 
 # Sometimes Todoist changes this which will cause tests to fail.
 N_DEFAULT_PROJECTS = 6
+N_DEFAULT_FILTERS = 8
 
 _INBOX_PROJECT_NAME = 'Inbox'
 _PROJECT_NAME = 'Test Project'
@@ -162,7 +163,8 @@ class UserTest(unittest.TestCase):
         with self.assertRaises(todoist.RequestError):
             self.user.add_filter(_FILTER, 'today')  # Premium only
             flters = self.user.get_filters()
-            self.assertEqual(len(flters), 1)
+            print(flters)
+            self.assertEqual(len(flters), N_DEFAULT_FILTERS + 1)
             flter = flters[0]
             self.assertEqual(flter.name, _FILTER)
             self.assertEqual(flter.query, 'today')
