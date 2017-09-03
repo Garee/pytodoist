@@ -1568,7 +1568,7 @@ class Label(TodoistObject):
         >>> label.delete()
         """
         args = {'id': self.id}
-        _perform_command(self.owner, 'label_update', args)
+        _perform_command(self.owner, 'label_delete', args)
 
 
 class Filter(TodoistObject):
