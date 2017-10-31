@@ -1,5 +1,6 @@
 *.pyc
 *.iml
+.venv
 .idea
 .coverage
 MANIFEST
