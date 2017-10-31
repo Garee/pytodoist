@@ -15,3 +15,38 @@ Please fork the project on `github <https://github.com/Garee/PyTodoist>`_ and su
 2. Ensure that your code meets the PEP8 standards.
 3. Update the documentation.
 4. Add yourself to credits.rst
+
+Setup for Development
+----------------------------
+
+First you need to install the needed packages:
+
+.. code-block:: bash
+    sudo pip install flake8
+    sudo pip install -Ur requirements.txt
+
+You can run the tests with:
+
+.. code-block:: bash
+    make test
+
+** With virtualenv **
+
+.. code-block:: bash
+    sudo pip install virtualenv
+    make bootstrap
+
+Now you can start the virtual environment with:
+
+.. code-block:: bash
+    . .venv/bin/activate
+
+And you can deactivate it with:
+
+.. code-block:: bash
+    deactivate
+
+You can also run the tests in the virtual environment with:
+
+.. code-block:: bash
+    make env-test
