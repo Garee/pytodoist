@@ -1,6 +1,10 @@
 History
 =======
 
+2.1.1 (17/07/2018)
+-----------------
+* Improved handling of invalid data in API responses.
+
 2.1.0 (25/02/2017)
 ------------------
 * Migrated from version 6 to version 7 of the sync API.
