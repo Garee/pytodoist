@@ -368,6 +368,9 @@ class User(TodoistObject):
         for task_json in tasks_json:
             task_id = task_json['id']
             project_id = task_json['project_id']
+            if project_id not in self.projects:
+                # ignore orphan tasks
+                continue
             project = self.projects[project_id]
             self.tasks[task_id] = Task(task_json, project)
 
@@ -376,6 +379,9 @@ class User(TodoistObject):
         for note_json in notes_json:
             note_id = note_json['id']
             task_id = note_json['item_id']
+            if task_id not in self.tasks:
+                # ignore orphan notes
+                continue
             task = self.tasks[task_id]
             self.notes[note_id] = Note(note_json, task)
 
@@ -396,6 +402,9 @@ class User(TodoistObject):
         for reminder_json in reminders_json:
             reminder_id = reminder_json['id']
             task_id = reminder_json['item_id']
+            if task_id not in self.tasks:
+                # ignore orphan reminders
+                continue
             task = self.tasks[task_id]
             self.reminders[reminder_id] = Reminder(reminder_json, task)
 
