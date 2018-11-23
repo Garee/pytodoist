@@ -1,8 +1,12 @@
 History
 =======
 
+2.1.2 (23/11/2018)
+------------------
+* Upgraded the requests dependency to fix a security vulnerability.
+
 2.1.1 (17/07/2018)
------------------
+------------------
 * Improved handling of invalid data in API responses.
 
 2.1.0 (25/02/2017)
