@@ -1779,7 +1779,9 @@ class FilterColor(object):
 
     >>> from pytodoist import todoist
     >>> user = todoist.login('john.doe@gmail.com', 'password')
-    >>> user.add_filter('Overdue', todoist.Query.OVERDUE, color=todoist.FilterColor.RED)
+    >>> user.add_filter('Overdue',
+    >>>                 todoist.Query.OVERDUE,
+    >>>                 color=todoist.FilterColor.RED)
 
     The supported colors:
         * GREEN
