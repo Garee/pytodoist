@@ -83,6 +83,11 @@ class UserTest(unittest.TestCase):
         self.user = todoist.login(self.user.email, self.user.password)
         self.assertEqual(self.user.full_name, new_name)
 
+    def test_quick_add(self):
+        text = 'Buy milk #Inbox'
+        task = self.user.quick_add(text)
+        self.assertEqual(task.content, 'Buy milk')
+
     def test_add_project(self):
         self.user.add_project(_PROJECT_NAME)
         projects = self.user.get_projects()

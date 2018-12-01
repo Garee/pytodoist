@@ -408,6 +408,32 @@ class User(TodoistObject):
             task = self.tasks[task_id]
             self.reminders[reminder_id] = Reminder(reminder_json, task)
 
+    def quick_add(self, text, note=None, reminder=None):
+        """Add a task using the 'Quick Add Task' syntax.
+
+        :param text: The text of the task that is parsed. A project
+            name starts with the `#` character, a label starts with a `@`
+            and an assignee starts with a `+`.
+        :type text: str
+        :param note: The content of the note.
+        :type note: str
+        :param reminder: The date of the reminder, added in free form text.
+        :type reminder: str
+        :return: The added task.
+        :rtype: :class:`pytodoist.todoist.Task`
+
+        >>> from pytodoist import todoist
+        >>> user = todoist.login('john.doe@gmail.com', 'password')
+        >>> task = user.quick_add('Install Pytodoist #personal @app')
+        >>> print(task.content)
+        Install PyTodoist
+        """
+        response = API.quick_add(self.api_token, text,
+                                 note=note, reminder=reminder)
+        _fail_if_contains_errors(response)
+        task_json = response.json()
+        return Task(task_json, self)
+
     def add_project(self, name, color=None, indent=None, order=None):
         """Add a project to the user's account.
 

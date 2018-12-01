@@ -4,6 +4,7 @@ History
 2.1.3 (01/12/2018)
 ------------------
 * Fixed the project/label/filter color mappings.
+* Added support for the quick add task API - https://developer.todoist.com/sync/v7/#quick-add-task
 
 2.1.2 (23/11/2018)
 ------------------

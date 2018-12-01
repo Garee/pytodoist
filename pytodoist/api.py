@@ -259,6 +259,28 @@ class TodoistAPI(object):
         }
         return self._post('add_item', params, **kwargs)
 
+    def quick_add(self, api_token, text, **kwargs):
+        """Add a task using the Todoist 'Quick Add Task' syntax.
+
+        :param api_token: The user's login api_token.
+        :type api_token: str
+        :param text: The text of the task that is parsed. A project
+            name starts with the `#` character, a label starts with a `@`
+            and an assignee starts with a `+`.
+        :type text: str
+        :param note: The content of the note.
+        :type note: str
+        :param reminder: The date of the reminder, added in free form text.
+        :type reminder: str
+        :return: The HTTP response to the request.
+        :rtype: :class:`requests.Response`
+        """
+        params = {
+            'token': api_token,
+            'text': text
+        }
+        return self._post('quick/add', params, **kwargs)
+
     def get_all_completed_tasks(self, api_token, **kwargs):
         """Return a list of a user's completed tasks.
 

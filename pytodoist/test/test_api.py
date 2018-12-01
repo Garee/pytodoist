@@ -92,6 +92,13 @@ class TodoistAPITest(unittest.TestCase):
         task_info = response.json()
         self.assertEqual(task_info['content'], 'Task 1')
 
+    def test_quick_add(self):
+        text = 'Buy milk #Inbox'
+        response = self.api.quick_add(self.user.api_token, text)
+        self.assertEqual(response.status_code, _HTTP_OK)
+        task_info = response.json()
+        self.assertEqual(task_info['content'], 'Buy milk')
+
     def test_get_all_completed_tasks_empty(self):
         response = self.api.get_all_completed_tasks(self.user.api_token)
         self.assertNotEqual(response.status_code, _HTTP_OK)
