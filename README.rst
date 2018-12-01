@@ -37,4 +37,4 @@ Have fun:
 Documentation
 -------------
 
-Comprehensive online documentation can be found at http://pytodoist.readthedocs.org
+Comprehensive online documentation can be found at https://pytodoist.readthedocs.org

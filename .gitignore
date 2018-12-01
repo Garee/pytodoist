@@ -10,3 +10,4 @@ htmlcov/
 .DS_Store
 build/
 *.egg-info/
+.venv

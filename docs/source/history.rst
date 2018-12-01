@@ -1,6 +1,10 @@
 History
 =======
 
+2.1.3 (01/12/2018)
+------------------
+* Fixed the project/label/filter color mappings.
+
 2.1.2 (23/11/2018)
 ------------------
 * Upgraded the requests dependency to fix a security vulnerability.

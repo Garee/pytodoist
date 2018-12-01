@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
 """This module contains the unit tests for the pytodoist.todoist module."""
+import time
 import unittest
 from pytodoist import todoist
 from pytodoist.test.util import create_user
 
 # Sometimes Todoist changes this which will cause tests to fail.
-N_DEFAULT_PROJECTS = 6
+N_DEFAULT_TASKS = 8
+N_DEFAULT_PROJECTS = 2
 N_DEFAULT_FILTERS = 8
 
 _INBOX_PROJECT_NAME = 'Inbox'
@@ -21,6 +23,7 @@ class UserTest(unittest.TestCase):
 
     def setUp(self):
         self.user = create_user()
+        time.sleep(10)  # Rate limit ourselves to avoid a server rate limit.
 
     def tearDown(self):
         self.user.delete()
@@ -133,7 +136,7 @@ class UserTest(unittest.TestCase):
         inbox.add_task(_TASK)
         inbox.add_task(_TASK + '2')
         tasks = self.user.get_tasks()
-        self.assertEqual(len(tasks), 2)
+        self.assertEqual(len(tasks), N_DEFAULT_TASKS + 2)
         for task in tasks:
             self.assertIsNotNone(task)
 
@@ -143,7 +146,6 @@ class UserTest(unittest.TestCase):
         self.assertEqual(len(labels), 1)
         label = labels[0]
         self.assertEqual(label.name, _LABEL)
-        self.assertEqual(label.color, todoist.Color.GRAY)
 
     def test_get_label(self):
         self.user.add_label(_LABEL)
@@ -163,7 +165,6 @@ class UserTest(unittest.TestCase):
         with self.assertRaises(todoist.RequestError):
             self.user.add_filter(_FILTER, 'today')  # Premium only
             flters = self.user.get_filters()
-            print(flters)
             self.assertEqual(len(flters), N_DEFAULT_FILTERS + 1)
             flter = flters[0]
             self.assertEqual(flter.name, _FILTER)
@@ -177,15 +178,8 @@ class UserTest(unittest.TestCase):
             self.assertEqual(flter.name, _FILTER)
 
     def test_search_tasks(self):
-        inbox = self.user.get_project(_INBOX_PROJECT_NAME)
-        inbox.add_task(_TASK)
-        inbox.add_task(_TASK + '2')
         tasks = self.user.search_tasks(todoist.Query.ALL)
-        self.assertEqual(len(tasks), 2)
-
-    def test_search_tasks_no_results(self):
-        tasks = self.user.search_tasks(todoist.Query.ALL)
-        self.assertEqual(len(tasks), 0)
+        self.assertEqual(len(tasks), N_DEFAULT_TASKS)
 
     def test_search_tasks_today(self):
         inbox = self.user.get_project(_INBOX_PROJECT_NAME)
@@ -230,6 +224,7 @@ class ProjectTest(unittest.TestCase):
 
     def setUp(self):
         self.user = create_user()
+        time.sleep(10)  # Rate limit ourselves to avoid a server rate limit.
         self.user.add_project(_PROJECT_NAME)
         self.project = self.user.get_project(_PROJECT_NAME)
 
@@ -305,6 +300,7 @@ class TaskTest(unittest.TestCase):
 
     def setUp(self):
         self.user = create_user()
+        time.sleep(10)  # Rate limit ourselves to avoid a server rate limit.
         self.project = self.user.add_project(_PROJECT_NAME)
         self.task = self.project.add_task(_TASK, date='every day')
 
@@ -365,7 +361,7 @@ class TaskTest(unittest.TestCase):
 
     def test_add_location_reminder(self):
         self.task.add_location_reminder('email', 'Leave Glasgow',
-                                        55.8580, 4.2590, 'on_leave',
+                                        '55.8580', '4.2590', 'on_leave',
                                         100)
 
 

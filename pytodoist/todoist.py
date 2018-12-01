@@ -1420,8 +1420,8 @@ class Task(TodoistObject):
             'service': service,
             'type': 'location',
             'name': name,
-            'loc_lat': lat,
-            'loc_long': long,
+            'loc_lat': str(lat),
+            'loc_long': str(long),
             'loc_trigger': trigger,
             'radius': radius
         }
@@ -1681,40 +1681,132 @@ class Reminder(TodoistObject):
         _perform_command(owner, 'reminder_delete', args)
 
 
-class Color(object):
+class ProjectColor(object):
     """This class acts as an easy way to specify Todoist project
     colors.
 
     >>> from pytodoist import todoist
     >>> user = todoist.login('john.doe@gmail.com', 'password')
-    >>> user.add_project('PyTodoist', color=todoist.Color.RED)
+    >>> user.add_project('PyTodoist', color=todoist.ProjectColor.PALE_RED)
+
+    The supported colors:
+        * LIGHT_GREEN
+        * LIGHT_PINK
+        * LIGHT_ORANGE
+        * LIGHT_GOLD
+        * PALE_BLUE
+        * PALE_BROWN
+        * LIGHT_PINK
+        * LIGHT_GRAY
+        * PALE_RED
+        * YELLOW_ORANGE
+        * LIGHT_AQUA
+        * BRIGHT_CYAN
+        * BRIGHT_PINK
+        * CRIMSON
+        * ORANGE
+        * LIME_GREEN
+        * DARK_CYAN
+        * ARTIC_BLUE
+        * SKY_BLUE
+        * CORNFLOWER_BLUE
+        * BLACK
+        * MEDIUM_GRAY
+    """
+    LIGHT_GREEN = 0
+    LIGHT_PINK = 1
+    LIGHT_ORANGE = 2
+    LIGHT_GOLD = 3
+    PALE_BLUE = 4
+    PALE_BROWN = 5
+    LIGHT_PINK = 6
+    LIGHT_GRAY = 7
+    PALE_RED = 8
+    YELLOW_ORANGE = 9
+    LIGHT_AQUA = 10
+    BRIGHT_CYAN = 11
+    BRIGHT_PINK = 12
+    CRIMSON = 13
+    ORANGE = 14
+    LIME_GREEN = 15
+    DARK_CYAN = 16
+    ARTIC_BLUE = 17
+    SKY_BLUE = 18
+    CORNFLOWER_BLUE = 19
+    BLACK = 20
+    MEDIUM_GRAY = 21
+
+
+class LabelColor(object):
+    """This class acts as an easy way to specify Todoist label
+    colors.
+
+    >>> from pytodoist import todoist
+    >>> user = todoist.login('john.doe@gmail.com', 'password')
+    >>> user.add_label('work', color=todoist.LabelColor.RED)
 
     The supported colors:
         * GREEN
-        * PINK
-        * LIGHT_ORANGE
-        * YELLOW
-        * DARK_BLUE
-        * BROWN
-        * PURPLE
-        * GRAY
+        * OLIVE
         * RED
-        * DARK_ORANGE
-        * CYAN
-        * LIGHT_BLUE
+        * PINK
+        * PURPLE
+        * BLUE
+        * CORNFLOWER_BLUE
+        * DARK_GRAY
+        * DARK_CYAN
+        * CRIMSON
+        * LIME_GREEN
+        * LIGHT_BLACK
     """
     GREEN = 0
-    PINK = 1
-    LIGHT_ORANGE = 2
-    YELLOW = 3
-    DARK_BLUE = 4
-    BROWN = 5
-    PURPLE = 6
-    GRAY = 7
-    RED = 8
-    DARK_ORANGE = 9
-    CYAN = 10
-    LIGHT_BLUE = 11
+    OLIVE = 1
+    RED = 2
+    PINK = 3
+    PURPLE = 4
+    BLUE = 5
+    CORNFLOWER_BLUE = 6
+    DARK_GRAY = 7
+    DARK_CYAN = 8
+    CRIMSON = 9
+    LIME_GREEN = 10
+    LIGHT_BLACK = 11
+
+
+class FilterColor(object):
+    """This class acts as an easy way to specify Todoist filter
+    colors.
+
+    >>> from pytodoist import todoist
+    >>> user = todoist.login('john.doe@gmail.com', 'password')
+    >>> user.add_filter('Overdue', todoist.Query.OVERDUE, color=todoist.FilterColor.RED)
+
+    The supported colors:
+        * GREEN
+        * OLIVE
+        * RED
+        * PINK
+        * PURPLE
+        * BLUE
+        * CORNFLOWER_BLUE
+        * DARK_GRAY
+        * DARK_CYAN
+        * CRIMSON
+        * LIME_GREEN
+        * LIGHT_BLACK
+    """
+    GREEN = 0
+    OLIVE = 1
+    RED = 2
+    PINK = 3
+    PURPLE = 4
+    BLUE = 5
+    CORNFLOWER_BLUE = 6
+    DARK_GRAY = 7
+    DARK_CYAN = 8
+    CRIMSON = 9
+    LIME_GREEN = 10
+    LIGHT_BLACK = 11
 
 
 class Priority(object):

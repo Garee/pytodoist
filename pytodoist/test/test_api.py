@@ -2,6 +2,7 @@
 
 """This module contains unit tests for the pytodoist.api module."""
 import json
+import time
 import unittest
 from pytodoist.api import TodoistAPI
 from pytodoist.test.util import TestUser
@@ -18,6 +19,7 @@ class TodoistAPITest(unittest.TestCase):
 
     def setUp(self):
         self.user = TestUser()
+        time.sleep(10)  # Rate limit ourselves to avoid a server rate limit.
         response = self.api.register(self.user.email, self.user.full_name,
                                      self.user.password)
         if response.status_code != _HTTP_OK:  # Assume already registered.
