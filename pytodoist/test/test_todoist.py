@@ -186,13 +186,6 @@ class UserTest(unittest.TestCase):
         tasks = self.user.search_tasks(todoist.Query.ALL)
         self.assertEqual(len(tasks), N_DEFAULT_TASKS)
 
-    def test_search_tasks_today(self):
-        inbox = self.user.get_project(_INBOX_PROJECT_NAME)
-        inbox.add_task(_TASK, date='today')
-        inbox.add_task(_TASK + '2', date='today')
-        tasks = self.user.search_tasks(todoist.Query.TODAY)
-        self.assertEqual(len(tasks), 2)
-
     def test_search_tasks_overdue(self):
         inbox = self.user.get_project(_INBOX_PROJECT_NAME)
         inbox.add_task(_TASK, date='today')
