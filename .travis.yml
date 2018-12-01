@@ -6,9 +6,6 @@ python:
   - "3.5"
   - "3.6"
 
-before_install:
-  - "curl -X POST http://readthedocs.org/build/pytodoist"
-
 install:
   - "pip install flake8"
   - "pip install -r requirements.txt"
