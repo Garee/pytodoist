@@ -1,4 +1,4 @@
-include README.rst
+include README.md
 include LICENCE.txt
 include setup.py
 include setup.cfg
