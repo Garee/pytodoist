@@ -355,7 +355,7 @@ class User(TodoistObject):
         if 'filters' in response_json:
             self._sync_filters(response_json['filters'])
         if 'reminders' in response_json:
-            self._sync_filters(response_json['reminders'])
+            self._sync_reminders(response_json['reminders'])
 
     def _sync_projects(self, projects_json):
         """"Populate the user's projects from a JSON encoded list."""
@@ -1464,7 +1464,7 @@ class Task(TodoistObject):
         >>> reminders = task.get_reminders()
         """
         owner = self.project.owner
-        return [r for r in owner.get_reminders() if r.id == self.id]
+        return [r for r in owner.get_reminders() if r.task.id == self.id]
 
     def delete(self):
         """Delete the task.
