@@ -7,7 +7,7 @@ from pytodoist import todoist
 from pytodoist.test.util import create_user
 
 # Sometimes Todoist changes this which will cause tests to fail.
-N_DEFAULT_TASKS = 8
+N_DEFAULT_TASKS = 9
 N_DEFAULT_PROJECTS = 2
 N_DEFAULT_FILTERS = 8
 
