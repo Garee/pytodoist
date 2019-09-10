@@ -1,6 +1,10 @@
 History
 =======
 
+2.1.4 (10/09/2019)
+------------------
+* Migrate to using version 8 of the Todoist API.
+
 2.1.3 (01/12/2018)
 ------------------
 * Fixed the project/label/filter color mappings.

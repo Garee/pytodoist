@@ -22,15 +22,15 @@ _HTTP_OK = 200
 
 
 class TodoistAPI(object):
-    """A wrapper around version 7 of the Todoist API.
+    """A wrapper around version 8 of the Todoist API.
 
     >>> from pytodoist.api import TodoistAPI
     >>> api = TodoistAPI()
     >>> print(api.URL)
-    https://api.todoist.com/API/v7/
+    https://api.todoist.com/API/v8/
     """
 
-    VERSION = '7'
+    VERSION = '8'
     URL = 'https://api.todoist.com/API/v{0}/'.format(VERSION)
 
     def login(self, email, password):

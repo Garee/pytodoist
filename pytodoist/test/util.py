@@ -18,7 +18,7 @@ class TestUser(object):
         self.full_name = "Test User"
         self.email = "pytodoist_" + generate_id() + "@gmail.com"
         self.password = "password"
-        self.api_token = None
+        self.token = None
         self.sync_token = '*'
 
 

@@ -68,27 +68,25 @@ def login_with_google(email, oauth2_token):
     return _login(API.login_with_google, email, oauth2_token)
 
 
-def login_with_api_token(api_token):
+def login_with_api_token(token):
     """Login to Todoist using a user's api token.
 
     .. note:: It is up to you to obtain the api token.
 
-    :param api_token: A Todoist user's api token.
-    :type api_token: str
+    :param token: A Todoist user's api token.
+    :type token: str
     :return: The Todoist user.
     :rtype: :class:`pytodoist.todoist.User`
 
     >>> from pytodoist import todoist
-    >>> api_token = 'api_token'
-    >>> user = todoist.login_with_api_token(api_token)
+    >>> token = 'token'
+    >>> user = todoist.login_with_api_token(token)
     >>> print(user.full_name)
     John Doe
     """
-    response = API.sync(api_token, '*', '["user"]')
+    response = API.sync(token, '*', '["user"]')
     _fail_if_contains_errors(response)
     user_json = response.json()['user']
-    # Required as sync doesn't return the api_token.
-    user_json['api_token'] = user_json['token']
     return User(user_json)
 
 
@@ -195,7 +193,7 @@ def _perform_command(user, command_type, command_args):
         'temp_id': _gen_uuid()
     }
     commands = json.dumps([command])
-    response = API.sync(user.api_token, user.sync_token, commands=commands)
+    response = API.sync(user.token, user.sync_token, commands=commands)
     _fail_if_contains_errors(response, command_uuid)
     response_json = response.json()
     user.sync_token = response_json['sync_token']
@@ -250,7 +248,7 @@ class User(TodoistObject):
         turn off notifications. Only for premium users.
     :ivar inbox_project: The ID of the user's Inbox project.
     :ivar team_inbox: The ID of the user's team Inbox project.
-    :ivar api_token: The user's API token.
+    :ivar token: The user's API token.
     :ivar shard_id: The user's shard ID.
     :ivar image_id: The ID of the user's avatar.
     :ivar is_biz_admin: Is the user a business administrator?
@@ -292,7 +290,6 @@ class User(TodoistObject):
         self.default_reminder = ''
         self.inbox_project = ''
         self.team_inbox = ''
-        self.api_token = ''
         self.shard_id = ''
         self.image_id = ''
         self.is_biz_admin = ''
@@ -340,7 +337,7 @@ class User(TodoistObject):
             `here <https://developer.todoist.com/#retrieve-data>`_ for a list
             of resources.
         """
-        response = API.sync(self.api_token, '*', resource_types)
+        response = API.sync(self.token, '*', resource_types)
         _fail_if_contains_errors(response)
         response_json = response.json()
         self.sync_token = response_json['sync_token']
@@ -428,7 +425,7 @@ class User(TodoistObject):
         >>> print(task.content)
         Install PyTodoist
         """
-        response = API.quick_add(self.api_token, text,
+        response = API.quick_add(self.token, text,
                                  note=note, reminder=reminder)
         _fail_if_contains_errors(response)
         task_json = response.json()
@@ -578,7 +575,7 @@ class User(TodoistObject):
         >>> tasks = user.search_tasks(todoist.Query.TOMORROW, '18 Sep')
         """
         queries = json.dumps(queries)
-        response = API.query(self.api_token, queries)
+        response = API.query(self.token, queries)
         _fail_if_contains_errors(response)
         query_results = response.json()
         tasks = []
@@ -751,7 +748,7 @@ class User(TodoistObject):
         :param should_notify: Notify if this is ``1``.
         :type should_notify: int
         """
-        response = API.update_notification_settings(self.api_token, event,
+        response = API.update_notification_settings(self.token, event,
                                                     service, should_notify)
         _fail_if_contains_errors(response)
 
@@ -816,7 +813,7 @@ class User(TodoistObject):
         >>> print(stats)
         {"karma_last_update": 50.0, "karma_trend": "up", ... }
         """
-        response = API.get_productivity_stats(self.api_token)
+        response = API.get_productivity_stats(self.token)
         _fail_if_contains_errors(response)
         return response.json()
 
@@ -900,7 +897,7 @@ class User(TodoistObject):
         >>> print(user.get_redirect_link())
         https://todoist.com/secureRedirect?path=%2Fapp&token ...
         """
-        response = API.get_redirect_link(self.api_token)
+        response = API.get_redirect_link(self.token)
         _fail_if_contains_errors(response)
         link_json = response.json()
         return link_json['link']
@@ -918,7 +915,7 @@ class User(TodoistObject):
         >>> user.delete()
         ... # The user token is now invalid and Todoist operations will fail.
         """
-        response = API.delete_user(self.api_token, self.password,
+        response = API.delete_user(self.token, self.password,
                                    reason=reason, in_background=0)
         _fail_if_contains_errors(response)
 
@@ -1080,7 +1077,7 @@ class Project(TodoistObject):
         tasks = []
         offset = 0
         while True:
-            response = API.get_all_completed_tasks(self.owner.api_token,
+            response = API.get_all_completed_tasks(self.owner.token,
                                                    limit=_PAGE_LIMIT,
                                                    offset=offset,
                                                    project_id=self.id)
@@ -1208,7 +1205,7 @@ class Project(TodoistObject):
         >>> project = user.get_project('PyTodoist')
         >>> project.delete()
         """
-        args = {'ids': [self.id]}
+        args = {'id': self.id}
         _perform_command(self.owner, 'project_delete', args)
         del self.owner.projects[self.id]
 
@@ -1318,7 +1315,7 @@ class Task(TodoistObject):
         """
         args = {
             'project_id': self.project.id,
-            'ids': [self.id]
+            'id': self.id
         }
         owner = self.project.owner
         _perform_command(owner, 'item_uncomplete', args)
@@ -1384,8 +1381,8 @@ class Task(TodoistObject):
         Inbox
         """
         args = {
-            'project_items': {self.project.id: [self.id]},
-            'to_project': project.id
+            'id': self.id,
+            'project_id': project.id
         }
         _perform_command(self.project.owner, 'item_move', args)
         self.project = project
@@ -1475,7 +1472,7 @@ class Task(TodoistObject):
         >>> task = project.add_task('Read Chapter 4')
         >>> task.delete()
         """
-        args = {'ids': [self.id]}
+        args = {'id': self.id}
         _perform_command(self.project.owner, 'item_delete', args)
         del self.project.owner.tasks[self.id]
 

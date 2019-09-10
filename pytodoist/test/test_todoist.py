@@ -43,7 +43,7 @@ class UserTest(unittest.TestCase):
             todoist.login_with_google(self.user.email, '')
 
     def test_login_with_api_token_success(self):
-        todoist.login_with_api_token(self.user.api_token)
+        todoist.login_with_api_token(self.user.token)
 
     def test_login_with_api_token_failure(self):
         with self.assertRaises(todoist.RequestError):
