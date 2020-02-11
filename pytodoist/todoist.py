@@ -1209,6 +1209,38 @@ class Project(TodoistObject):
         _perform_command(self.owner, 'project_delete', args)
         del self.owner.projects[self.id]
 
+    def __str__(self):
+        cls_name = type(self).__name__
+        name = self.name
+        # Cap the length at 20 characters
+        if len(name) > 20:
+            name = name[:17] + '...'
+        if self.parent_id is not None:
+            parent = self.owner.projects[self.parent_id]
+            parent_name = parent.name
+            if len(parent_name) > 20:
+                parent_name = parent_name[:17] + '...'
+            parent_str=' with Parent "{}"'.format(parent_name)
+        else:
+            parent_str = ''
+        s = '<{cls} "{name}"{parent_str}>'
+        s = s.format(cls=cls_name, name=name, parent_str=parent_str)
+        return s
+
+    def __repr__(self):
+        cls_name = type(self).__name__
+        name = self.name
+        # Cap the length at 20 characters
+        if len(name) > 20:
+            name = name[:17] + '...'
+        if self.parent_id is not None:
+            parent = self.owner.projects[self.parent_id]
+            parent_str = ', parent={}'.format(repr(parent))
+        else:
+            parent_str = ''
+        s = '{cls}("{name}"{parent_str})'
+        s = s.format(cls=cls_name, name=name, parent_str=parent_str)
+        return s
 
 class Task(TodoistObject):
     """A Todoist Task with the following attributes:
@@ -1624,6 +1656,26 @@ class Label(TodoistObject):
         """
         args = {'id': self.id}
         _perform_command(self.owner, 'label_delete', args)
+
+    def __str__(self):
+        cls_name = type(self).__name__
+        name = self.name
+        # Cap the length at 20 characters
+        if len(name) > 20:
+            name = name[:17] + '...'
+        s = '<{cls} "{name}">'
+        s = s.format(cls=cls_name, name=name)
+        return s
+
+    def __repr__(self):
+        cls_name = type(self).__name__
+        name = self.name
+        # Cap the length at 20 characters
+        if len(name) > 20:
+            name = name[:17] + '...'
+        s = '{cls}("{name}")'
+        s = s.format(cls=cls_name, name=name)
+        return s
 
 
 class Filter(TodoistObject):
