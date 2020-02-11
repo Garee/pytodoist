@@ -1476,6 +1476,29 @@ class Task(TodoistObject):
         _perform_command(self.project.owner, 'item_delete', args)
         del self.project.owner.tasks[self.id]
 
+    def __str__(self):
+        cls_name = type(self).__name__
+        content, project = self.content, self.project.name
+        # Cap the length at 20 characters
+        if len(content) > 20:
+            content = content[:17] + '...'
+        if len(project) > 20:
+            project = project[:17] + '...'
+        s = '<{cls} "{content}" in Project "{project}">'
+        s = s.format(cls=cls_name, content=content, project=project)
+        return s
+
+    def __repr__(self):
+        cls_name = type(self).__name__
+        content, project = self.content, self.project.name
+        # Cap the length at 20 characters
+        if len(content) > 20:
+            content = content[:17] + '...'
+        if len(project) > 20:
+            project = project[:17] + '...'
+        s = '{cls}("{content}", project="{project}")'
+        s = s.format(cls=cls_name, content=content, project=project)
+        return s
 
 class Note(TodoistObject):
     """A Todoist note with the following attributes:
