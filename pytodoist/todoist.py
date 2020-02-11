@@ -23,6 +23,7 @@ from pytodoist.api import TodoistAPI
 # No magic numbers
 _HTTP_OK = 200
 _PAGE_LIMIT = 50
+_REPR_CHAR_LIMIT = 20
 
 API = TodoistAPI()
 
@@ -1212,14 +1213,14 @@ class Project(TodoistObject):
     def __str__(self):
         cls_name = type(self).__name__
         name = self.name
-        # Cap the length at 20 characters
-        if len(name) > 20:
-            name = name[:17] + '...'
+        # Cap the length.
+        if len(name) > _REPR_CHAR_LIMIT:
+            name = name[:_REPR_CHAR_LIMIT - 3] + '...'
         if self.parent_id is not None:
             parent = self.owner.projects[self.parent_id]
             parent_name = parent.name
-            if len(parent_name) > 20:
-                parent_name = parent_name[:17] + '...'
+            if len(parent_name) > _REPR_CHAR_LIMIT:
+                parent_name = parent_name[:_REPR_CHAR_LIMIT - 3] + '...'
             parent_str=' with Parent "{}"'.format(parent_name)
         else:
             parent_str = ''
@@ -1230,9 +1231,9 @@ class Project(TodoistObject):
     def __repr__(self):
         cls_name = type(self).__name__
         name = self.name
-        # Cap the length at 20 characters
-        if len(name) > 20:
-            name = name[:17] + '...'
+        # Cap the length.
+        if len(name) > _REPR_CHAR_LIMIT:
+            name = name[:_REPR_CHAR_LIMIT - 3] + '...'
         if self.parent_id is not None:
             parent = self.owner.projects[self.parent_id]
             parent_str = ', parent={}'.format(repr(parent))
@@ -1511,11 +1512,11 @@ class Task(TodoistObject):
     def __str__(self):
         cls_name = type(self).__name__
         content, project = self.content, self.project.name
-        # Cap the length at 20 characters
-        if len(content) > 20:
-            content = content[:17] + '...'
-        if len(project) > 20:
-            project = project[:17] + '...'
+        # Cap the length.
+        if len(content) > _REPR_CHAR_LIMIT:
+            content = content[:_REPR_CHAR_LIMIT - 3] + '...'
+        if len(project) > _REPR_CHAR_LIMIT:
+            project = project[:_REPR_CHAR_LIMIT - 3] + '...'
         s = '<{cls} "{content}" in Project "{project}">'
         s = s.format(cls=cls_name, content=content, project=project)
         return s
@@ -1523,11 +1524,11 @@ class Task(TodoistObject):
     def __repr__(self):
         cls_name = type(self).__name__
         content, project = self.content, self.project.name
-        # Cap the length at 20 characters
-        if len(content) > 20:
-            content = content[:17] + '...'
-        if len(project) > 20:
-            project = project[:17] + '...'
+        # Cap the length.
+        if len(content) > _REPR_CHAR_LIMIT:
+            content = content[:_REPR_CHAR_LIMIT - 3] + '...'
+        if len(project) > _REPR_CHAR_LIMIT:
+            project = project[:_REPR_CHAR_LIMIT - 3] + '...'
         s = '{cls}("{content}", project="{project}")'
         s = s.format(cls=cls_name, content=content, project=project)
         return s
@@ -1660,9 +1661,9 @@ class Label(TodoistObject):
     def __str__(self):
         cls_name = type(self).__name__
         name = self.name
-        # Cap the length at 20 characters
-        if len(name) > 20:
-            name = name[:17] + '...'
+        # Cap the length.
+        if len(name) > _REPR_CHAR_LIMIT:
+            name = name[:_REPR_CHAR_LIMIT - 3] + '...'
         s = '<{cls} "{name}">'
         s = s.format(cls=cls_name, name=name)
         return s
@@ -1670,9 +1671,9 @@ class Label(TodoistObject):
     def __repr__(self):
         cls_name = type(self).__name__
         name = self.name
-        # Cap the length at 20 characters
-        if len(name) > 20:
-            name = name[:17] + '...'
+        # Cap the length.
+        if len(name) > _REPR_CHAR_LIMIT:
+            name = name[:_REPR_CHAR_LIMIT - 3] + '...'
         s = '{cls}("{name}")'
         s = s.format(cls=cls_name, name=name)
         return s
