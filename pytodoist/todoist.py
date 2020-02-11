@@ -1221,7 +1221,7 @@ class Project(TodoistObject):
             parent_name = parent.name
             if len(parent_name) > _REPR_CHAR_LIMIT:
                 parent_name = parent_name[:_REPR_CHAR_LIMIT - 3] + '...'
-            parent_str=' with Parent "{}"'.format(parent_name)
+            parent_str = ' with Parent "{}"'.format(parent_name)
         else:
             parent_str = ''
         s = '<{cls} "{name}"{parent_str}>'
@@ -1242,6 +1242,7 @@ class Project(TodoistObject):
         s = '{cls}("{name}"{parent_str})'
         s = s.format(cls=cls_name, name=name, parent_str=parent_str)
         return s
+
 
 class Task(TodoistObject):
     """A Todoist Task with the following attributes:
@@ -1532,6 +1533,7 @@ class Task(TodoistObject):
         s = '{cls}("{content}", project="{project}")'
         s = s.format(cls=cls_name, content=content, project=project)
         return s
+
 
 class Note(TodoistObject):
     """A Todoist note with the following attributes:
