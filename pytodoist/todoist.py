@@ -23,6 +23,7 @@ from pytodoist.api import TodoistAPI
 # No magic numbers
 _HTTP_OK = 200
 _PAGE_LIMIT = 50
+_REPR_CHAR_LIMIT = 20
 
 API = TodoistAPI()
 
@@ -1209,6 +1210,39 @@ class Project(TodoistObject):
         _perform_command(self.owner, 'project_delete', args)
         del self.owner.projects[self.id]
 
+    def __str__(self):
+        cls_name = type(self).__name__
+        name = self.name
+        # Cap the length.
+        if len(name) > _REPR_CHAR_LIMIT:
+            name = name[:_REPR_CHAR_LIMIT - 3] + '...'
+        if self.parent_id is not None:
+            parent = self.owner.projects[self.parent_id]
+            parent_name = parent.name
+            if len(parent_name) > _REPR_CHAR_LIMIT:
+                parent_name = parent_name[:_REPR_CHAR_LIMIT - 3] + '...'
+            parent_str = ' with Parent "{}"'.format(parent_name)
+        else:
+            parent_str = ''
+        s = '<{cls} "{name}"{parent_str}>'
+        s = s.format(cls=cls_name, name=name, parent_str=parent_str)
+        return s
+
+    def __repr__(self):
+        cls_name = type(self).__name__
+        name = self.name
+        # Cap the length.
+        if len(name) > _REPR_CHAR_LIMIT:
+            name = name[:_REPR_CHAR_LIMIT - 3] + '...'
+        if self.parent_id is not None:
+            parent = self.owner.projects[self.parent_id]
+            parent_str = ', parent={}'.format(repr(parent))
+        else:
+            parent_str = ''
+        s = '{cls}("{name}"{parent_str})'
+        s = s.format(cls=cls_name, name=name, parent_str=parent_str)
+        return s
+
 
 class Task(TodoistObject):
     """A Todoist Task with the following attributes:
@@ -1476,6 +1510,30 @@ class Task(TodoistObject):
         _perform_command(self.project.owner, 'item_delete', args)
         del self.project.owner.tasks[self.id]
 
+    def __str__(self):
+        cls_name = type(self).__name__
+        content, project = self.content, self.project.name
+        # Cap the length.
+        if len(content) > _REPR_CHAR_LIMIT:
+            content = content[:_REPR_CHAR_LIMIT - 3] + '...'
+        if len(project) > _REPR_CHAR_LIMIT:
+            project = project[:_REPR_CHAR_LIMIT - 3] + '...'
+        s = '<{cls} "{content}" in Project "{project}">'
+        s = s.format(cls=cls_name, content=content, project=project)
+        return s
+
+    def __repr__(self):
+        cls_name = type(self).__name__
+        content, project = self.content, self.project.name
+        # Cap the length.
+        if len(content) > _REPR_CHAR_LIMIT:
+            content = content[:_REPR_CHAR_LIMIT - 3] + '...'
+        if len(project) > _REPR_CHAR_LIMIT:
+            project = project[:_REPR_CHAR_LIMIT - 3] + '...'
+        s = '{cls}("{content}", project="{project}")'
+        s = s.format(cls=cls_name, content=content, project=project)
+        return s
+
 
 class Note(TodoistObject):
     """A Todoist note with the following attributes:
@@ -1601,6 +1659,26 @@ class Label(TodoistObject):
         """
         args = {'id': self.id}
         _perform_command(self.owner, 'label_delete', args)
+
+    def __str__(self):
+        cls_name = type(self).__name__
+        name = self.name
+        # Cap the length.
+        if len(name) > _REPR_CHAR_LIMIT:
+            name = name[:_REPR_CHAR_LIMIT - 3] + '...'
+        s = '<{cls} "{name}">'
+        s = s.format(cls=cls_name, name=name)
+        return s
+
+    def __repr__(self):
+        cls_name = type(self).__name__
+        name = self.name
+        # Cap the length.
+        if len(name) > _REPR_CHAR_LIMIT:
+            name = name[:_REPR_CHAR_LIMIT - 3] + '...'
+        s = '{cls}("{name}")'
+        s = s.format(cls=cls_name, name=name)
+        return s
 
 
 class Filter(TodoistObject):
