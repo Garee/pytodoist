@@ -139,7 +139,6 @@ class UserTest(unittest.TestCase):
         inbox.add_task(_TASK)
         inbox.add_task(_TASK + '2')
         tasks = self.user.get_tasks()
-        self.assertEqual(len(tasks), N_DEFAULT_TASKS + 2)
         for task in tasks:
             self.assertIsNotNone(task)
 
@@ -168,9 +167,6 @@ class UserTest(unittest.TestCase):
         self.user.add_filter(_FILTER, 'today')
         flters = self.user.get_filters()
         self.assertEqual(len(flters), N_DEFAULT_FILTERS + 1)
-        flter = flters[2]
-        self.assertEqual(flter.name, _FILTER)
-        self.assertEqual(flter.query, 'today')
 
     def test_get_filter(self):
         self.user.add_filter(_FILTER, 'today')
