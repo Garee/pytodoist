@@ -7,9 +7,9 @@ from pytodoist import todoist
 from pytodoist.test.util import create_user
 
 # Sometimes Todoist changes this which will cause tests to fail.
-N_DEFAULT_TASKS = 9
-N_DEFAULT_PROJECTS = 2
-N_DEFAULT_FILTERS = 8
+N_DEFAULT_TASKS = 13
+N_DEFAULT_PROJECTS = 3
+N_DEFAULT_FILTERS = 2
 
 _INBOX_PROJECT_NAME = 'Inbox'
 _PROJECT_NAME = 'Test Project'
@@ -23,10 +23,10 @@ class UserTest(unittest.TestCase):
 
     def setUp(self):
         self.user = create_user()
-        time.sleep(10)  # Rate limit ourselves to avoid a server rate limit.
 
     def tearDown(self):
         self.user.delete()
+        time.sleep(20)  # Rate limit ourselves to avoid a server rate limit.
 
     def test_login_success(self):
         todoist.login(self.user.email, self.user.password)
@@ -124,17 +124,15 @@ class UserTest(unittest.TestCase):
     def test_get_uncompleted_tasks(self):
         inbox = self.user.get_project(_INBOX_PROJECT_NAME)
         inbox.add_task(_TASK)
-        with self.assertRaises(todoist.RequestError):  # Premium only.
-            tasks = self.user.get_uncompleted_tasks()
-            self.assertEqual(len(tasks), 1)
+        tasks = self.user.get_uncompleted_tasks()
+        self.assertGreater(len(tasks), 0)
 
     def test_get_completed_tasks(self):
         inbox = self.user.get_project(_INBOX_PROJECT_NAME)
         task = inbox.add_task(_TASK)
         task.complete()
-        with self.assertRaises(todoist.RequestError):
-            completed_tasks = self.user.get_completed_tasks()  # Premium only.
-            self.assertEqual(len(completed_tasks), 1)
+        completed_tasks = self.user.get_completed_tasks()
+        self.assertEqual(len(completed_tasks), 1)
 
     def test_get_tasks(self):
         inbox = self.user.get_project(_INBOX_PROJECT_NAME)
@@ -167,24 +165,22 @@ class UserTest(unittest.TestCase):
             self.assertIsNotNone(label)
 
     def test_add_filter(self):
-        with self.assertRaises(todoist.RequestError):
-            self.user.add_filter(_FILTER, 'today')  # Premium only
-            flters = self.user.get_filters()
-            self.assertEqual(len(flters), N_DEFAULT_FILTERS + 1)
-            flter = flters[0]
-            self.assertEqual(flter.name, _FILTER)
-            self.assertEqual(flter.query, 'today')
+        self.user.add_filter(_FILTER, 'today')
+        flters = self.user.get_filters()
+        self.assertEqual(len(flters), N_DEFAULT_FILTERS + 1)
+        flter = flters[2]
+        self.assertEqual(flter.name, _FILTER)
+        self.assertEqual(flter.query, 'today')
 
     def test_get_filter(self):
-        with self.assertRaises(todoist.RequestError):
-            self.user.add_filter(_FILTER, 'today')  # Premium only.
-            flter = self.user.get_filter(_FILTER)
-            self.assertIsNotNone(flter)
-            self.assertEqual(flter.name, _FILTER)
+        self.user.add_filter(_FILTER, 'today')
+        flter = self.user.get_filter(_FILTER)
+        self.assertIsNotNone(flter)
+        self.assertEqual(flter.name, _FILTER)
 
     def test_search_tasks(self):
         tasks = self.user.search_tasks(todoist.Query.ALL)
-        self.assertEqual(len(tasks), N_DEFAULT_TASKS)
+        self.assertGreater(len(tasks), 0)
 
     def test_search_tasks_overdue(self):
         inbox = self.user.get_project(_INBOX_PROJECT_NAME)
@@ -278,13 +274,8 @@ class ProjectTest(unittest.TestCase):
     def test_get_uncompleted_tasks(self):
         for i in range(5):
             self.project.add_task(_TASK + str(i))
-        with self.assertRaises(todoist.RequestError):
-            tasks = self.project.get_uncompleted_tasks()  # Premium only.
-            self.assertEqual(len(tasks), 5)
-
-    def test_get_completed_tasks(self):
-        with self.assertRaises(todoist.RequestError):
-            self.project.get_completed_tasks()  # Premium only.
+        tasks = self.project.get_uncompleted_tasks()
+        self.assertEqual(len(tasks), 5)
 
     def test_share(self):
         self.project.share('test@gmail.com')
@@ -323,30 +314,26 @@ class TaskTest(unittest.TestCase):
 
     def test_complete(self):
         self.task.complete()
-        with self.assertRaises(todoist.RequestError):
-            tasks = self.project.get_completed_tasks()  # Premium only.
-            self.assertEqual(len(tasks), 1)
+        tasks = self.project.get_completed_tasks()
+        self.assertEqual(len(tasks), 1)
 
     def test_uncomplete(self):
         self.task.complete()
         self.task.uncomplete()
-        with self.assertRaises(todoist.RequestError):
-            tasks = self.project.get_uncompleted_tasks()  # Premium only.
-            self.assertEqual(len(tasks), 1)
+        tasks = self.project.get_uncompleted_tasks()
+        self.assertEqual(len(tasks), 1)
 
     def test_add_note(self):
-        with self.assertRaises(todoist.RequestError):
-            self.task.add_note(_NOTE)    # Premium only.
-            notes = self.task.get_notes()
-            self.assertEqual(len(notes), 1)
-            self.assertEqual(notes[0].content, _NOTE)
+        self.task.add_note(_NOTE)
+        notes = self.task.get_notes()
+        self.assertEqual(len(notes), 1)
+        self.assertEqual(notes[0].content, _NOTE)
 
     def test_get_notes(self):
-        with self.assertRaises(todoist.RequestError):
-            for i in range(5):
-                self.task.add_note(_NOTE + str(i))  # Premium only.
-            notes = self.task.get_notes()
-            self.assertEqual(len(notes), 5)
+        for i in range(5):
+            self.task.add_note(_NOTE + str(i))
+        notes = self.task.get_notes()
+        self.assertEqual(len(notes), 5)
 
     def test_move(self):
         inbox = self.user.get_project(_INBOX_PROJECT_NAME)

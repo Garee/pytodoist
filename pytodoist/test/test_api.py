@@ -101,10 +101,8 @@ class TodoistAPITest(unittest.TestCase):
 
     def test_get_all_completed_tasks_empty(self):
         response = self.api.get_all_completed_tasks(self.user.token)
-        self.assertNotEqual(response.status_code, _HTTP_OK)
-        self.assertIn('error', response.json())
-        error_info = response.json()
-        self.assertEqual(error_info['error'], "Premium only feature")
+        self.assertEqual(response.status_code, _HTTP_OK)
+        self.assertIn('items', response.json())
 
     def test_get_redirect_link(self):
         response = self.api.get_redirect_link(self.user.token)
