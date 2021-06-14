@@ -1,0 +1,3 @@
+[flake8]
+# To match the code formatter https://github.com/ambv/black
+max-line-length = 88
