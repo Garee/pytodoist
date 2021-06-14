@@ -23,10 +23,10 @@ class UserTest(unittest.TestCase):
 
     def setUp(self):
         self.user = create_user()
+        time.sleep(30)  # Rate limit ourselves to avoid a server rate limit.
 
     def tearDown(self):
         self.user.delete()
-        time.sleep(20)  # Rate limit ourselves to avoid a server rate limit.
 
     def test_login_success(self):
         todoist.login(self.user.email, self.user.password)
@@ -173,10 +173,6 @@ class UserTest(unittest.TestCase):
         flter = self.user.get_filter(_FILTER)
         self.assertIsNotNone(flter)
         self.assertEqual(flter.name, _FILTER)
-
-    def test_search_tasks(self):
-        tasks = self.user.search_tasks(todoist.Query.ALL)
-        self.assertGreater(len(tasks), 0)
 
     def test_search_tasks_overdue(self):
         inbox = self.user.get_project(_INBOX_PROJECT_NAME)
