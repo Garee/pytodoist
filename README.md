@@ -5,7 +5,7 @@
 <p align="center">
 <a href="https://pypi.python.org/pypi/pytodoist"><img src="https://img.shields.io/pypi/v/pytodoist.svg?maxAge=600" alt="PyPI" /></a>
 <a href="https://pypi.python.org/pypi/pytodoist"><img src="https://img.shields.io/pypi/pyversions/pytodoist.svg" alt="Python versions"></a>
-<a href="https://github.com/garee/pytodoist/blob/master/LICENSE"><img src="https://img.shields.io/github/license/garee/pytodoist.svg" alt="License" /></a> <a href="https://travis-ci.org/Garee/pytodoist"><img src="https://travis-ci.org/Garee/pytodoist.svg?branch=master" alt="Build status"></a>
+<a href="https://github.com/garee/pytodoist/blob/master/LICENSE"><img src="https://img.shields.io/github/license/garee/pytodoist.svg" alt="License" /></a> <a href="https://travis-ci.com/Garee/pytodoist"><img src="https://travis-ci.com/Garee/pytodoist.svg?branch=master" alt="Build status"></a>
 </p>
 
 **PyTodoist** is a Python package for interacting with [Todoist](http://www.todoist.com). It hides the underlying API calls with higher-level abstractions that make it easy to use Todoist with Python.
