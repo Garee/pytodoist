@@ -30,8 +30,8 @@ class TodoistAPI(object):
     https://api.todoist.com/API/v8/
     """
 
-    VERSION = '8'
-    URL = 'https://api.todoist.com/API/v{0}/'.format(VERSION)
+    VERSION = "8"
+    URL = "https://api.todoist.com/API/v{0}/".format(VERSION)
 
     def login(self, email, password):
         """Login to Todoist.
@@ -51,11 +51,8 @@ class TodoistAPI(object):
         >>> print(full_name)
         John Doe
         """
-        params = {
-            'email': email,
-            'password': password
-        }
-        return self._get('login', params)
+        params = {"email": email, "password": password}
+        return self._get("login", params)
 
     def login_with_google(self, email, oauth2_token, **kwargs):
         """Login to Todoist using Google's oauth2 authentication.
@@ -88,14 +85,11 @@ class TodoistAPI(object):
         >>> print(full_name)
         John Doe
         """
-        params = {
-            'email': email,
-            'oauth2_token': oauth2_token
-        }
+        params = {"email": email, "oauth2_token": oauth2_token}
         req_func = self._get
-        if kwargs.get('auto_signup', 0) == 1:  # POST if we're creating a user.
+        if kwargs.get("auto_signup", 0) == 1:  # POST if we're creating a user.
             req_func = self._post
-        return req_func('login_with_google', params, **kwargs)
+        return req_func("login_with_google", params, **kwargs)
 
     def register(self, email, full_name, password, **kwargs):
         """Register a new Todoist user.
@@ -122,12 +116,8 @@ class TodoistAPI(object):
         >>> print(full_name)
         John Doe
         """
-        params = {
-            'email': email,
-            'full_name': full_name,
-            'password': password
-        }
-        return self._post('register', params, **kwargs)
+        params = {"email": email, "full_name": full_name, "password": password}
+        return self._post("register", params, **kwargs)
 
     def delete_user(self, api_token, password, **kwargs):
         """Delete a registered Todoist user's account.
@@ -143,11 +133,8 @@ class TodoistAPI(object):
         :return: The HTTP response to the request.
         :rtype: :class:`requests.Response`
         """
-        params = {
-            'token': api_token,
-            'current_password': password
-        }
-        return self._post('delete_user', params, **kwargs)
+        params = {"token": api_token, "current_password": password}
+        return self._post("delete_user", params, **kwargs)
 
     def sync(self, api_token, sync_token, resource_types='["all"]', **kwargs):
         """Update and retrieve Todoist data.
@@ -179,14 +166,14 @@ class TodoistAPI(object):
         {'seq_no_global': 3848029654, 'seq_no': 3848029654, 'Projects': ...}
         """
         params = {
-            'token': api_token,
-            'sync_token': sync_token,
+            "token": api_token,
+            "sync_token": sync_token,
         }
         req_func = self._post
-        if 'commands' not in kwargs:  # GET if we're not changing data.
+        if "commands" not in kwargs:  # GET if we're not changing data.
             req_func = self._get
-            params['resource_types'] = resource_types
-        return req_func('sync', params, **kwargs)
+            params["resource_types"] = resource_types
+        return req_func("sync", params, **kwargs)
 
     def query(self, api_token, queries, **kwargs):
         """Search all of a user's tasks using date, priority and label queries.
@@ -201,11 +188,8 @@ class TodoistAPI(object):
         :return: The HTTP response to the request.
         :rtype: :class:`requests.Response`
         """
-        params = {
-            'token': api_token,
-            'queries': queries
-        }
-        return self._get('query', params, **kwargs)
+        params = {"token": api_token, "queries": queries}
+        return self._get("query", params, **kwargs)
 
     def add_item(self, api_token, content, **kwargs):
         """Add a task to a project.
@@ -253,11 +237,8 @@ class TodoistAPI(object):
         >>> print(task['content'])
         Install PyTodoist
         """
-        params = {
-            'token': api_token,
-            'content': content
-        }
-        return self._post('add_item', params, **kwargs)
+        params = {"token": api_token, "content": content}
+        return self._post("add_item", params, **kwargs)
 
     def quick_add(self, api_token, text, **kwargs):
         """Add a task using the Todoist 'Quick Add Task' syntax.
@@ -275,11 +256,8 @@ class TodoistAPI(object):
         :return: The HTTP response to the request.
         :rtype: :class:`requests.Response`
         """
-        params = {
-            'token': api_token,
-            'text': text
-        }
-        return self._post('quick/add', params, **kwargs)
+        params = {"token": api_token, "text": text}
+        return self._post("quick/add", params, **kwargs)
 
     def get_all_completed_tasks(self, api_token, **kwargs):
         """Return a list of a user's completed tasks.
@@ -312,10 +290,8 @@ class TodoistAPI(object):
         >>> response = api.get_all_completed_tasks(user_api_token)
         >>> completed_tasks = response.json()
         """
-        params = {
-            'token': api_token
-        }
-        return self._get('get_all_completed_items', params, **kwargs)
+        params = {"token": api_token}
+        return self._get("get_all_completed_items", params, **kwargs)
 
     def upload_file(self, api_token, file_path, **kwargs):
         """Upload a file suitable to be passed as a file_attachment.
@@ -327,13 +303,10 @@ class TodoistAPI(object):
         :return: The HTTP response to the request.
         :rtype: :class:`requests.Response`
         """
-        params = {
-            'token': api_token,
-            'file_name': os.path.basename(file_path)
-        }
-        with open(file_path, 'rb') as f:
-            files = {'file': f}
-            return self._post('upload_file', params, files, **kwargs)
+        params = {"token": api_token, "file_name": os.path.basename(file_path)}
+        with open(file_path, "rb") as f:
+            files = {"file": f}
+            return self._post("upload_file", params, files, **kwargs)
 
     def get_productivity_stats(self, api_token, **kwargs):
         """Return a user's productivity stats.
@@ -343,13 +316,10 @@ class TodoistAPI(object):
         :return: The HTTP response to the request.
         :rtype: :class:`requests.Response`
         """
-        params = {
-            'token': api_token
-        }
-        return self._get('get_productivity_stats', params, **kwargs)
+        params = {"token": api_token}
+        return self._get("get_productivity_stats", params, **kwargs)
 
-    def update_notification_settings(self, api_token, event,
-                                     service, should_notify):
+    def update_notification_settings(self, api_token, event, service, should_notify):
         """Update a user's notification settings.
 
         :param api_token: The user's login api_token.
@@ -374,12 +344,12 @@ class TodoistAPI(object):
         ...
         """
         params = {
-            'token': api_token,
-            'notification_type': event,
-            'service': service,
-            'dont_notify': should_notify
+            "token": api_token,
+            "notification_type": event,
+            "service": service,
+            "dont_notify": should_notify,
         }
-        return self._post('update_notification_setting', params)
+        return self._post("update_notification_setting", params)
 
     def get_redirect_link(self, api_token, **kwargs):
         """Return the absolute URL to redirect or to open in
@@ -407,10 +377,8 @@ class TodoistAPI(object):
         >>> print(redirect_link)
         https://todoist.com/secureRedirect?path=adflk...
         """
-        params = {
-            'token': api_token
-        }
-        return self._get('get_redirect_link', params, **kwargs)
+        params = {"token": api_token}
+        return self._get("get_redirect_link", params, **kwargs)
 
     def _get(self, end_point, params=None, **kwargs):
         """Send a HTTP GET request to a Todoist API end-point.
