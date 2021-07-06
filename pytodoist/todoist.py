@@ -219,6 +219,20 @@ class TodoistObject(object):
             self.to_update.add(key)  # Don't update on __init__.
         super(TodoistObject, self).__setattr__(key, value)
 
+    def __getattribute__(self, name):
+        '''
+        Return immutable versions of mutable attributes.
+
+        We can't detect changes to mutable attributes (calling .append() on
+        lists), so when an attribute is a list, we return it to the user as a
+        tuple instead, forcing them to overwrite it if they wish to modify it.
+        '''
+        attribute = object.__getattribute__(self, name)
+        if isinstance(attribute, (list)):
+            return tuple(attribute)
+        else:
+            return attribute
+
 
 class User(TodoistObject):
     """A Todoist User that has the following attributes:
